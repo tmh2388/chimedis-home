@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CHIMEDIS — Chinese Medicine Discovery</title>
+<link rel="icon" href="assets/logo.png">
+<meta name="description" content="Cổng thông tin tra cứu và nghiên cứu Trung Y — tạp chí, báo cáo, bài viết học thuật và sách chuyên khảo, song ngữ Việt–Trung–Anh.">
+<style>
+:root{
+  --bg:#F5F0E6;
+  --ink:#0E3A3A;
+  --ink-2:#15514F;
+  --accent:#B4472B;
+  --accent-2:#9A3A22;
+  --fg:#241F19;
+  --muted-fg:#6B6156;
+  --card:#FFFFFF;
+  --border:#E4DCCC;
+  --border-strong:#D8CDB8;
+  --focus:#1E7A76;
+  --radius:10px;
+  --font-serif:"Noto Serif","Songti SC","Noto Serif SC",serif;
+  --font-serif-cn:"Noto Serif SC","Songti SC",serif;
+  --font-sans:"Noto Sans","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--fg);
+  font-family:var(--font-sans);line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block}
+a{color:inherit;text-decoration:none}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:2.5px solid var(--focus);outline-offset:2px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 24px}
+@media (max-width:640px){.wrap{padding:0 16px}}
+
+/* ===== HEADER ===== */
+header.site{background:var(--ink);color:#F5F0E6;position:sticky;top:0;z-index:40}
+.site-top{display:flex;align-items:center;gap:16px;padding:14px 0}
+.brand{display:flex;align-items:center;gap:11px;margin-right:auto;min-width:0}
+.brand img{width:48px;height:48px;flex:0 0 auto;object-fit:contain}
+.brand-text{min-width:0;display:flex;flex-direction:column;gap:1px}
+.brand-text .bn{font-family:var(--font-serif);font-size:19px;font-weight:700;letter-spacing:.02em;white-space:nowrap;line-height:1.1}
+.brand-text .bs{font-size:10px;color:#C9DAD8;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;line-height:1.1}
+nav.main{display:flex;gap:4px;align-items:center}
+nav.main a{padding:8px 12px;border-radius:8px;font-size:14px;font-weight:500;white-space:nowrap;transition:background .18s}
+nav.main a:hover{background:rgba(255,255,255,.1)}
+.hdr-actions{display:flex;align-items:center;gap:8px}
+.lang-wrap{position:relative}
+.lang-btn{display:flex;align-items:center;gap:5px;padding:7px 10px;border:1px solid rgba(255,255,255,.25);border-radius:8px;background:transparent;color:inherit;font-size:13px;font-weight:600}
+.lang-btn:hover{background:rgba(255,255,255,.1)}
+.lang-menu{position:absolute;top:calc(100% + 6px);right:0;background:#fff;border-radius:11px;box-shadow:0 8px 24px rgba(14,58,58,.18);border:1px solid var(--border);padding:6px;min-width:140px;display:none;z-index:50}
+.lang-menu.show{display:block}
+.lang-opt{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:7px;font-size:13.5px;color:var(--fg);cursor:pointer}
+.lang-opt:hover{background:#F5F0E6}
+.lang-opt.active{color:var(--accent);font-weight:700}
+.lang-opt .ck{width:14px;height:14px;color:var(--accent);display:none}
+.lang-opt.active .ck{display:block}
+.dict-cta{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:var(--accent);color:#fff;font-size:13.5px;font-weight:600;white-space:nowrap;transition:background .18s}
+.dict-cta:hover{background:var(--accent-2)}
+.burger{display:none;background:none;border:none;color:#fff;padding:8px}
+.burger svg{width:22px;height:22px}
+@media (max-width:900px){
+  nav.main{display:none}
+  .burger{display:block}
+}
+
+/* ===== HERO / SEARCH ===== */
+.hero{padding:56px 0 40px;text-align:center}
+.hero h1{font-family:var(--font-serif);font-size:34px;line-height:1.25;margin:0 0 10px;color:var(--ink)}
+.hero p.lead{margin:0 auto 32px;max-width:560px;color:var(--muted-fg);font-size:15.5px}
+.search-box{max-width:680px;margin:0 auto}
+.search-row{display:flex;gap:8px}
+.search-row .search-field{flex:1;display:flex;align-items:center;background:var(--card);border:1.5px solid var(--border-strong);border-radius:12px;box-shadow:0 2px 10px rgba(14,58,58,.06);min-width:0}
+.search-row input{flex:1;border:none;padding:0 18px;height:52px;font-size:15px;font-family:inherit;background:transparent;color:var(--fg);min-width:0;border-radius:12px}
+.search-row input::placeholder{color:#A69C8C}
+.search-row input:focus{outline:none}
+.search-row .btn{height:52px}
+.adv-toggle{margin-top:14px;height:36px;padding:0 16px;border-radius:18px;display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--ink);font-weight:600;background:var(--card);border:1.5px solid var(--border-strong)}
+.adv-toggle:hover{border-color:var(--ink)}
+.adv-toggle.open{background:var(--ink);color:#fff;border-color:var(--ink)}
+.adv-toggle svg{width:14px;height:14px;transition:transform .2s}
+.adv-toggle.open svg{transform:rotate(180deg)}
+
+/* ===== HỆ NÚT BẤM THỐNG NHẤT ===== */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:44px;padding:0 20px;border-radius:9px;font-family:inherit;font-weight:700;font-size:14px;border:1.5px solid transparent;line-height:1;white-space:nowrap;transition:background .16s,border-color .16s,color .16s}
+.btn svg{width:17px;height:17px;flex:0 0 auto}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-2)}
+.btn-secondary{background:var(--card);color:var(--ink);border-color:var(--border-strong)}
+.btn-secondary:hover{border-color:var(--ink);background:#EFE8D8}
+.btn-sm{height:36px;padding:0 14px;font-size:12.5px;border-radius:8px}
+.btn-icon{width:36px;height:36px;padding:0;border-radius:8px;flex:0 0 auto}
+.btn-icon svg{width:15px;height:15px}
+.btn-block{width:100%}
+
+.search-row button{border-radius:0;height:auto;align-self:stretch}
+
+.adv-panel{max-width:820px;margin:18px auto 0;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px;text-align:left;display:none}
+.adv-panel.show{display:block}
+.adv-panel h4{margin:0 0 4px;font-size:13px;color:var(--ink)}
+.adv-hint{font-size:12px;color:var(--muted-fg);margin:0 0 14px}
+
+/* Search builder rows — kiểu PubMed Advanced Search Builder */
+.builder-rows{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.builder-row{display:grid;grid-template-columns:92px 1fr 150px 36px;gap:8px;align-items:center}
+@media (max-width:640px){.builder-row{grid-template-columns:1fr;gap:6px}}
+.builder-row select.conn{font-size:12.5px;font-weight:700;color:var(--accent);text-align:center;text-align-last:center;border-color:var(--border-strong)}
+.builder-row select,.builder-row input[type=text]{width:100%;height:36px;padding:0 10px;border:1px solid var(--border-strong);border-radius:8px;background:#FCFAF6;font-size:13px;font-family:inherit;color:var(--fg)}
+
+.adv-divider{border:none;border-top:1px solid var(--border);margin:16px 0 18px}
+.adv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media (max-width:760px){.adv-grid{grid-template-columns:1fr 1fr}}
+.adv-field label{display:block;font-size:11.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-fg);margin-bottom:6px}
+.adv-field select,.adv-field input{width:100%;height:36px;padding:0 10px;border:1px solid var(--border-strong);border-radius:8px;background:#FCFAF6;font-size:13.5px;font-family:inherit;color:var(--fg)}
+.adv-field .chk-row{display:flex;flex-wrap:wrap;gap:6px 14px;padding-top:4px}
+.adv-field .chk-row label{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--fg);margin:0;cursor:pointer}
+.adv-field .chk-row input{width:15px;height:15px;accent-color:var(--accent);flex:0 0 auto}
+.match-mode{display:flex;gap:16px;padding-top:4px}
+.match-mode label{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--fg);cursor:pointer}
+.match-mode input{accent-color:var(--accent)}
+.adv-apply{margin-top:18px;display:flex;justify-content:flex-end;gap:10px}
+
+/* ===== DOCUMENT TYPE CARDS ===== */
+section.categories{padding:36px 0 8px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.section-head h2{font-family:var(--font-serif);font-size:22px;margin:0;color:var(--ink)}
+.section-head .see-all{font-size:13.5px;font-weight:600;color:var(--accent);white-space:nowrap}
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media (max-width:900px){.cat-grid{grid-template-columns:repeat(2,1fr)}}
+.cat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:22px 18px;transition:border-color .18s,transform .18s}
+.cat-card:hover{border-color:var(--accent);transform:translateY(-2px)}
+.cat-card .ic{width:38px;height:38px;border-radius:9px;background:#EFE8D8;display:flex;align-items:center;justify-content:center;margin-bottom:14px;color:var(--ink)}
+.cat-card .ic svg{width:20px;height:20px}
+.cat-card h3{margin:0 0 4px;font-size:15.5px;color:var(--fg)}
+.cat-card .count{font-size:12.5px;color:var(--muted-fg)}
+
+/* ===== DOCUMENT LIST ===== */
+section.doclist{padding:44px 0 8px}
+.doc-row{display:flex;gap:16px;padding:20px 0;border-bottom:1px solid var(--border)}
+.doc-row:first-child{padding-top:4px}
+.doc-type{flex:0 0 88px}
+.type-badge{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:4px 8px;border-radius:5px;color:#fff}
+.tb-journal{background:#15514F}
+.tb-report{background:#8A5A22}
+.tb-article{background:#B4472B}
+.tb-book{background:#5B4A8A}
+.doc-main{flex:1;min-width:0}
+.doc-main h3{margin:0 0 5px;font-family:var(--font-serif);font-size:17px;line-height:1.4;color:var(--fg)}
+.doc-main h3 a:hover{color:var(--accent)}
+.doc-meta{font-size:12.5px;color:var(--muted-fg);margin-bottom:6px}
+.doc-meta span+span::before{content:"·";margin:0 6px}
+.doc-abstract{font-size:13.5px;color:#4A4238;margin:0}
+.doc-actions{flex:0 0 auto;display:flex;flex-direction:column;gap:8px;align-items:flex-end}
+@media (max-width:640px){
+  .doc-row{flex-wrap:wrap}
+  .doc-type{flex:1 1 100%;order:-1}
+  .doc-actions{flex-direction:row}
+}
+.load-more{display:flex;justify-content:center;padding:28px 0 8px}
+
+/* ===== APP PROMO ===== */
+section.app-promo{padding:56px 0}
+.promo-panel{background:var(--ink);color:#F5F0E6;border-radius:18px;padding:44px 40px;display:flex;align-items:center;gap:40px}
+@media (max-width:800px){.promo-panel{flex-direction:column;text-align:center;padding:36px 24px}}
+.promo-text{flex:1}
+.promo-text .eyebrow{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#8FC6C2;font-weight:700;margin-bottom:10px}
+.promo-text h2{font-family:var(--font-serif);font-size:26px;margin:0 0 12px}
+.promo-text p{color:#C9DAD8;font-size:14.5px;max-width:440px;margin:0 0 22px}
+@media (max-width:800px){.promo-text p{margin-left:auto;margin-right:auto}}
+.promo-actions{display:flex;gap:12px;flex-wrap:wrap}
+@media (max-width:800px){.promo-actions{justify-content:center}}
+.store-btn{display:flex;align-items:center;gap:9px;padding:10px 16px;border-radius:9px;background:#0A2828;border:1px solid rgba(255,255,255,.18)}
+.store-btn svg{width:20px;height:20px}
+.store-btn .lbl small{display:block;font-size:9.5px;color:#9FB8B6}
+.store-btn .lbl strong{display:block;font-size:14px;font-weight:600}
+.promo-visual{flex:0 0 auto;width:150px;height:150px;border-radius:28px;background:#123F3D;display:flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.12)}
+.promo-visual img{width:88px;height:88px;border-radius:50%}
+
+/* ===== VIDEO ===== */
+section.videos{padding:8px 0 52px}
+.video-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media (max-width:900px){.video-grid{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:600px){.video-grid{grid-template-columns:1fr}}
+.video-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.video-thumb{position:relative;aspect-ratio:16/9;background:#D8CDB8;background:linear-gradient(135deg,#123F3D,#0E3A3A)}
+.video-thumb .play{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.video-thumb .play span{width:52px;height:52px;border-radius:50%;background:rgba(255,255,255,.92);display:flex;align-items:center;justify-content:center;transition:transform .18s}
+.video-card:hover .play span{transform:scale(1.08)}
+.video-thumb .play svg{width:20px;height:20px;color:var(--accent);margin-left:3px}
+.video-dur{position:absolute;bottom:8px;right:8px;background:rgba(0,0,0,.72);color:#fff;font-size:11px;padding:2px 6px;border-radius:4px;font-weight:600}
+.video-info{padding:13px 14px}
+.video-info h4{margin:0 0 4px;font-size:14px;line-height:1.4;color:var(--fg)}
+.video-info .vm{font-size:12px;color:var(--muted-fg)}
+
+/* ===== FOOTER ===== */
+footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px;margin-bottom:30px}
+@media (max-width:760px){.footer-grid{grid-template-columns:1fr 1fr;row-gap:26px}}
+.footer-brand .bn{font-family:var(--font-serif);color:#fff;font-size:17px;font-weight:700;margin-bottom:8px}
+.footer-brand p{font-size:12.5px;line-height:1.6;max-width:280px;color:#93ADAA}
+.footer-col h5{font-size:11.5px;text-transform:uppercase;letter-spacing:.06em;color:#6FA09C;margin:0 0 12px}
+.footer-col a{display:block;font-size:13px;padding:4px 0;color:#C9DAD8}
+.footer-col a:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:18px;font-size:12px;color:#7C9B98;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap site-top">
+    <a class="brand" href="#">
+      <img src="assets/logo-dark.png" alt="Chimedis">
+      <span class="brand-text">
+        <span class="bn">CHIMEDIS</span>
+        <span class="bs">Chinese Medicine Discovery</span>
+      </span>
+    </a>
+    <nav class="main">
+      <a href="#" data-i18n="nav_journal">Tạp chí</a>
+      <a href="#" data-i18n="nav_report">Báo cáo</a>
+      <a href="#" data-i18n="nav_article">Bài viết</a>
+      <a href="#" data-i18n="nav_book">Thư viện sách</a>
+      <a href="#" data-i18n="nav_video">Video</a>
+      <a href="#" data-i18n="nav_about">Giới thiệu</a>
+    </nav>
+    <div class="hdr-actions">
+      <div class="lang-wrap">
+        <button class="lang-btn" id="langBtn" aria-label="Chọn ngôn ngữ" onclick="toggleLangMenu()"><span id="langLabel">VI</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M6 9l6 6 6-6"/></svg></button>
+        <div class="lang-menu" id="langMenu">
+          <div class="lang-opt" data-l="vi" onclick="setLang('vi')">Tiếng Việt<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+          <div class="lang-opt" data-l="zh" onclick="setLang('zh')">中文<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+          <div class="lang-opt" data-l="en" onclick="setLang('en')">English<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+        </div>
+      </div>
+      <a class="btn btn-primary btn-sm" href="https://dict.chimedis.vn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <span data-i18n="dict_cta">Tra từ điển</span>
+      </a>
+      <button class="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap">
+    <h1 data-i18n-html="hero_title">Tra cứu và khám phá tri thức<br>Trung Y</h1>
+    <p class="lead" data-i18n="hero_lead">Thư viện tạp chí, báo cáo, bài viết học thuật và sách chuyên khảo về Trung Y — song ngữ Việt–Trung–Anh.</p>
+    <div class="search-box">
+      <div class="search-row">
+        <div class="search-field">
+          <input type="text" placeholder="Tìm theo tiêu đề, tác giả, từ khoá..." data-i18n-ph="search_ph">
+        </div>
+        <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span data-i18n="search_btn">Tìm kiếm</span></button>
+      </div>
+      <button class="adv-toggle" id="advToggle" onclick="toggleAdv()">
+        <span data-i18n="adv_toggle">Tra cứu nâng cao</span>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
+      </button>
+      <div class="adv-panel" id="advPanel">
+        <h4 data-i18n="adv_title">Trình xây dựng truy vấn</h4>
+        <p class="adv-hint" data-i18n="adv_hint">Kết hợp nhiều điều kiện theo từng trường — giống PubMed Advanced Search Builder / CNKI 高级检索.</p>
+
+        <div class="builder-rows" id="builderRows">
+          <div class="builder-row">
+            <select class="conn" style="visibility:hidden" aria-hidden="true"><option data-i18n="op_and">VÀ</option></select>
+            <input type="text" placeholder="Nhập từ khoá tra cứu..." data-i18n-ph="search_ph">
+            <select class="fld-select">
+              <option data-i18n="fld_title">Tiêu đề</option>
+              <option data-i18n="fld_author">Tác giả</option>
+              <option data-i18n="fld_abstract">Tóm tắt</option>
+              <option data-i18n="fld_keyword">Từ khoá</option>
+              <option data-i18n="fld_fulltext">Toàn văn</option>
+              <option data-i18n="fld_journal">Tên tạp chí / nguồn</option>
+              <option data-i18n="fld_affil">Đơn vị công tác</option>
+              <option>DOI</option>
+            </select>
+            <button class="btn btn-icon btn-secondary" type="button" aria-label="Xoá dòng" style="visibility:hidden">×</button>
+          </div>
+          <div class="builder-row">
+            <select class="conn" aria-label="Phép kết hợp">
+              <option data-i18n="op_and">VÀ</option>
+              <option data-i18n="op_or">HOẶC</option>
+              <option data-i18n="op_not">KHÔNG</option>
+            </select>
+            <input type="text" placeholder="Nhập từ khoá tra cứu..." data-i18n-ph="search_ph">
+            <select class="fld-select">
+              <option data-i18n="fld_author">Tác giả</option>
+              <option data-i18n="fld_title">Tiêu đề</option>
+              <option data-i18n="fld_abstract">Tóm tắt</option>
+              <option data-i18n="fld_keyword">Từ khoá</option>
+              <option data-i18n="fld_fulltext">Toàn văn</option>
+              <option data-i18n="fld_journal">Tên tạp chí / nguồn</option>
+              <option data-i18n="fld_affil">Đơn vị công tác</option>
+              <option>DOI</option>
+            </select>
+            <button class="btn btn-icon btn-secondary" type="button" aria-label="Xoá dòng">×</button>
+          </div>
+        </div>
+        <button class="btn btn-secondary btn-sm" type="button" onclick="addBuilderRow()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          <span data-i18n="add_condition">Thêm điều kiện</span>
+        </button>
+
+        <hr class="adv-divider">
+
+        <div class="adv-grid">
+          <div class="adv-field" style="grid-column:span 2">
+            <label data-i18n="filter_doctype">Loại tài liệu</label>
+            <div class="chk-row">
+              <label><input type="checkbox" checked><span data-i18n="nav_journal">Tạp chí</span></label>
+              <label><input type="checkbox" checked><span data-i18n="nav_report">Báo cáo</span></label>
+              <label><input type="checkbox" checked><span data-i18n="nav_article">Bài viết</span></label>
+              <label><input type="checkbox" checked><span data-i18n="doctype_book">Sách</span></label>
+            </div>
+          </div>
+          <div class="adv-field">
+            <label data-i18n="filter_category">Chuyên mục</label>
+            <select><option data-i18n="cat_all">Tất cả</option><option data-i18n="cat_acupuncture">Châm cứu</option><option data-i18n="cat_herbal">Dược liệu học</option><option data-i18n="cat_internal">Nội khoa TCM</option><option data-i18n="cat_diagnostics">Chẩn đoán học</option></select>
+          </div>
+          <div class="adv-field">
+            <label data-i18n="filter_language">Ngôn ngữ</label>
+            <select><option data-i18n="lang_all">Tất cả</option><option>Tiếng Việt</option><option>中文</option><option>English</option></select>
+          </div>
+          <div class="adv-field">
+            <label data-i18n="filter_daterange">Thời gian đăng</label>
+            <select><option data-i18n="date_anytime">Mọi lúc</option><option data-i18n="date_30d">30 ngày qua</option><option data-i18n="date_thisyear">Năm nay</option><option data-i18n="date_custom">Tự chọn khoảng...</option></select>
+          </div>
+          <div class="adv-field">
+            <label data-i18n="filter_matchmode">Chế độ khớp</label>
+            <div class="match-mode">
+              <label><input type="radio" name="matchmode" checked><span data-i18n="match_exact">Chính xác</span></label>
+              <label><input type="radio" name="matchmode"><span data-i18n="match_fuzzy">Mờ (gần đúng)</span></label>
+            </div>
+          </div>
+        </div>
+        <div class="adv-apply">
+          <button class="btn btn-secondary" type="button" onclick="toggleAdv()" data-i18n="adv_cancel">Huỷ</button>
+          <button class="btn btn-primary" type="button" data-i18n="adv_apply">Áp dụng bộ lọc</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="categories wrap">
+    <div class="section-head"><h2 data-i18n="sec_categories">Phân loại tài liệu</h2></div>
+    <div class="cat-grid">
+      <a class="cat-card" href="#">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7.5" width="14.5" height="14.5" rx="1.6"/><path d="M7 7.5V4.6A1.6 1.6 0 0 1 8.6 3H19a1.6 1.6 0 0 1 1.6 1.6V17a1.6 1.6 0 0 1-1.6 1.6h-2.5"/></svg></span>
+        <h3 data-i18n="nav_journal">Tạp chí</h3>
+        <div class="count"><span>128</span> <span data-i18n="cnt_issues">số phát hành</span></div>
+      </a>
+      <a class="cat-card" href="#">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4.5" width="14" height="17.5" rx="2"/><path d="M9 3.2h6a1 1 0 0 1 1 1v1.3H8V4.2a1 1 0 0 1 1-1z"/><path d="M9 17.5v-3M12.5 17.5v-5.5M16 17.5v-2.3"/></svg></span>
+        <h3 data-i18n="nav_report">Báo cáo</h3>
+        <div class="count"><span>64</span> <span data-i18n="cnt_reports">báo cáo</span></div>
+      </a>
+      <a class="cat-card" href="#">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 2h9L20 7.5V20.4A1.6 1.6 0 0 1 18.4 22H5.6A1.6 1.6 0 0 1 4 20.4V3.6A1.6 1.6 0 0 1 5.5 2z"/><path d="M14.5 2v4.4a1.1 1.1 0 0 0 1.1 1.1H20"/><path d="M7.5 12.3h9M7.5 15.6h9M7.5 9h5.5"/></svg></span>
+        <h3 data-i18n="nav_article">Bài viết</h3>
+        <div class="count"><span>340</span> <span data-i18n="cnt_articles">bài</span></div>
+      </a>
+      <a class="cat-card" href="#">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="9" width="4.2" height="12" rx="1"/><rect x="9.9" y="5" width="4.2" height="16" rx="1"/><rect x="16.3" y="10.5" width="4.2" height="10.5" rx="1"/><path d="M2.5 21.5h19"/></svg></span>
+        <h3 data-i18n="nav_book">Thư viện sách</h3>
+        <div class="count"><span>57</span> <span data-i18n="cnt_books">đầu sách</span></div>
+      </a>
+    </div>
+  </section>
+
+  <section class="doclist wrap">
+    <div class="section-head">
+      <h2 data-i18n="sec_latest">Mới đăng gần đây</h2>
+      <a class="see-all" href="#" data-i18n="see_all">Xem tất cả →</a>
+    </div>
+
+    <div class="doc-row">
+      <div class="doc-type"><span class="type-badge tb-journal" data-i18n="nav_journal">Tạp chí</span></div>
+      <div class="doc-main">
+        <h3><a href="#">Nghiên cứu tác dụng kháng viêm của Hoàng Kỳ trong điều trị hen phế quản mạn tính</a></h3>
+        <div class="doc-meta"><span>Trần Minh Đức, Lê Thị Hoa</span><span>12/08/2026</span><span>中医内科学</span></div>
+        <p class="doc-abstract">Nghiên cứu đánh giá hiệu quả lâm sàng của bài thuốc gia giảm từ Hoàng Kỳ trên 84 bệnh nhân hen phế quản mạn tính, theo dõi trong 12 tuần...</p>
+      </div>
+      <div class="doc-actions">
+        <button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4M5 21h14"/></svg>PDF</button>
+      </div>
+    </div>
+
+    <div class="doc-row">
+      <div class="doc-type"><span class="type-badge tb-article" data-i18n="nav_article">Bài viết</span></div>
+      <div class="doc-main">
+        <h3><a href="#">Nguyên lý "Thông bất thống" trong châm cứu giảm đau — tổng quan lâm sàng</a></h3>
+        <div class="doc-meta"><span>Phạm Văn An</span><span>10/08/2026</span><span>针灸学</span></div>
+        <p class="doc-abstract">Bài viết tổng hợp cơ chế và bằng chứng lâm sàng của nguyên lý "thông bất thống, thống bất thông" ứng dụng trong điều trị đau mạn tính bằng châm cứu.</p>
+      </div>
+      <div class="doc-actions">
+        <button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4M5 21h14"/></svg>PDF</button>
+      </div>
+    </div>
+
+    <div class="doc-row">
+      <div class="doc-type"><span class="type-badge tb-report" data-i18n="nav_report">Báo cáo</span></div>
+      <div class="doc-main">
+        <h3><a href="#">Báo cáo khảo sát thực trạng sử dụng dược liệu tại các phòng khám YHCT khu vực phía Nam 2026</a></h3>
+        <div class="doc-meta"><span>Nhóm nghiên cứu Hạ Vân Y Đạo</span><span>05/08/2026</span><span>中药学</span></div>
+        <p class="doc-abstract">Khảo sát 212 phòng khám Y học cổ truyền, tổng hợp 15 vị dược liệu được kê đơn phổ biến nhất và các vấn đề về nguồn gốc, kiểm định chất lượng.</p>
+      </div>
+      <div class="doc-actions">
+        <button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4M5 21h14"/></svg>PDF</button>
+      </div>
+    </div>
+
+    <div class="doc-row">
+      <div class="doc-type"><span class="type-badge tb-book" data-i18n="doctype_book">Sách</span></div>
+      <div class="doc-main">
+        <h3><a href="#">中医基础理论精要 — Cương yếu Lý luận cơ bản Trung Y (bản dịch song ngữ)</a></h3>
+        <div class="doc-meta"><span>Chủ biên: Vương Kỳ Vũ · Dịch: Hạ Vân Y Đạo</span><span>28/07/2026</span><span>Sách giáo trình</span></div>
+        <p class="doc-abstract">Bản dịch song ngữ Việt–Trung giáo trình nền tảng về Âm Dương, Ngũ Hành, Tạng Tượng, Kinh Lạc — dùng cho người mới bắt đầu học Trung Y.</p>
+      </div>
+      <div class="doc-actions">
+        <button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4M5 21h14"/></svg>PDF</button>
+      </div>
+    </div>
+
+    <div class="doc-row">
+      <div class="doc-type"><span class="type-badge tb-journal" data-i18n="nav_journal">Tạp chí</span></div>
+      <div class="doc-main">
+        <h3><a href="#">So sánh hiệu quả điện châm và châm cứu truyền thống trong phục hồi chức năng sau đột quỵ</a></h3>
+        <div class="doc-meta"><span>Ngô Thanh Tùng, và cộng sự</span><span>22/07/2026</span><span>康复医学</span></div>
+        <p class="doc-abstract">Thử nghiệm lâm sàng ngẫu nhiên trên 96 bệnh nhân, so sánh cải thiện chức năng vận động giữa hai phương pháp sau 8 tuần điều trị.</p>
+      </div>
+      <div class="doc-actions">
+        <button class="btn btn-secondary btn-sm"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13m0 0l-4-4m4 4l4-4M5 21h14"/></svg>PDF</button>
+      </div>
+    </div>
+
+    <div class="load-more"><button class="btn btn-secondary" data-i18n="load_more">Xem thêm bài viết</button></div>
+  </section>
+
+  <section class="videos wrap">
+    <div class="section-head">
+      <h2 data-i18n="sec_video">Video bài giảng &amp; phỏng vấn</h2>
+      <a class="see-all" href="#" data-i18n="see_all_yt">Xem kênh YouTube →</a>
+    </div>
+    <div class="video-grid">
+      <a class="video-card" href="#">
+        <div class="video-thumb"><span class="video-dur">18:42</span><div class="play"><span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span></div></div>
+        <div class="video-info"><h4>Ngũ hành và ứng dụng lâm sàng trong biện chứng luận trị</h4><div class="vm">Bài giảng · BS. Hạ Vân Minh</div></div>
+      </a>
+      <a class="video-card" href="#">
+        <div class="video-thumb"><span class="video-dur">32:10</span><div class="play"><span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span></div></div>
+        <div class="video-info"><h4>Phỏng vấn: Hành trình gìn giữ tri thức Trung Y cổ truyền</h4><div class="vm">Phỏng vấn · Hạ Vân Y Đạo</div></div>
+      </a>
+      <a class="video-card" href="#">
+        <div class="video-thumb"><span class="video-dur">09:57</span><div class="play"><span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span></div></div>
+        <div class="video-info"><h4>Hướng dẫn nhận biết 10 vị dược liệu thường dùng</h4><div class="vm">Bài giảng · BS. Trần Minh Đức</div></div>
+      </a>
+    </div>
+  </section>
+
+  <section class="app-promo wrap">
+    <div class="promo-panel">
+      <div class="promo-visual"><img src="assets/logo-dark.png" alt="Chimedis app"></div>
+      <div class="promo-text">
+        <div class="eyebrow" data-i18n="promo_eyebrow">Ứng dụng tra cứu</div>
+        <h2 data-i18n="promo_title">Tra thuật ngữ Trung Y mọi lúc, mọi nơi</h2>
+        <p data-i18n="promo_desc">Chimedis — từ điển tra cứu thuật ngữ Trung Y song ngữ Việt–Trung–Anh, dùng ngay trên trình duyệt hoặc tải app cho điện thoại.</p>
+        <div class="promo-actions">
+          <a class="store-btn" href="#" aria-label="Tải trên App Store">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8.97-.19 1.9-.87 3.13-.79 1.58.1 2.75.72 3.52 1.99-3.02 1.85-2.29 5.6.55 6.65-.68 1.9-1.56 3.79-2.28 4.32zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.28 2.35-2.12 4.4-3.74 4.25z"/></svg>
+            <span class="lbl"><small data-i18n="store_dl">Tải xuống trên</small><strong>App Store</strong></span>
+          </a>
+          <a class="store-btn" href="#" aria-label="Tải trên Google Play">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.6 2.4c-.4.4-.6.9-.6 1.5v16.2c0 .6.2 1.1.6 1.5l.1.1L13 12.2v-.4L3.7 2.3l-.1.1zm11.7 11.7L18.4 17l-9.9 5.6c-.4.2-.9.1-1.3-.2l8.1-8.3zm0-4.2L17 17.4 21 19.7c.4-.2.7-.7.7-1.2v-13c0-.5-.3-1-.7-1.2l-4-2.3-3.7 6.9zM9.2 1.6L18 6.4l-3 3-9.2-9.2c.4-.3.9-.4 1.4-.2l2 1.6z"/></svg>
+            <span class="lbl"><small data-i18n="store_dl">Tải xuống trên</small><strong>Google Play</strong></span>
+          </a>
+          <a class="btn btn-primary" href="https://dict.chimedis.vn">
+            <span data-i18n="promo_online">Vào bản online</span>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M7 17L17 7M7 7h10v10"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="bn">夏雲醫道 · Hạ Vân Y Đạo</div>
+        <p data-i18n="footer_desc">Cổng thông tin tra cứu và nghiên cứu Trung Y — Chinese Medicine Discovery. Nội dung phục vụ học tập, nghiên cứu, không thay thế chẩn đoán y khoa.</p>
+      </div>
+      <div class="footer-col">
+        <h5 data-i18n="footer_col_library">Thư viện</h5>
+        <a href="#" data-i18n="nav_journal">Tạp chí</a><a href="#" data-i18n="nav_report">Báo cáo</a><a href="#" data-i18n="nav_article">Bài viết</a><a href="#" data-i18n="doctype_book">Sách</a>
+      </div>
+      <div class="footer-col">
+        <h5 data-i18n="footer_col_product">Sản phẩm</h5>
+        <a href="https://dict.chimedis.vn" data-i18n="footer_dict_online">Tra từ điển online</a><a href="#" data-i18n="footer_get_app">Tải app</a><a href="#" data-i18n="nav_video">Video</a>
+      </div>
+      <div class="footer-col">
+        <h5 data-i18n="footer_col_contact">Liên hệ</h5>
+        <a href="mailto:contact@chimedis.vn">contact@chimedis.vn</a><a href="#" data-i18n="nav_about">Giới thiệu</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span data-i18n="footer_copyright">© 2026 Hạ Vân Y Đạo</span>
+      <span data-i18n="footer_note">Thiết kế mockup — chưa phải bản triển khai thật</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+function toggleAdv(){
+  document.getElementById('advPanel').classList.toggle('show');
+  document.getElementById('advToggle').classList.toggle('open');
+}
+function addBuilderRow(){
+  const rows = document.getElementById('builderRows');
+  const row = document.createElement('div');
+  row.className = 'builder-row';
+  row.innerHTML = `
+    <select class="conn" aria-label="Phép kết hợp">
+      <option data-i18n="op_and">VÀ</option>
+      <option data-i18n="op_or">HOẶC</option>
+      <option data-i18n="op_not">KHÔNG</option>
+    </select>
+    <input type="text" placeholder="Nhập từ khoá tra cứu..." data-i18n-ph="search_ph">
+    <select class="fld-select">
+      <option data-i18n="fld_title">Tiêu đề</option>
+      <option data-i18n="fld_author">Tác giả</option>
+      <option data-i18n="fld_abstract">Tóm tắt</option>
+      <option data-i18n="fld_keyword">Từ khoá</option>
+      <option data-i18n="fld_fulltext">Toàn văn</option>
+      <option data-i18n="fld_journal">Tên tạp chí / nguồn</option>
+      <option data-i18n="fld_affil">Đơn vị công tác</option>
+      <option>DOI</option>
+    </select>
+    <button class="btn btn-icon btn-secondary" type="button" aria-label="Xoá dòng">×</button>`;
+  rows.appendChild(row);
+  applyI18n();
+}
+document.addEventListener('click', (e)=>{
+  const btn = e.target.closest('.builder-row button[aria-label="Xoá dòng"]');
+  if(btn && btn.style.visibility !== 'hidden') btn.closest('.builder-row').remove();
+  if(!e.target.closest('.lang-wrap')) closeLangMenu();
+});
+
+// ===== ĐA NGÔN NGỮ (VI/中/EN) =====
+const I18N = {
+  vi: {
+    nav_journal:"Tạp chí", nav_report:"Báo cáo", nav_article:"Bài viết", nav_book:"Thư viện sách", nav_video:"Video", nav_about:"Giới thiệu",
+    dict_cta:"Tra từ điển",
+    hero_title:"Tra cứu và khám phá tri thức<br>Trung Y",
+    hero_lead:"Thư viện tạp chí, báo cáo, bài viết học thuật và sách chuyên khảo về Trung Y — song ngữ Việt–Trung–Anh.",
+    search_ph:"Tìm theo tiêu đề, tác giả, từ khoá...", search_btn:"Tìm kiếm",
+    adv_toggle:"Tra cứu nâng cao", adv_title:"Trình xây dựng truy vấn",
+    adv_hint:"Kết hợp nhiều điều kiện theo từng trường — giống PubMed Advanced Search Builder / CNKI 高级检索.",
+    fld_title:"Tiêu đề", fld_author:"Tác giả", fld_abstract:"Tóm tắt", fld_keyword:"Từ khoá", fld_fulltext:"Toàn văn", fld_journal:"Tên tạp chí / nguồn", fld_affil:"Đơn vị công tác",
+    op_and:"VÀ", op_or:"HOẶC", op_not:"KHÔNG", add_condition:"Thêm điều kiện",
+    filter_doctype:"Loại tài liệu", doctype_book:"Sách",
+    filter_category:"Chuyên mục", cat_all:"Tất cả", cat_acupuncture:"Châm cứu", cat_herbal:"Dược liệu học", cat_internal:"Nội khoa TCM", cat_diagnostics:"Chẩn đoán học",
+    filter_language:"Ngôn ngữ", lang_all:"Tất cả",
+    filter_daterange:"Thời gian đăng", date_anytime:"Mọi lúc", date_30d:"30 ngày qua", date_thisyear:"Năm nay", date_custom:"Tự chọn khoảng...",
+    filter_matchmode:"Chế độ khớp", match_exact:"Chính xác", match_fuzzy:"Mờ (gần đúng)",
+    adv_cancel:"Huỷ", adv_apply:"Áp dụng bộ lọc",
+    sec_categories:"Phân loại tài liệu",
+    cnt_issues:"số phát hành", cnt_reports:"báo cáo", cnt_articles:"bài", cnt_books:"đầu sách",
+    sec_latest:"Mới đăng gần đây", see_all:"Xem tất cả →",
+    load_more:"Xem thêm bài viết",
+    sec_video:"Video bài giảng & phỏng vấn", see_all_yt:"Xem kênh YouTube →",
+    promo_eyebrow:"Ứng dụng tra cứu", promo_title:"Tra thuật ngữ Trung Y mọi lúc, mọi nơi",
+    promo_desc:"Chimedis — từ điển tra cứu thuật ngữ Trung Y song ngữ Việt–Trung–Anh, dùng ngay trên trình duyệt hoặc tải app cho điện thoại.",
+    store_dl:"Tải xuống trên", promo_online:"Vào bản online",
+    footer_desc:"Cổng thông tin tra cứu và nghiên cứu Trung Y — Chinese Medicine Discovery. Nội dung phục vụ học tập, nghiên cứu, không thay thế chẩn đoán y khoa.",
+    footer_col_library:"Thư viện", footer_col_product:"Sản phẩm", footer_dict_online:"Tra từ điển online", footer_get_app:"Tải app",
+    footer_col_contact:"Liên hệ", footer_copyright:"© 2026 Hạ Vân Y Đạo", footer_note:"Nội dung minh hoạ — thư viện đang được xây dựng"
+  },
+  zh: {
+    nav_journal:"期刊", nav_report:"报告", nav_article:"文章", nav_book:"书库", nav_video:"视频", nav_about:"关于我们",
+    dict_cta:"查词典",
+    hero_title:"查询与探索<br>中医知识",
+    hero_lead:"中医期刊、报告、学术文章与专著图书馆 — 越南语–中文–英语三语。",
+    search_ph:"按标题、作者、关键词搜索...", search_btn:"搜索",
+    adv_toggle:"高级检索", adv_title:"检索式构建器",
+    adv_hint:"按字段组合多个检索条件 — 类似 PubMed Advanced Search Builder / CNKI 高级检索。",
+    fld_title:"题名", fld_author:"作者", fld_abstract:"摘要", fld_keyword:"关键词", fld_fulltext:"全文", fld_journal:"期刊/来源", fld_affil:"单位",
+    op_and:"并且", op_or:"或者", op_not:"不含", add_condition:"添加条件",
+    filter_doctype:"文献类型", doctype_book:"图书",
+    filter_category:"分类", cat_all:"全部", cat_acupuncture:"针灸", cat_herbal:"中药学", cat_internal:"中医内科学", cat_diagnostics:"中医诊断学",
+    filter_language:"语言", lang_all:"全部",
+    filter_daterange:"发表时间", date_anytime:"不限", date_30d:"近30天", date_thisyear:"今年", date_custom:"自定义范围...",
+    filter_matchmode:"匹配方式", match_exact:"精确", match_fuzzy:"模糊",
+    adv_cancel:"取消", adv_apply:"应用筛选",
+    sec_categories:"文献分类",
+    cnt_issues:"期", cnt_reports:"篇报告", cnt_articles:"篇文章", cnt_books:"本图书",
+    sec_latest:"最新发布", see_all:"查看全部 →",
+    load_more:"加载更多",
+    sec_video:"讲座与访谈视频", see_all_yt:"访问 YouTube 频道 →",
+    promo_eyebrow:"查询应用", promo_title:"随时随地查询中医术语",
+    promo_desc:"Chimedis — 越–中–英三语中医术语词典，可直接在浏览器使用，或下载手机应用。",
+    store_dl:"下载于", promo_online:"打开在线版",
+    footer_desc:"中医查询与研究门户 — Chinese Medicine Discovery。内容仅供学习研究使用，不能替代医学诊断。",
+    footer_col_library:"文库", footer_col_product:"产品", footer_dict_online:"在线查词典", footer_get_app:"下载应用",
+    footer_col_contact:"联系方式", footer_copyright:"© 2026 夏雲醫道", footer_note:"示例内容 — 文库建设中"
+  },
+  en: {
+    nav_journal:"Journals", nav_report:"Reports", nav_article:"Articles", nav_book:"Book Library", nav_video:"Video", nav_about:"About",
+    dict_cta:"Dictionary",
+    hero_title:"Search & Discover<br>Chinese Medicine",
+    hero_lead:"A library of TCM journals, reports, academic articles and reference books — in Vietnamese, Chinese and English.",
+    search_ph:"Search by title, author, keyword...", search_btn:"Search",
+    adv_toggle:"Advanced search", adv_title:"Search Builder",
+    adv_hint:"Combine multiple field conditions — like PubMed's Advanced Search Builder / CNKI's 高级检索.",
+    fld_title:"Title", fld_author:"Author", fld_abstract:"Abstract", fld_keyword:"Keyword", fld_fulltext:"Full Text", fld_journal:"Journal / Source", fld_affil:"Affiliation",
+    op_and:"AND", op_or:"OR", op_not:"NOT", add_condition:"Add condition",
+    filter_doctype:"Document type", doctype_book:"Book",
+    filter_category:"Category", cat_all:"All", cat_acupuncture:"Acupuncture", cat_herbal:"Herbal Medicine", cat_internal:"TCM Internal Medicine", cat_diagnostics:"TCM Diagnostics",
+    filter_language:"Language", lang_all:"All",
+    filter_daterange:"Publication date", date_anytime:"Any time", date_30d:"Past 30 days", date_thisyear:"This year", date_custom:"Custom range...",
+    filter_matchmode:"Match mode", match_exact:"Exact", match_fuzzy:"Fuzzy",
+    adv_cancel:"Cancel", adv_apply:"Apply filters",
+    sec_categories:"Document categories",
+    cnt_issues:"issues", cnt_reports:"reports", cnt_articles:"articles", cnt_books:"titles",
+    sec_latest:"Recently added", see_all:"See all →",
+    load_more:"Load more",
+    sec_video:"Lectures & interviews", see_all_yt:"Visit YouTube channel →",
+    promo_eyebrow:"Lookup app", promo_title:"Look up TCM terms anytime, anywhere",
+    promo_desc:"Chimedis — a Vietnamese–Chinese–English TCM terminology dictionary. Use it right in your browser or download the app.",
+    store_dl:"Download on the", promo_online:"Open web version",
+    footer_desc:"A discovery portal for TCM research — Chinese Medicine Discovery. Content is for study and research only, not a substitute for medical diagnosis.",
+    footer_col_library:"Library", footer_col_product:"Product", footer_dict_online:"Open dictionary online", footer_get_app:"Get the app",
+    footer_col_contact:"Contact", footer_copyright:"© 2026 Ha Van Y Dao", footer_note:"Sample content — library under construction"
+  }
+};
+let state = { lang: localStorage.getItem('chimedis_portal_lang') || 'vi' };
+function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.vi[key] || key; }
+function applyI18n(){
+  document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML = t(el.getAttribute('data-i18n-html')); });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = t(el.getAttribute('data-i18n-ph')); });
+  document.documentElement.lang = state.lang;
+}
+function setLang(l){
+  state.lang = l;
+  localStorage.setItem('chimedis_portal_lang', l);
+  applyI18n();
+  syncLangMenu();
+  closeLangMenu();
+}
+function toggleLangMenu(){
+  document.getElementById('langMenu').classList.toggle('show');
+}
+function closeLangMenu(){
+  document.getElementById('langMenu').classList.remove('show');
+}
+function syncLangMenu(){
+  document.querySelectorAll('.lang-opt').forEach(el=>{
+    el.classList.toggle('active', el.dataset.l===state.lang);
+  });
+  document.getElementById('langLabel').textContent = state.lang.toUpperCase()==='ZH' ? '中' : state.lang.toUpperCase();
+}
+applyI18n();
+syncLangMenu();
+</script>
+</body>
+</html>
