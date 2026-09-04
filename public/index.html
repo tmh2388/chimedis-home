@@ -207,6 +207,48 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
 .footer-col a{display:block;font-size:13px;padding:4px 0;color:#C9DAD8}
 .footer-col a:hover{color:#fff}
 .footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:18px;font-size:12px;color:#7C9B98;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px}
+
+/* ===== KHÁM PHÁ Y VĂN (kết quả tra cứu OpenAlex + Europe PMC, hiển thị ngay tại trang) ===== */
+.lit{padding:26px 0 10px}
+.lit-bar{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.lit-back{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border-strong);border-radius:9px;padding:7px 13px;font-size:13.5px;font-weight:600;color:var(--ink)}
+.lit-back:hover{background:#EFE9DC}
+.lit-q{font-size:13px;color:var(--muted-fg);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lit-q b{color:var(--ink);font-weight:600}
+.lit-filters{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:center;padding:12px 14px;background:#FCFAF6;border:1px solid var(--border);border-radius:10px;font-size:13px;color:var(--muted-fg);margin-bottom:16px}
+.lit-filters label{display:flex;align-items:center;gap:6px;cursor:pointer}
+.lit-filters input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent)}
+.lit-filters select{height:32px;border:1px solid var(--border-strong);border-radius:7px;background:#fff;font-family:inherit;font-size:13px;color:var(--fg);padding:0 8px}
+.lit-exp{margin:0 0 16px;padding:12px 14px;background:#EEF5F0;border:1px solid #CFE4D6;border-radius:10px;font-size:13px;color:var(--ink-2)}
+.lit-exp b{color:var(--ink)}
+.lit-chip{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid #CFE4D6;border-radius:999px;padding:3px 10px;margin:4px 6px 0 0;font-size:12.5px}
+.lit-chip .vi{color:var(--muted-fg)}
+.lit-meta{margin:0 0 12px;font-size:13px;color:var(--muted-fg)}
+.lit-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:13px}
+.lit-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 17px}
+.lit-card h3{margin:0 0 5px;font-size:16px;line-height:1.4;font-family:var(--font-serif);color:var(--ink)}
+.lit-card h3 a:hover{color:var(--accent);text-decoration:underline}
+.lit-card .au{font-size:12.5px;color:var(--fg);margin:0 0 3px}
+.lit-card .sl{font-size:12px;color:var(--muted-fg);margin:0 0 7px;display:flex;flex-wrap:wrap;gap:3px 10px}
+.lit-card .ab{font-size:13px;color:#3C352C;margin:0 0 9px}
+.lit-card .tg{display:flex;flex-wrap:wrap;gap:6px}
+.lit-badge{font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px}
+.lit-badge.pm{background:#E3ECF7;color:#28568F}
+.lit-badge.oa{background:#E7F3EA;color:#1F7A3D}
+.lit-badge.ct{background:#F1ECE0;color:#6B5B3E}
+.lit-badge.sr{background:#ECEFF3;color:#4A5568}
+.lit-badge.tp{background:#F5EEF1;color:#8A4A64}
+.lit-card .lk{margin-top:9px;display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px}
+.lit-card .lk a{color:var(--accent);font-weight:600}
+.lit-card .lk a:hover{text-decoration:underline}
+.lit-pager{display:flex;justify-content:center;align-items:center;gap:14px;margin:22px 0 8px}
+.lit-pager button{height:36px;padding:0 15px;border:1px solid var(--border-strong);border-radius:9px;background:var(--card);font-size:13px;font-weight:600;color:var(--ink)}
+.lit-pager button:disabled{opacity:.4;cursor:not-allowed}
+.lit-state{text-align:center;padding:44px 20px;color:var(--muted-fg);font-size:14px}
+.lit-state.err{color:var(--accent-2)}
+.lit-spin{width:24px;height:24px;border:3px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:litspin .8s linear infinite;margin:0 auto 12px}
+@keyframes litspin{to{transform:rotate(360deg)}}
+.lit-disc{margin:6px 0 0;font-size:11.5px;color:#9B8F7E;text-align:center}
 </style>
 </head>
 <body>
@@ -221,7 +263,7 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
       </span>
     </a>
     <nav class="main">
-      <a href="research.html" data-i18n="nav_discover">Khám phá y văn</a>
+      <a href="#heroSearch" id="navDiscover" data-i18n="nav_discover">Khám phá y văn</a>
       <a href="#" data-i18n="nav_journal">Tạp chí</a>
       <a href="#" data-i18n="nav_report">Báo cáo</a>
       <a href="#" data-i18n="nav_article">Bài viết</a>
@@ -341,13 +383,36 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
         </div>
         <div class="adv-apply">
           <button class="btn btn-secondary" type="button" onclick="toggleAdv()" data-i18n="adv_cancel">Huỷ</button>
-          <button class="btn btn-primary" type="button" data-i18n="adv_apply">Áp dụng bộ lọc</button>
+          <button class="btn btn-primary" type="button" id="advRun" data-i18n="adv_apply">Tìm trong y văn</button>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="categories wrap">
+  <section class="wrap lit" id="litPanel" hidden>
+    <div class="lit-bar">
+      <button class="lit-back" id="litBack" type="button">← <span data-i18n="lit_back">Quay lại</span></button>
+      <div class="lit-q" id="litQ"></div>
+    </div>
+    <div class="lit-filters" id="litFilters">
+      <label><input type="checkbox" id="lf-openalex" checked> OpenAlex</label>
+      <label><input type="checkbox" id="lf-europepmc" checked> Europe PMC</label>
+      <label><span data-i18n="lit_yearfrom">Từ năm</span>
+        <select id="lf-yearFrom">
+          <option value="" data-i18n="lit_nolimit">Không giới hạn</option>
+          <option value="2020">2020</option>
+          <option value="2015">2015</option>
+          <option value="2010">2010</option>
+          <option value="2000">2000</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="lf-openAccess"> <span data-i18n="lit_oa">Chỉ bài đọc miễn phí (Open Access)</span></label>
+      <label><input type="checkbox" id="lf-pubmedOnly"> <span data-i18n="lit_pubmed">Chỉ bài có trong PubMed/MEDLINE</span></label>
+    </div>
+    <div id="litOut"></div>
+  </section>
+
+  <section class="categories wrap" data-browse>
     <div class="section-head"><h2 data-i18n="sec_categories">Phân loại tài liệu</h2></div>
     <div class="cat-grid">
       <a class="cat-card" href="#">
@@ -373,7 +438,7 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
     </div>
   </section>
 
-  <section class="doclist wrap">
+  <section class="doclist wrap" data-browse>
     <div class="section-head">
       <h2 data-i18n="sec_latest">Mới đăng gần đây</h2>
       <a class="see-all" href="#" data-i18n="see_all">Xem tất cả →</a>
@@ -442,7 +507,7 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
     <div class="load-more"><button class="btn btn-secondary" data-i18n="load_more">Xem thêm bài viết</button></div>
   </section>
 
-  <section class="videos wrap">
+  <section class="videos wrap" data-browse>
     <div class="section-head">
       <h2 data-i18n="sec_video">Video bài giảng &amp; phỏng vấn</h2>
       <a class="see-all" href="#" data-i18n="see_all_yt">Xem kênh YouTube →</a>
@@ -553,21 +618,203 @@ document.addEventListener('click', (e)=>{
   if(!e.target.closest('.lang-wrap')) closeLangMenu();
 });
 
-// Ô tìm kiếm chính → trang Khám phá y văn (OpenAlex + Europe PMC).
-const heroSearch = document.getElementById('heroSearch');
-if(heroSearch){
-  heroSearch.addEventListener('submit',(e)=>{
-    e.preventDefault();
-    const q = document.getElementById('heroQ').value.trim();
-    if(q.length < 2) return;
-    location.href = 'research.html?q=' + encodeURIComponent(q);
+// ===== KHÁM PHÁ Y VĂN — tra cứu OpenAlex + Europe PMC ngay tại trang chủ =====
+(function(){
+  const panel = document.getElementById('litPanel');
+  const outEl = document.getElementById('litOut');
+  const qEl   = document.getElementById('litQ');
+  if(!panel || !outEl) return;
+
+  const FIELD_BY_I18N = {
+    fld_title:'title', fld_author:'author', fld_abstract:'abstract', fld_keyword:'keyword',
+    fld_fulltext:'fulltext', fld_journal:'journal', fld_affil:'affiliation'
+  };
+  const OP_BY_I18N = { op_and:'AND', op_or:'OR', op_not:'NOT' };
+  let lastReq = null;   // { q } hoặc { advanced }
+  let lastPage = 1;
+
+  function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+  function srcLabel(s){ return {openalex:'OpenAlex', europepmc:'Europe PMC'}[s] || s; }
+
+  function selKey(selectEl, map, fallback){
+    const opt = selectEl && selectEl.selectedOptions && selectEl.selectedOptions[0];
+    const key = opt && opt.getAttribute('data-i18n');
+    return (key && map[key]) || fallback;
+  }
+
+  function collectAdvanced(){
+    const rows = [];
+    document.querySelectorAll('#builderRows .builder-row').forEach((row, idx)=>{
+      const input = row.querySelector('input[type=text]');
+      const term = input ? input.value.trim() : '';
+      if(!term) return;
+      const field = selKey(row.querySelector('.fld-select'), FIELD_BY_I18N, 'doi'); // option "DOI" không có data-i18n
+      const op = idx === 0 ? 'AND' : selKey(row.querySelector('.conn'), OP_BY_I18N, 'AND');
+      rows.push({ term, field, op });
+    });
+    return rows;
+  }
+
+  function readFilters(){
+    const sources = [];
+    if(document.getElementById('lf-openalex').checked) sources.push('openalex');
+    if(document.getElementById('lf-europepmc').checked) sources.push('europepmc');
+    return {
+      sources: sources.join(','),
+      yearFrom: document.getElementById('lf-yearFrom').value,
+      openAccess: document.getElementById('lf-openAccess').checked ? '1' : '',
+      pubmedOnly: document.getElementById('lf-pubmedOnly').checked ? '1' : ''
+    };
+  }
+
+  function showPanel(){
+    document.querySelectorAll('[data-browse]').forEach(el=> el.hidden = true);
+    panel.hidden = false;
+  }
+  function hidePanel(){
+    panel.hidden = true;
+    document.querySelectorAll('[data-browse]').forEach(el=> el.hidden = false);
+    lastReq = null;
+    if(location.search) history.replaceState(null,'',location.pathname);
+  }
+
+  function renderExpansion(exp){
+    if(!exp) return '';
+    const chips = exp.terms.map(tm=>`<span class="lit-chip"><span class="vi">${esc(tm.vi)}</span> → <b>${esc(tm.en)}</b></span>`).join('');
+    return `<div class="lit-exp"><b>Đã nhận diện thuật ngữ YHCT</b> và dịch sang tiếng Anh để tra y văn quốc tế:<br>${chips}</div>`;
+  }
+
+  function card(r){
+    const au = (r.authors && r.authors.length)
+      ? esc(r.authors.slice(0,6).join(', ')) + (r.authors.length>6 ? ', …' : '')
+      : '<span style="color:var(--muted-fg)">Không rõ tác giả</span>';
+    const sub = [];
+    if(r.venue) sub.push(esc(r.venue));
+    if(r.year) sub.push(r.year);
+    if(r.type) sub.push(esc(r.type));
+    const tg = [];
+    if(r.inPubMed) tg.push('<span class="lit-badge pm">PubMed</span>');
+    if(r.isOpenAccess) tg.push('<span class="lit-badge oa">Open Access</span>');
+    if(typeof r.citations === 'number') tg.push(`<span class="lit-badge ct">${r.citations} trích dẫn</span>`);
+    (r.sources||[]).forEach(s=> tg.push(`<span class="lit-badge sr">${srcLabel(s)}</span>`));
+    if(r.topic) tg.push(`<span class="lit-badge tp">${esc(r.topic)}</span>`);
+    const lk = [];
+    if(r.landingUrl) lk.push(`<a href="${esc(r.landingUrl)}" target="_blank" rel="noopener">Xem nguồn ↗</a>`);
+    if(r.oaUrl && r.oaUrl !== r.landingUrl) lk.push(`<a href="${esc(r.oaUrl)}" target="_blank" rel="noopener">Toàn văn miễn phí ↗</a>`);
+    if(r.pmid) lk.push(`<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(r.pmid)}/" target="_blank" rel="noopener">PubMed ↗</a>`);
+    if(r.doi) lk.push(`<a href="https://doi.org/${esc(r.doi)}" target="_blank" rel="noopener">DOI</a>`);
+    return `<li class="lit-card">
+      <h3>${r.landingUrl ? `<a href="${esc(r.landingUrl)}" target="_blank" rel="noopener">${esc(r.title)}</a>` : esc(r.title)}</h3>
+      <p class="au">${au}</p>
+      <p class="sl">${sub.map(x=>`<span>${x}</span>`).join('')}</p>
+      ${r.abstract ? `<p class="ab">${esc(r.abstract)}</p>` : ''}
+      <div class="tg">${tg.join('')}</div>
+      ${lk.length ? `<div class="lk">${lk.join('')}</div>` : ''}
+    </li>`;
+  }
+
+  async function runLit(req, page){
+    lastReq = req; lastPage = page || 1;
+    const filters = readFilters();
+    if(!filters.sources){ outEl.innerHTML = '<div class="lit-state err">Chọn ít nhất một nguồn dữ liệu.</div>'; showPanel(); return; }
+
+    const body = Object.assign({ page: lastPage, perPage: 20 }, filters, req);
+    qEl.innerHTML = req.advanced
+      ? '<b>Tra cứu nâng cao</b> · ' + req.advanced.map(r=>esc(r.field.toUpperCase()+':'+r.term)).join(' ')
+      : '<b>' + esc(req.q) + '</b>';
+    showPanel();
+    outEl.innerHTML = '<div class="lit-state"><div class="lit-spin"></div>Đang tra cứu OpenAlex và Europe PMC…</div>';
+    window.scrollTo({ top: panel.offsetTop - 70, behavior:'smooth' });
+
+    let data;
+    try{
+      const res = await fetch('/api/research/search', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+      });
+      data = await res.json();
+      if(!res.ok || !data.success) throw new Error(data.error || 'Lỗi tìm kiếm');
+    }catch(e){
+      outEl.innerHTML = `<div class="lit-state err">${esc(e.message)}</div>`;
+      return;
+    }
+
+    if(!data.results.length){
+      outEl.innerHTML = renderExpansion(data.expansion) +
+        '<div class="lit-state">Không tìm thấy tài liệu phù hợp. Thử từ khoá khác hoặc bỏ bớt bộ lọc.</div>';
+      return;
+    }
+
+    const totalTxt = Object.entries(data.totalBySource||{})
+      .map(([s,n])=>`${srcLabel(s)}: ~${Number(n).toLocaleString('vi-VN')}`).join(' · ');
+    const srcErr = data.sourceErrors
+      ? `<div class="lit-state err" style="padding:10px;text-align:left">Một số nguồn lỗi: ${esc(JSON.stringify(data.sourceErrors))}</div>` : '';
+
+    outEl.innerHTML =
+      renderExpansion(data.expansion) +
+      `<p class="lit-meta">Trang ${data.page} — ${data.count} kết quả đã gộp trùng. Tổng khớp: ${totalTxt}</p>` +
+      srcErr +
+      `<ul class="lit-list">${data.results.map(card).join('')}</ul>` +
+      `<div class="lit-pager">
+        <button id="litPrev" ${data.page<=1?'disabled':''}>← Trước</button>
+        <span>Trang ${data.page}</span>
+        <button id="litNext" ${data.count < data.perPage ? 'disabled':''}>Sau →</button>
+      </div>` +
+      `<p class="lit-disc">Dữ liệu từ OpenAlex &amp; Europe PMC. Nội dung phục vụ học tập, nghiên cứu — không thay thế tư vấn y khoa.</p>`;
+
+    const p = document.getElementById('litPrev'), n = document.getElementById('litNext');
+    if(p) p.onclick = ()=> runLit(lastReq, lastPage - 1);
+    if(n) n.onclick = ()=> runLit(lastReq, lastPage + 1);
+  }
+
+  // Ô tìm chính
+  const heroSearch = document.getElementById('heroSearch');
+  if(heroSearch){
+    heroSearch.addEventListener('submit',(e)=>{
+      e.preventDefault();
+      const q = document.getElementById('heroQ').value.trim();
+      if(q.length < 2) return;
+      const params = new URLSearchParams({ q }); history.replaceState(null,'','?'+params.toString());
+      runLit({ q });
+    });
+  }
+  // Nút "Tìm trong y văn" trong bảng tra cứu nâng cao
+  const advRun = document.getElementById('advRun');
+  if(advRun){
+    advRun.addEventListener('click',()=>{
+      const rows = collectAdvanced();
+      if(!rows.length){ alert('Nhập từ khoá cho ít nhất một điều kiện.'); return; }
+      if(typeof toggleAdv === 'function') document.getElementById('advPanel').classList.remove('show');
+      runLit({ advanced: rows });
+    });
+  }
+  document.getElementById('litBack').addEventListener('click', hidePanel);
+  const navDiscover = document.getElementById('navDiscover');
+  if(navDiscover){
+    navDiscover.addEventListener('click',(e)=>{
+      e.preventDefault();
+      if(!panel.hidden) hidePanel();
+      const hq = document.getElementById('heroQ');
+      window.scrollTo({ top:0, behavior:'smooth' });
+      if(hq) setTimeout(()=> hq.focus(), 300);
+    });
+  }
+  ['lf-openalex','lf-europepmc','lf-yearFrom','lf-openAccess','lf-pubmedOnly'].forEach(id=>{
+    document.getElementById(id).addEventListener('change', ()=>{ if(lastReq) runLit(lastReq, 1); });
   });
-}
+
+  // Vào trang kèm ?q= (từ link cũ / chia sẻ) → chạy luôn
+  const initQ = new URLSearchParams(location.search).get('q');
+  if(initQ){
+    const hq = document.getElementById('heroQ'); if(hq) hq.value = initQ;
+    runLit({ q: initQ });
+  }
+})();
 
 // ===== ĐA NGÔN NGỮ (VI/中/EN) =====
 const I18N = {
   vi: {
     nav_discover:"Khám phá y văn", nav_journal:"Tạp chí", nav_report:"Báo cáo", nav_article:"Bài viết", nav_book:"Thư viện sách", nav_video:"Video", nav_about:"Giới thiệu",
+    lit_back:"Quay lại", lit_yearfrom:"Từ năm", lit_nolimit:"Không giới hạn", lit_oa:"Chỉ bài đọc miễn phí (Open Access)", lit_pubmed:"Chỉ bài có trong PubMed/MEDLINE",
     dict_cta:"Tra từ điển",
     hero_title:"Tra cứu và khám phá tri thức<br>Trung Y",
     hero_lead:"Thư viện tạp chí, báo cáo, bài viết học thuật và sách chuyên khảo về Trung Y — song ngữ Việt–Trung–Anh.",
@@ -581,7 +828,7 @@ const I18N = {
     filter_language:"Ngôn ngữ", lang_all:"Tất cả",
     filter_daterange:"Thời gian đăng", date_anytime:"Mọi lúc", date_30d:"30 ngày qua", date_thisyear:"Năm nay", date_custom:"Tự chọn khoảng...",
     filter_matchmode:"Chế độ khớp", match_exact:"Chính xác", match_fuzzy:"Mờ (gần đúng)",
-    adv_cancel:"Huỷ", adv_apply:"Áp dụng bộ lọc",
+    adv_cancel:"Huỷ", adv_apply:"Tìm trong y văn",
     sec_categories:"Phân loại tài liệu",
     cnt_issues:"số phát hành", cnt_reports:"báo cáo", cnt_articles:"bài", cnt_books:"đầu sách",
     sec_latest:"Mới đăng gần đây", see_all:"Xem tất cả →",
@@ -596,6 +843,7 @@ const I18N = {
   },
   zh: {
     nav_discover:"文献检索", nav_journal:"期刊", nav_report:"报告", nav_article:"文章", nav_book:"书库", nav_video:"视频", nav_about:"关于我们",
+    lit_back:"返回", lit_yearfrom:"起始年份", lit_nolimit:"不限", lit_oa:"仅开放获取（Open Access）", lit_pubmed:"仅 PubMed/MEDLINE 收录",
     dict_cta:"查词典",
     hero_title:"查询与探索<br>中医知识",
     hero_lead:"中医期刊、报告、学术文章与专著图书馆 — 越南语–中文–英语三语。",
@@ -609,7 +857,7 @@ const I18N = {
     filter_language:"语言", lang_all:"全部",
     filter_daterange:"发表时间", date_anytime:"不限", date_30d:"近30天", date_thisyear:"今年", date_custom:"自定义范围...",
     filter_matchmode:"匹配方式", match_exact:"精确", match_fuzzy:"模糊",
-    adv_cancel:"取消", adv_apply:"应用筛选",
+    adv_cancel:"取消", adv_apply:"检索文献",
     sec_categories:"文献分类",
     cnt_issues:"期", cnt_reports:"篇报告", cnt_articles:"篇文章", cnt_books:"本图书",
     sec_latest:"最新发布", see_all:"查看全部 →",
@@ -624,6 +872,7 @@ const I18N = {
   },
   en: {
     nav_discover:"Discover literature", nav_journal:"Journals", nav_report:"Reports", nav_article:"Articles", nav_book:"Book Library", nav_video:"Video", nav_about:"About",
+    lit_back:"Back", lit_yearfrom:"From year", lit_nolimit:"No limit", lit_oa:"Open Access only", lit_pubmed:"In PubMed/MEDLINE only",
     dict_cta:"Dictionary",
     hero_title:"Search & Discover<br>Chinese Medicine",
     hero_lead:"A library of TCM journals, reports, academic articles and reference books — in Vietnamese, Chinese and English.",
@@ -637,7 +886,7 @@ const I18N = {
     filter_language:"Language", lang_all:"All",
     filter_daterange:"Publication date", date_anytime:"Any time", date_30d:"Past 30 days", date_thisyear:"This year", date_custom:"Custom range...",
     filter_matchmode:"Match mode", match_exact:"Exact", match_fuzzy:"Fuzzy",
-    adv_cancel:"Cancel", adv_apply:"Apply filters",
+    adv_cancel:"Cancel", adv_apply:"Search literature",
     sec_categories:"Document categories",
     cnt_issues:"issues", cnt_reports:"reports", cnt_articles:"articles", cnt_books:"titles",
     sec_latest:"Recently added", see_all:"See all →",
