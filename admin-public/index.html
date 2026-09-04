@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quản trị — CHIMEDIS</title>
+<style>
+:root{
+  --bg:#F5F0E6; --ink:#0E3A3A; --ink-2:#15514F; --accent:#B4472B; --accent-2:#9A3A22;
+  --fg:#241F19; --muted-fg:#6B6156; --card:#FFFFFF; --border:#E4DCCC; --border-strong:#D8CDB8;
+  --ok:#1E7A44; --warn:#B4472B; --font-sans:"Noto Sans","Segoe UI",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font-sans);line-height:1.5}
+a{color:inherit}
+button,input,select,textarea{font:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+header.top{background:var(--ink);color:#F5F0E6;padding:14px 0}
+header.top .wrap{display:flex;align-items:center;gap:14px}
+header.top .bn{font-weight:700;font-size:17px;margin-right:auto}
+header.top .who{font-size:13px;color:#C9DAD8}
+header.top .role-badge{background:var(--accent);color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;text-transform:uppercase;margin-left:8px}
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 14px;border-radius:8px;font-weight:700;font-size:13px;border:1.5px solid transparent;cursor:pointer;background:var(--card);color:var(--ink);border-color:var(--border-strong)}
+.btn:hover{border-color:var(--ink)}
+.btn-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn-primary:hover{background:var(--accent-2);border-color:var(--accent-2)}
+.btn-sm{height:30px;padding:0 10px;font-size:12px}
+.btn-danger{color:var(--warn);border-color:var(--warn)}
+main{padding:30px 0 60px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:20px}
+h1{font-size:22px;margin:0 0 6px}
+h2{font-size:16px;margin:0 0 14px}
+.hint{color:var(--muted-fg);font-size:13px;margin:0 0 16px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:12px;font-weight:700;color:var(--muted-fg);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em}
+.field input,.field select,.field textarea{width:100%;padding:8px 10px;border:1px solid var(--border-strong);border-radius:7px;background:#FCFAF6}
+.field textarea{min-height:70px;resize:vertical}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:700px){.grid2,.grid3{grid-template-columns:1fr}}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:9px 8px;border-bottom:1px solid var(--border)}
+th{color:var(--muted-fg);font-size:11.5px;text-transform:uppercase;letter-spacing:.03em}
+.badge{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:5px;color:#fff;text-transform:uppercase}
+.b-draft{background:#8A5A22}.b-pending_review{background:#1E5A7A}.b-published{background:#1E7A44}
+.actions{display:flex;gap:6px;flex-wrap:wrap}
+.tabs{display:flex;gap:4px;margin-bottom:18px;border-bottom:2px solid var(--border)}
+.tab{padding:9px 16px;font-weight:700;font-size:13.5px;color:var(--muted-fg);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
+.tab.active{color:var(--ink);border-color:var(--accent)}
+.login-box{max-width:380px;margin:80px auto;text-align:center}
+.login-box .bn{font-size:22px;font-weight:700;color:var(--ink);margin-bottom:6px}
+.login-box p{color:var(--muted-fg);font-size:13.5px;margin-bottom:24px}
+.divider{display:flex;align-items:center;gap:10px;color:var(--muted-fg);font-size:12px;margin:16px 0}
+.divider::before,.divider::after{content:"";flex:1;border-top:1px solid var(--border)}
+.msg{padding:10px 12px;border-radius:8px;font-size:13px;margin-bottom:14px}
+.msg-err{background:#FCEAE6;color:var(--warn)}
+.msg-ok{background:#E7F5EC;color:var(--ok)}
+.toggle-link{font-size:12.5px;color:var(--accent);cursor:pointer;margin-top:10px;display:inline-block}
+[hidden]{display:none!important}
+.orcid-badge{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;padding:4px 9px;border-radius:7px;background:#A6CE3922;color:#3B6B1F;font-weight:700}
+</style>
+</head>
+<body>
+
+<div id="loginView" class="wrap">
+  <div class="login-box">
+    <div class="bn">CHIMEDIS · Quản trị</div>
+    <p>Đăng nhập để quản lý nội dung chimedis.vn</p>
+    <div id="loginMsg"></div>
+    <button class="btn btn-primary" style="width:100%;justify-content:center" onclick="signInGoogle()">Đăng nhập với Google</button>
+    <div class="divider">hoặc email</div>
+    <div class="field"><input type="email" id="loginEmail" placeholder="Email"></div>
+    <div class="field"><input type="password" id="loginPass" placeholder="Mật khẩu"></div>
+    <button class="btn" style="width:100%;justify-content:center" onclick="signInEmail()" id="emailSubmitBtn">Đăng nhập</button>
+    <span class="toggle-link" onclick="toggleRegisterMode()" id="toggleModeLink">Chưa có tài khoản? Đăng ký</span>
+  </div>
+</div>
+
+<div id="appView" hidden>
+  <header class="top">
+    <div class="wrap">
+      <span class="bn">CHIMEDIS · Quản trị</span>
+      <span class="who" id="whoLabel"></span>
+      <span class="role-badge" id="roleBadge"></span>
+      <button class="btn btn-sm" onclick="doSignOut()" style="margin-left:14px">Đăng xuất</button>
+    </div>
+  </header>
+  <main class="wrap">
+
+    <div class="card" id="orcidCard">
+      <h2>Liên kết ORCID</h2>
+      <div id="orcidStatus"></div>
+    </div>
+
+    <div id="readerNotice" class="card" hidden>
+      <p class="hint" style="margin:0">Tài khoản của bạn hiện chỉ có quyền Reader (đọc). Liên hệ quản trị viên (contact@chimedis.vn) để được cấp quyền Author (viết bài) hoặc Editor (biên tập/xuất bản).</p>
+    </div>
+
+    <div id="workArea" hidden>
+      <div class="tabs">
+        <div class="tab active" data-tab="docs" onclick="switchTab('docs')">Tài liệu</div>
+        <div class="tab" data-tab="users" onclick="switchTab('users')" id="usersTabBtn" hidden>Người dùng</div>
+      </div>
+
+      <div id="tab-docs">
+        <div class="card">
+          <h2 id="formTitle">Tạo tài liệu mới</h2>
+          <div id="docMsg"></div>
+          <input type="hidden" id="docId">
+          <div class="grid3">
+            <div class="field"><label>Loại tài liệu</label>
+              <select id="f_doc_type"><option value="journal">Tạp chí</option><option value="report">Báo cáo</option><option value="article">Bài viết</option><option value="book">Sách</option></select>
+            </div>
+            <div class="field"><label>Chuyên mục</label><input id="f_category" placeholder="vd. Châm cứu"></div>
+            <div class="field"><label>Nhãn nguồn hiển thị</label><input id="f_source_label" placeholder="vd. 中医内科学"></div>
+          </div>
+          <div class="field"><label>Tiêu đề (VI) *</label><input id="f_title_vi"></div>
+          <div class="grid2">
+            <div class="field"><label>Tiêu đề (中文)</label><input id="f_title_zh"></div>
+            <div class="field"><label>Tiêu đề (EN)</label><input id="f_title_en"></div>
+          </div>
+          <div class="field"><label>Tác giả (hiển thị)</label><input id="f_authors_text" placeholder="vd. Trần Minh Đức, Lê Thị Hoa"></div>
+          <div class="field"><label>Tóm tắt (VI)</label><textarea id="f_abstract_vi"></textarea></div>
+          <div class="grid2">
+            <div class="field"><label>Tóm tắt (中文)</label><textarea id="f_abstract_zh"></textarea></div>
+            <div class="field"><label>Tóm tắt (EN)</label><textarea id="f_abstract_en"></textarea></div>
+          </div>
+          <div class="field"><label>Nội dung đầy đủ (VI)</label><textarea id="f_body_vi" style="min-height:140px"></textarea></div>
+          <div class="field"><label>Link PDF (nếu có)</label><input id="f_pdf_url" placeholder="https://..."></div>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="saveDoc()">Lưu</button>
+            <button class="btn" onclick="resetForm()">Huỷ / Tạo mới</button>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Danh sách</h2>
+          <table>
+            <thead><tr><th>ID</th><th>Loại</th><th>Tiêu đề</th><th>Tác giả tạo</th><th>Trạng thái</th><th>Cập nhật</th><th>Thao tác</th></tr></thead>
+            <tbody id="docsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-users" hidden>
+        <div class="card">
+          <h2>Người dùng</h2>
+          <table>
+            <thead><tr><th>Email</th><th>Tên</th><th>ORCID</th><th>Vai trò</th><th></th></tr></thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup,
+  signInWithEmailAndPassword, createUserWithEmailAndPassword,
+  onAuthStateChanged, signOut,
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+// Cùng project Firebase "chimedis" dùng cho dict.chimedis.vn — 1 danh tính chung toàn hệ sinh thái.
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyDwzEBH7JpKiPakwilNfv5Eu5cFvJ6CiyY',
+  authDomain: 'chimedis.firebaseapp.com',
+  projectId: 'chimedis',
+  appId: '1:969178764176:web:1dc0f34903b052bb691915',
+};
+
+let auth = null;
+let registerMode = false;
+let currentUser = null; // { id, email, display_name, role, orcid_id, orcid_verified }
+let currentDocs = [];
+
+try {
+  const app = initializeApp(FIREBASE_CONFIG);
+  auth = getAuth(app);
+} catch (e) {
+  console.error('Firebase init lỗi:', e);
+}
+
+function showMsg(elId, text, ok=false) {
+  const el = document.getElementById(elId);
+  el.innerHTML = text ? `<div class="msg ${ok?'msg-ok':'msg-err'}">${text}</div>` : '';
+}
+
+window.toggleRegisterMode = function() {
+  registerMode = !registerMode;
+  document.getElementById('emailSubmitBtn').textContent = registerMode ? 'Đăng ký' : 'Đăng nhập';
+  document.getElementById('toggleModeLink').textContent = registerMode ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký';
+};
+
+window.signInGoogle = async function() {
+  showMsg('loginMsg', '');
+  try {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  } catch (e) {
+    showMsg('loginMsg', 'Đăng nhập Google thất bại: ' + e.message);
+  }
+};
+
+window.signInEmail = async function() {
+  showMsg('loginMsg', '');
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  if (!email || !pass) return showMsg('loginMsg', 'Nhập đủ email và mật khẩu');
+  try {
+    if (registerMode) {
+      await createUserWithEmailAndPassword(auth, email, pass);
+    } else {
+      await signInWithEmailAndPassword(auth, email, pass);
+    }
+  } catch (e) {
+    showMsg('loginMsg', 'Lỗi: ' + e.message);
+  }
+};
+
+window.doSignOut = function() { signOut(auth); };
+
+async function authedFetch(url, opts = {}) {
+  const token = await auth.currentUser.getIdToken();
+  const headers = Object.assign({ 'Content-Type': 'application/json' }, opts.headers || {}, { Authorization: 'Bearer ' + token });
+  const res = await fetch(url, Object.assign({}, opts, { headers }));
+  return res;
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) {
+    document.getElementById('loginView').hidden = false;
+    document.getElementById('appView').hidden = true;
+    return;
+  }
+  try {
+    const token = await user.getIdToken();
+    const res = await fetch('/api/auth/sync', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Lỗi đồng bộ tài khoản');
+    currentUser = data.user;
+    renderApp();
+  } catch (e) {
+    showMsg('loginMsg', 'Lỗi đồng bộ tài khoản: ' + e.message);
+  }
+});
+
+function renderApp() {
+  document.getElementById('loginView').hidden = true;
+  document.getElementById('appView').hidden = false;
+  document.getElementById('whoLabel').textContent = currentUser.display_name || currentUser.email || '';
+  document.getElementById('roleBadge').textContent = currentUser.role;
+
+  const orcidEl = document.getElementById('orcidStatus');
+  if (currentUser.orcid_id && currentUser.orcid_verified) {
+    orcidEl.innerHTML = `<span class="orcid-badge">✓ ${currentUser.orcid_id}</span> <button class="btn btn-sm" style="margin-left:10px" onclick="unlinkOrcid()">Bỏ liên kết</button>`;
+  } else {
+    orcidEl.innerHTML = `<p class="hint" style="margin:0 0 10px">Chưa liên kết ORCID iD.</p><button class="btn btn-sm" onclick="linkOrcid()">Liên kết ORCID</button>`;
+  }
+
+  const isAuthorPlus = ['author', 'editor', 'admin'].includes(currentUser.role);
+  document.getElementById('readerNotice').hidden = isAuthorPlus;
+  document.getElementById('workArea').hidden = !isAuthorPlus;
+  document.getElementById('usersTabBtn').hidden = currentUser.role !== 'admin';
+
+  if (isAuthorPlus) loadDocs();
+}
+
+window.linkOrcid = async function() {
+  const res = await authedFetch('/api/orcid/start');
+  const data = await res.json();
+  if (data.success) { window.location.href = data.url; }
+  else { alert(data.error || 'Chưa cấu hình liên kết ORCID'); }
+};
+window.unlinkOrcid = async function() {
+  const res = await authedFetch('/api/orcid', { method: 'DELETE' });
+  const data = await res.json();
+  if (data.success) { currentUser.orcid_id = null; currentUser.orcid_verified = 0; renderApp(); }
+};
+
+window.switchTab = function(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  document.getElementById('tab-docs').hidden = name !== 'docs';
+  document.getElementById('tab-users').hidden = name !== 'users';
+  if (name === 'users') loadUsers();
+};
+
+const DOC_TYPE_LABEL = { journal: 'Tạp chí', report: 'Báo cáo', article: 'Bài viết', book: 'Sách' };
+const STATUS_LABEL = { draft: 'Nháp', pending_review: 'Chờ duyệt', published: 'Đã xuất bản' };
+
+async function loadDocs() {
+  const res = await authedFetch('/api/admin/documents');
+  const data = await res.json();
+  if (!data.success) return showMsg('docMsg', data.error);
+  currentDocs = data.documents;
+  const isElevated = ['editor', 'admin'].includes(currentUser.role);
+  const body = document.getElementById('docsTableBody');
+  body.innerHTML = currentDocs.map(d => {
+    const actions = [];
+    const isOwner = d.created_by === currentUser.id;
+    if ((isOwner && d.status === 'draft') || isElevated) actions.push(`<button class="btn btn-sm" onclick="editDoc(${d.id})">Sửa</button>`);
+    if (isOwner && d.status === 'draft') actions.push(`<button class="btn btn-sm" onclick="submitDoc(${d.id})">Nộp duyệt</button>`);
+    if (isElevated && d.status !== 'published') actions.push(`<button class="btn btn-sm btn-primary" onclick="publishDoc(${d.id})">Xuất bản</button>`);
+    if (isElevated && d.status === 'published') actions.push(`<button class="btn btn-sm" onclick="unpublishDoc(${d.id})">Gỡ xuống</button>`);
+    if ((isOwner && d.status === 'draft') || isElevated) actions.push(`<button class="btn btn-sm btn-danger" onclick="deleteDoc(${d.id})">Xoá</button>`);
+    return `<tr>
+      <td>${d.id}</td><td>${DOC_TYPE_LABEL[d.doc_type] || d.doc_type}</td>
+      <td>${d.title_vi}</td><td>${d.created_by_name || ''}</td>
+      <td><span class="badge b-${d.status}">${STATUS_LABEL[d.status]}</span></td>
+      <td>${new Date(d.updated_at).toLocaleDateString('vi-VN')}</td>
+      <td><div class="actions">${actions.join('')}</div></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" class="hint">Chưa có tài liệu nào.</td></tr>';
+}
+
+function formFields() {
+  return ['doc_type','category','source_label','title_vi','title_zh','title_en','authors_text','abstract_vi','abstract_zh','abstract_en','body_vi','pdf_url'];
+}
+window.resetForm = function() {
+  document.getElementById('formTitle').textContent = 'Tạo tài liệu mới';
+  document.getElementById('docId').value = '';
+  formFields().forEach(f => { document.getElementById('f_' + f).value = ''; });
+  showMsg('docMsg', '');
+};
+window.editDoc = function(id) {
+  const d = currentDocs.find(x => x.id === id);
+  if (!d) return;
+  document.getElementById('formTitle').textContent = `Sửa tài liệu #${id}`;
+  document.getElementById('docId').value = id;
+  formFields().forEach(f => { document.getElementById('f_' + f).value = d[f] || ''; });
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
+window.saveDoc = async function() {
+  const id = document.getElementById('docId').value;
+  const payload = {};
+  formFields().forEach(f => { payload[f] = document.getElementById('f_' + f).value; });
+  if (!payload.title_vi) return showMsg('docMsg', 'Tiêu đề (VI) là bắt buộc');
+  const url = id ? `/api/admin/documents/${id}` : '/api/admin/documents';
+  const method = id ? 'PUT' : 'POST';
+  const res = await authedFetch(url, { method, body: JSON.stringify(payload) });
+  const data = await res.json();
+  if (!data.success) return showMsg('docMsg', data.error);
+  showMsg('docMsg', 'Đã lưu.', true);
+  resetForm();
+  loadDocs();
+};
+window.submitDoc = async function(id) {
+  const res = await authedFetch(`/api/admin/documents/${id}/submit`, { method: 'POST' });
+  const data = await res.json();
+  if (!data.success) return alert(data.error);
+  loadDocs();
+};
+window.publishDoc = async function(id) {
+  const res = await authedFetch(`/api/admin/documents/${id}/publish`, { method: 'POST' });
+  const data = await res.json();
+  if (!data.success) return alert(data.error);
+  loadDocs();
+};
+window.unpublishDoc = async function(id) {
+  const res = await authedFetch(`/api/admin/documents/${id}/unpublish`, { method: 'POST' });
+  const data = await res.json();
+  if (!data.success) return alert(data.error);
+  loadDocs();
+};
+window.deleteDoc = async function(id) {
+  if (!confirm('Xoá tài liệu này? Không thể hoàn tác.')) return;
+  const res = await authedFetch(`/api/admin/documents/${id}`, { method: 'DELETE' });
+  const data = await res.json();
+  if (!data.success) return alert(data.error);
+  loadDocs();
+};
+
+async function loadUsers() {
+  const res = await authedFetch('/api/admin/users');
+  const data = await res.json();
+  if (!data.success) return alert(data.error);
+  const body = document.getElementById('usersTableBody');
+  body.innerHTML = data.users.map(u => `<tr>
+    <td>${u.email || ''}</td><td>${u.display_name || ''}</td>
+    <td>${u.orcid_verified ? `<span class="orcid-badge">✓ ${u.orcid_id}</span>` : '—'}</td>
+    <td>
+      <select onchange="changeRole(${u.id}, this.value)" ${u.id === currentUser.id ? 'disabled' : ''}>
+        ${['reader','author','editor','admin'].map(r => `<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`).join('')}
+      </select>
+    </td><td></td>
+  </tr>`).join('');
+}
+window.changeRole = async function(id, role) {
+  const res = await authedFetch(`/api/admin/users/${id}/role`, { method: 'PUT', body: JSON.stringify({ role }) });
+  const data = await res.json();
+  if (!data.success) { alert(data.error); loadUsers(); }
+};
+</script>
+</body>
+</html>
