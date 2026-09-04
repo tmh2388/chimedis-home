@@ -392,8 +392,15 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
       <div class="lit-q" id="litQ"></div>
     </div>
     <div class="lit-filters" id="litFilters">
-      <label><input type="checkbox" id="lf-openalex" checked> OpenAlex</label>
-      <label><input type="checkbox" id="lf-europepmc" checked> Europe PMC</label>
+      <label><span data-i18n="lit_doctype">Loại tài liệu</span>
+        <select id="lf-docType">
+          <option value="" data-i18n="lit_dt_all">Tất cả</option>
+          <option value="systematic-review" data-i18n="lit_dt_sr">Tổng quan hệ thống &amp; phân tích gộp</option>
+          <option value="rct" data-i18n="lit_dt_rct">Thử nghiệm lâm sàng (RCT)</option>
+          <option value="review" data-i18n="lit_dt_review">Bài tổng quan</option>
+          <option value="preprint" data-i18n="lit_dt_preprint">Tiền ấn phẩm (preprint)</option>
+        </select>
+      </label>
       <label><span data-i18n="lit_yearfrom">Từ năm</span>
         <select id="lf-yearFrom">
           <option value="" data-i18n="lit_nolimit">Không giới hạn</option>
@@ -403,8 +410,9 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
           <option value="2000">2000</option>
         </select>
       </label>
-      <label><input type="checkbox" id="lf-openAccess"> <span data-i18n="lit_oa">Chỉ bài đọc miễn phí (Open Access)</span></label>
       <label><input type="checkbox" id="lf-pubmedOnly"> <span data-i18n="lit_pubmed">Chỉ bài có trong PubMed/MEDLINE</span></label>
+      <label><input type="checkbox" id="lf-pmcOnly"> <span data-i18n="lit_pmc">Có toàn văn trên PubMed Central</span></label>
+      <label><input type="checkbox" id="lf-openAccess"> <span data-i18n="lit_oa">Chỉ bài đọc miễn phí (Open Access)</span></label>
     </div>
     <div id="litOut"></div>
   </section>
@@ -653,14 +661,13 @@ document.addEventListener('click', (e)=>{
   }
 
   function readFilters(){
-    const sources = [];
-    if(document.getElementById('lf-openalex').checked) sources.push('openalex');
-    if(document.getElementById('lf-europepmc').checked) sources.push('europepmc');
+    // OpenAlex + Europe PMC luôn được truy vấn cả hai (mặc định phía server) — không lộ ra UI.
     return {
-      sources: sources.join(','),
+      docType: document.getElementById('lf-docType').value,
       yearFrom: document.getElementById('lf-yearFrom').value,
       openAccess: document.getElementById('lf-openAccess').checked ? '1' : '',
-      pubmedOnly: document.getElementById('lf-pubmedOnly').checked ? '1' : ''
+      pubmedOnly: document.getElementById('lf-pubmedOnly').checked ? '1' : '',
+      pmcOnly: document.getElementById('lf-pmcOnly').checked ? '1' : ''
     };
   }
 
@@ -713,8 +720,6 @@ document.addEventListener('click', (e)=>{
   async function runLit(req, page){
     lastReq = req; lastPage = page || 1;
     const filters = readFilters();
-    if(!filters.sources){ outEl.innerHTML = '<div class="lit-state err">Chọn ít nhất một nguồn dữ liệu.</div>'; showPanel(); return; }
-
     const body = Object.assign({ page: lastPage, perPage: 20 }, filters, req);
     qEl.innerHTML = req.advanced
       ? '<b>Tra cứu nâng cao</b> · ' + req.advanced.map(r=>esc(r.field.toUpperCase()+':'+r.term)).join(' ')
@@ -795,7 +800,7 @@ document.addEventListener('click', (e)=>{
       if(hq) setTimeout(()=> hq.focus(), 300);
     });
   }
-  ['lf-openalex','lf-europepmc','lf-yearFrom','lf-openAccess','lf-pubmedOnly'].forEach(id=>{
+  ['lf-docType','lf-yearFrom','lf-openAccess','lf-pubmedOnly','lf-pmcOnly'].forEach(id=>{
     document.getElementById(id).addEventListener('change', ()=>{ if(lastReq) runLit(lastReq, 1); });
   });
 
@@ -812,6 +817,7 @@ const I18N = {
   vi: {
     nav_discover:"Khám phá y văn", nav_journal:"Tạp chí", nav_report:"Báo cáo", nav_article:"Bài viết", nav_book:"Thư viện sách", nav_video:"Video", nav_about:"Giới thiệu",
     lit_back:"Quay lại", lit_yearfrom:"Từ năm", lit_nolimit:"Không giới hạn", lit_oa:"Chỉ bài đọc miễn phí (Open Access)", lit_pubmed:"Chỉ bài có trong PubMed/MEDLINE",
+    lit_pmc:"Có toàn văn trên PubMed Central", lit_doctype:"Loại tài liệu", lit_dt_all:"Tất cả", lit_dt_sr:"Tổng quan hệ thống & phân tích gộp", lit_dt_rct:"Thử nghiệm lâm sàng (RCT)", lit_dt_review:"Bài tổng quan", lit_dt_preprint:"Tiền ấn phẩm (preprint)",
     dict_cta:"Tra từ điển",
     hero_title:"Tra cứu và khám phá tri thức<br>Trung Y",
     hero_lead:"Thư viện tạp chí, báo cáo, bài viết học thuật và sách chuyên khảo về Trung Y — song ngữ Việt–Trung–Anh.",
@@ -840,6 +846,7 @@ const I18N = {
   zh: {
     nav_discover:"文献检索", nav_journal:"期刊", nav_report:"报告", nav_article:"文章", nav_book:"书库", nav_video:"视频", nav_about:"关于我们",
     lit_back:"返回", lit_yearfrom:"起始年份", lit_nolimit:"不限", lit_oa:"仅开放获取（Open Access）", lit_pubmed:"仅 PubMed/MEDLINE 收录",
+    lit_pmc:"PubMed Central 有全文", lit_doctype:"文献类型", lit_dt_all:"全部", lit_dt_sr:"系统评价与荟萃分析", lit_dt_rct:"随机对照试验（RCT）", lit_dt_review:"综述", lit_dt_preprint:"预印本",
     dict_cta:"查词典",
     hero_title:"查询与探索<br>中医知识",
     hero_lead:"中医期刊、报告、学术文章与专著图书馆 — 越南语–中文–英语三语。",
@@ -868,6 +875,7 @@ const I18N = {
   en: {
     nav_discover:"Discover literature", nav_journal:"Journals", nav_report:"Reports", nav_article:"Articles", nav_book:"Book Library", nav_video:"Video", nav_about:"About",
     lit_back:"Back", lit_yearfrom:"From year", lit_nolimit:"No limit", lit_oa:"Open Access only", lit_pubmed:"In PubMed/MEDLINE only",
+    lit_pmc:"Full text in PubMed Central", lit_doctype:"Document type", lit_dt_all:"All", lit_dt_sr:"Systematic review & meta-analysis", lit_dt_rct:"Randomized controlled trial (RCT)", lit_dt_review:"Review", lit_dt_preprint:"Preprint",
     dict_cta:"Dictionary",
     hero_title:"Search & Discover<br>Chinese Medicine",
     hero_lead:"A library of TCM journals, reports, academic articles and reference books — in Vietnamese, Chinese and English.",

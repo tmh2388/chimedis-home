@@ -14,6 +14,7 @@ const router = Router();
 
 const VALID_SOURCES = ['openalex', 'europepmc'];
 const VALID_OPS = ['AND', 'OR', 'NOT'];
+const VALID_DOCTYPES = ['systematic-review', 'rct', 'review', 'preprint'];
 const MAX_PER_PAGE = 25;
 const MAX_ADV_ROWS = 8;
 // Với các trường này, term được chạy qua từ điển YHCT để dịch sang tiếng Anh.
@@ -57,6 +58,8 @@ function readFilters(src) {
     yearFrom,
     openAccessOnly: truthy(src.openAccess),
     pubmedOnly: truthy(src.pubmedOnly),
+    pmcOnly: truthy(src.pmcOnly),
+    docType: VALID_DOCTYPES.includes(src.docType) ? src.docType : null,
   };
 }
 
