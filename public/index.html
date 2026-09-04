@@ -221,6 +221,7 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
       </span>
     </a>
     <nav class="main">
+      <a href="research.html" data-i18n="nav_discover">Khám phá y văn</a>
       <a href="#" data-i18n="nav_journal">Tạp chí</a>
       <a href="#" data-i18n="nav_report">Báo cáo</a>
       <a href="#" data-i18n="nav_article">Bài viết</a>
@@ -251,12 +252,12 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
     <h1 data-i18n-html="hero_title">Tra cứu và khám phá tri thức<br>Trung Y</h1>
     <p class="lead" data-i18n="hero_lead">Thư viện tạp chí, báo cáo, bài viết học thuật và sách chuyên khảo về Trung Y — song ngữ Việt–Trung–Anh.</p>
     <div class="search-box">
-      <div class="search-row">
+      <form class="search-row" id="heroSearch">
         <div class="search-field">
-          <input type="text" placeholder="Tìm theo tiêu đề, tác giả, từ khoá..." data-i18n-ph="search_ph">
+          <input id="heroQ" type="text" placeholder="Tìm theo tiêu đề, tác giả, từ khoá..." data-i18n-ph="search_ph" autocomplete="off">
         </div>
-        <button class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span data-i18n="search_btn">Tìm kiếm</span></button>
-      </div>
+        <button type="submit" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg><span data-i18n="search_btn">Tìm kiếm</span></button>
+      </form>
       <button class="adv-toggle" id="advToggle" onclick="toggleAdv()">
         <span data-i18n="adv_toggle">Tra cứu nâng cao</span>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 9l6 6 6-6"/></svg>
@@ -552,10 +553,21 @@ document.addEventListener('click', (e)=>{
   if(!e.target.closest('.lang-wrap')) closeLangMenu();
 });
 
+// Ô tìm kiếm chính → trang Khám phá y văn (OpenAlex + Europe PMC).
+const heroSearch = document.getElementById('heroSearch');
+if(heroSearch){
+  heroSearch.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const q = document.getElementById('heroQ').value.trim();
+    if(q.length < 2) return;
+    location.href = 'research.html?q=' + encodeURIComponent(q);
+  });
+}
+
 // ===== ĐA NGÔN NGỮ (VI/中/EN) =====
 const I18N = {
   vi: {
-    nav_journal:"Tạp chí", nav_report:"Báo cáo", nav_article:"Bài viết", nav_book:"Thư viện sách", nav_video:"Video", nav_about:"Giới thiệu",
+    nav_discover:"Khám phá y văn", nav_journal:"Tạp chí", nav_report:"Báo cáo", nav_article:"Bài viết", nav_book:"Thư viện sách", nav_video:"Video", nav_about:"Giới thiệu",
     dict_cta:"Tra từ điển",
     hero_title:"Tra cứu và khám phá tri thức<br>Trung Y",
     hero_lead:"Thư viện tạp chí, báo cáo, bài viết học thuật và sách chuyên khảo về Trung Y — song ngữ Việt–Trung–Anh.",
@@ -583,7 +595,7 @@ const I18N = {
     footer_col_contact:"Liên hệ", footer_copyright:"© 2026 Hạ Vân Y Đạo", footer_note:"Nội dung minh hoạ — thư viện đang được xây dựng"
   },
   zh: {
-    nav_journal:"期刊", nav_report:"报告", nav_article:"文章", nav_book:"书库", nav_video:"视频", nav_about:"关于我们",
+    nav_discover:"文献检索", nav_journal:"期刊", nav_report:"报告", nav_article:"文章", nav_book:"书库", nav_video:"视频", nav_about:"关于我们",
     dict_cta:"查词典",
     hero_title:"查询与探索<br>中医知识",
     hero_lead:"中医期刊、报告、学术文章与专著图书馆 — 越南语–中文–英语三语。",
@@ -611,7 +623,7 @@ const I18N = {
     footer_col_contact:"联系方式", footer_copyright:"© 2026 夏雲醫道", footer_note:"示例内容 — 文库建设中"
   },
   en: {
-    nav_journal:"Journals", nav_report:"Reports", nav_article:"Articles", nav_book:"Book Library", nav_video:"Video", nav_about:"About",
+    nav_discover:"Discover literature", nav_journal:"Journals", nav_report:"Reports", nav_article:"Articles", nav_book:"Book Library", nav_video:"Video", nav_about:"About",
     dict_cta:"Dictionary",
     hero_title:"Search & Discover<br>Chinese Medicine",
     hero_lead:"A library of TCM journals, reports, academic articles and reference books — in Vietnamese, Chinese and English.",

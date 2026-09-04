@@ -7,6 +7,7 @@ import authRoutes from './routes/auth.js';
 import documentRoutes, { adminRouter as adminDocumentRoutes } from './routes/documents.js';
 import userRoutes from './routes/users.js';
 import orcidRoutes from './routes/orcid.js';
+import researchRoutes from './routes/research.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -19,6 +20,7 @@ app.use(express.json());
 
 // ===== API (dùng chung cho cả 2 domain) =====
 app.use('/api/auth', authRoutes);
+app.use('/api/research', researchRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/admin/documents', adminDocumentRoutes);
 app.use('/api/admin/users', userRoutes);
