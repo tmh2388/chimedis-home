@@ -7,6 +7,8 @@
 //   POST /api/research/search  { q } hoặc { advanced: [{term,field,op}] } — tìm nâng cao
 
 import { Router } from 'express';
+import dns from 'node:dns/promises';
+import { Readable } from 'node:stream';
 import { searchAll, ADV_FIELDS, advancedToDisplay } from '../lib/research-sources.js';
 import { buildSearchQuery } from '../lib/tcm-vocab.js';
 
@@ -215,6 +217,99 @@ router.post('/search', async (req, res) => {
     untranslated: ex.untranslated,
     effective: ex.text || rawQ,
   }, res);
+});
+
+// ===== Tải PDF trực tiếp (proxy) =====
+// "Tải PDF" trên trang phải TẢI đúng tệp, không chỉ mở tab mới — nhưng oaUrl là link
+// ngoài (PMC, publisher, kho lưu trữ trường...) nên trình duyệt sẽ KHÔNG tự tải cross-origin
+// dù có thuộc tính `download`. Máy chủ đứng ra lấy hộ rồi trả về với
+// Content-Disposition: attachment để ép tải — vì đây là endpoint fetch URL bất kỳ do client
+// đưa lên nên phải tự chặn SSRF (không cho trỏ vào mạng nội bộ) + giới hạn kích thước/thời gian.
+const PDF_TIMEOUT_MS = 20000;
+const MAX_PDF_BYTES = 30 * 1024 * 1024; // 30MB — đủ cho hầu hết bài báo, chặn lạm dụng băng thông
+const PROXY_UA = `ChimedisPortal/1.0 (+https://chimedis.vn; mailto:${process.env.RESEARCH_CONTACT_EMAIL || 'contact@chimedis.vn'})`;
+
+function isPrivateIp(ip) {
+  if (!ip) return true;
+  if (ip.includes(':')) {
+    // IPv6: chặn loopback/link-local/ULA và IPv4-mapped nội bộ.
+    return /^(::1)$/i.test(ip) || /^fe80:/i.test(ip) || /^f[cd][0-9a-f]{2}:/i.test(ip) || /^::ffff:(10\.|127\.|172\.(1[6-9]|2\d|3[01])\.|192\.168\.|169\.254\.)/i.test(ip);
+  }
+  const parts = ip.split('.').map(Number);
+  if (parts.length !== 4 || parts.some((n) => Number.isNaN(n))) return true; // dị dạng → coi như không an toàn
+  const [a, b] = parts;
+  if (a === 10 || a === 127 || a === 0) return true;
+  if (a === 169 && b === 254) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  if (a === 192 && b === 168) return true;
+  return false;
+}
+
+function sanitizeFilename(s) {
+  const clean = String(s || 'tailieu').replace(/[\\/:"*?<>|\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+  return (clean || 'tailieu').slice(0, 100);
+}
+
+router.get('/pdf', async (req, res) => {
+  let url;
+  try {
+    url = new URL(String(req.query.url || ''));
+  } catch {
+    return res.status(400).json({ success: false, error: 'Liên kết không hợp lệ.' });
+  }
+  if (url.protocol !== 'https:') {
+    return res.status(400).json({ success: false, error: 'Chỉ hỗ trợ liên kết HTTPS.' });
+  }
+
+  let resolved;
+  try {
+    resolved = await dns.lookup(url.hostname);
+  } catch {
+    return res.status(400).json({ success: false, error: 'Không phân giải được tên miền nguồn.' });
+  }
+  if (isPrivateIp(resolved.address)) {
+    return res.status(400).json({ success: false, error: 'Nguồn không được phép.' });
+  }
+
+  const ctrl = new AbortController();
+  const to = setTimeout(() => ctrl.abort(), PDF_TIMEOUT_MS);
+  let upstream;
+  try {
+    upstream = await fetch(url, {
+      signal: ctrl.signal,
+      redirect: 'follow',
+      headers: { Accept: 'application/pdf,*/*', 'User-Agent': PROXY_UA },
+    });
+  } catch {
+    clearTimeout(to);
+    return res.status(502).json({ success: false, error: 'Không tải được tệp từ nguồn (hết thời gian hoặc lỗi mạng).' });
+  }
+  clearTimeout(to);
+
+  if (!upstream.ok) {
+    return res.status(502).json({ success: false, error: `Nguồn trả lỗi (${upstream.status}).` });
+  }
+  const ct = upstream.headers.get('content-type') || '';
+  if (!ct.toLowerCase().includes('pdf')) {
+    // oaUrl đôi khi là trang đích (HTML) chứ không phải file PDF trực tiếp — không ép tải nhầm HTML.
+    return res.status(415).json({ success: false, error: 'Liên kết này không phải PDF tải trực tiếp. Hãy dùng "Xem nguồn".' });
+  }
+  const len = parseInt(upstream.headers.get('content-length') || '0', 10);
+  if (len && len > MAX_PDF_BYTES) {
+    return res.status(413).json({ success: false, error: 'Tệp vượt quá giới hạn 30MB để tải qua máy chủ.' });
+  }
+
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="${sanitizeFilename(req.query.name)}.pdf"`);
+
+  const nodeStream = Readable.fromWeb(upstream.body);
+  let bytes = 0;
+  nodeStream.on('data', (chunk) => {
+    bytes += chunk.length;
+    if (bytes > MAX_PDF_BYTES) nodeStream.destroy(new Error('too large'));
+  });
+  nodeStream.on('error', () => { if (!res.headersSent) res.status(502); res.end(); });
+  nodeStream.pipe(res);
 });
 
 export default router;

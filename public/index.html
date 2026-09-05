@@ -239,11 +239,13 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
 .lit-badge.ct{background:#F1ECE0;color:#6B5B3E}
 .lit-badge.sr{background:#ECEFF3;color:#4A5568}
 .lit-badge.tp{background:#F5EEF1;color:#8A4A64}
+.lit-badge.kw{background:#EFF3EC;color:#4C6647}
 .lit-card .lk{margin-top:9px;display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px}
 .lit-card .lk a{color:var(--accent);font-weight:600}
 .lit-card .lk a:hover{text-decoration:underline}
 
 /* Bảng kết quả — bố cục theo cột kiểu Web of Science/Scopus, cuộn ngang trên màn nhỏ */
+#litOut.lit-refreshing{opacity:.55;transition:opacity .15s ease}
 .lit-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--card)}
 table.lit-table{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
 table.lit-table thead th{position:sticky;top:0;background:#FCFAF6;border-bottom:1px solid var(--border-strong);text-align:left;padding:10px 12px;font-size:12px;font-weight:700;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
@@ -263,7 +265,7 @@ table.lit-table td.c-cite{white-space:nowrap;color:var(--fg);font-weight:600}
 table.lit-table td.c-badges{min-width:130px}
 table.lit-table td.c-badges .lit-badge{display:inline-block;margin:0 4px 4px 0}
 table.lit-table td.c-actions{white-space:nowrap;text-align:right}
-.qv-btn,.dl-btn{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border-radius:7px;font-size:12px;font-weight:600;border:1px solid var(--border-strong);background:#fff;color:var(--ink);margin-left:6px;cursor:pointer}
+.qv-btn,.dl-btn{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border-radius:7px;font-size:12px;font-family:inherit;font-weight:600;border:1px solid var(--border-strong);background:#fff;color:var(--ink);margin-left:6px;cursor:pointer}
 .qv-btn:hover{background:#EFE9DC}
 .dl-btn{color:#fff;background:var(--accent);border-color:var(--accent)}
 .dl-btn:hover{filter:brightness(1.06)}
@@ -748,28 +750,48 @@ document.addEventListener('click', (e)=>{
   }
 
   // Mỗi bài → 1 hàng chính (tóm tắt theo cột) + 1 hàng chi tiết ẩn (Xem nhanh: toàn văn tóm tắt + mọi liên kết).
+  // Liên kết tải PDF đi qua proxy máy chủ (/api/research/pdf) để ép trình duyệt TẢI đúng tệp
+  // thay vì mở tab mới — oaUrl là link ngoài (cross-origin) nên thuộc tính `download` của thẻ
+  // <a> bị trình duyệt bỏ qua, phải nhờ máy chủ gắn header Content-Disposition: attachment.
+  function pdfProxyUrl(r){
+    const name = String(r.title||'tailieu').slice(0,80);
+    return '/api/research/pdf?' + new URLSearchParams({ url: r.oaUrl, name }).toString();
+  }
+
   function tableRow(r, i){
     const au = (r.authors && r.authors.length)
       ? esc(r.authors.slice(0,3).join(', ')) + (r.authors.length>3 ? ' …' : '')
       : `<span style="color:var(--muted-fg)">${t('lit_noauthor')||'Không rõ tác giả'}</span>`;
-    const tg = [];
-    if(r.inPubMed) tg.push('<span class="lit-badge pm">PubMed</span>');
-    if(r.isOpenAccess) tg.push('<span class="lit-badge oa">OA</span>');
-    (r.sources||[]).forEach(s=> tg.push(`<span class="lit-badge sr">${srcLabel(s)}</span>`));
-    if(r.type) tg.push(`<span class="lit-badge tp">${esc(r.type)}</span>`);
+    // Nhãn trạng thái (nguồn/loại/OA) — thông tin thư mục học, đặt gọn dưới tiêu đề.
+    const meta = [];
+    if(r.inPubMed) meta.push('<span class="lit-badge pm">PubMed</span>');
+    if(r.isOpenAccess) meta.push('<span class="lit-badge oa">OA</span>');
+    (r.sources||[]).forEach(s=> meta.push(`<span class="lit-badge sr">${srcLabel(s)}</span>`));
+    if(r.type) meta.push(`<span class="lit-badge tp">${esc(r.type)}</span>`);
+    // Cột "Nhãn" = từ khoá THẬT của bài (OpenAlex keywords / Europe PMC keywordList),
+    // không phải nhãn hệ thống — mới đúng nghĩa "Keyword" như các CSDL học thuật.
+    const kw = (r.keywords && r.keywords.length)
+      ? r.keywords.slice(0,5).map(k=>`<span class="lit-badge kw">${esc(k)}</span>`).join('')
+      : (r.topic ? `<span class="lit-badge tp">${esc(r.topic)}</span>` : '<span style="color:var(--muted-fg)">—</span>');
 
+    // Nút này KHÔNG dùng thẻ <a href> đơn thuần: nhiều nguồn (PMC, một số nhà xuất bản)
+    // chặn tải tự động và trả về trang HTML "đang xác minh…" thay vì PDF thật. Phải fetch()
+    // trước để kiểm tra content-type PDF thật rồi mới ép tải (blob + download) — nếu không,
+    // báo lỗi rõ ràng và gợi ý mở trang gốc, thay vì âm thầm tải về một tệp lỗi.
     const dl = r.oaUrl
-      ? `<a class="dl-btn" href="${esc(r.oaUrl)}" target="_blank" rel="noopener" title="Toàn văn miễn phí">⬇ ${t('lit_dl')||'Tải PDF'}</a>`
+      ? `<button type="button" class="dl-btn" data-pdf="${esc(pdfProxyUrl(r))}" data-fallback="${esc(r.landingUrl||r.oaUrl)}" data-fname="${esc(String(r.title||'tailieu').slice(0,80))}" title="Toàn văn miễn phí">⬇ ${t('lit_dl')||'Tải PDF'}</button>`
       : `<span class="dl-btn disabled" title="${t('lit_nodl')||'Không có PDF miễn phí'}">⬇ ${t('lit_dl')||'Tải PDF'}</span>`;
 
     return `<tr class="lit-row">
         <td class="c-title">${r.landingUrl ? `<a href="${esc(r.landingUrl)}" target="_blank" rel="noopener">${esc(r.title)}</a>` : esc(r.title)}
-          ${r.venue ? `<div style="margin-top:3px;color:var(--muted-fg);font-size:12px">${esc(r.venue)}</div>` : ''}</td>
+          <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:5px;align-items:center">
+            ${r.venue ? `<span style="color:var(--muted-fg);font-size:12px">${esc(r.venue)}</span>` : ''}${meta.join('')}
+          </div></td>
         <td class="c-authors">${au}</td>
         <td class="c-venue">${r.venue ? esc(r.venue) : '—'}</td>
         <td class="c-year">${r.year || '—'}</td>
         <td class="c-cite">${typeof r.citations === 'number' ? r.citations.toLocaleString('vi-VN') : '—'}</td>
-        <td class="c-badges">${tg.join('')}</td>
+        <td class="c-badges">${kw}</td>
         <td class="c-actions">
           <button type="button" class="qv-btn" data-qv="${i}">👁 <span data-label>${t('lit_quickview')||'Xem nhanh'}</span></button>
           ${dl}
@@ -782,7 +804,6 @@ document.addEventListener('click', (e)=>{
           ${r.oaUrl && r.oaUrl !== r.landingUrl ? `<a href="${esc(r.oaUrl)}" target="_blank" rel="noopener">Toàn văn miễn phí ↗</a>` : ''}
           ${r.pmid ? `<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(r.pmid)}/" target="_blank" rel="noopener">PubMed ↗</a>` : ''}
           ${r.doi ? `<a href="https://doi.org/${esc(r.doi)}" target="_blank" rel="noopener">DOI: ${esc(r.doi)}</a>` : ''}
-          ${r.topic ? `<span class="lit-badge tp">${esc(r.topic)}</span>` : ''}
         </div>
       </td></tr>`;
   }
@@ -802,36 +823,91 @@ document.addEventListener('click', (e)=>{
     </tr></thead>`;
   }
 
-  async function runLit(req, page){
-    lastReq = req; lastPage = page || 1;
-    const filters = readFilters();
-    const perPage = parseInt(filters.perPage, 10) || 20;
-    const body = Object.assign({ page: lastPage, perPage }, filters, req);
-    qEl.innerHTML = req.advanced
-      ? '<b>Tra cứu nâng cao</b> · ' + req.advanced.map(r=>esc(r.field.toUpperCase()+':'+r.term)).join(' ')
-      : '<b>' + esc(req.q) + '</b>';
-    showPanel();
-    outEl.innerHTML = '<div class="lit-state"><div class="lit-spin"></div>Đang tra cứu OpenAlex và Europe PMC…</div>';
-    window.scrollTo({ top: panel.offsetTop - 70, behavior:'smooth' });
+  let lastData = null; // kết quả gần nhất đã hiển thị — dùng để sắp xếp lại tức thì phía client
 
-    let data;
-    try{
-      const res = await fetch('/api/research/search', {
-        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
+  // Sắp xếp lại đúng tập đang hiển thị (không đổi thành phần, chỉ đổi thứ tự) — dùng để phản
+  // hồi tức thì khi bấm cột, trong lúc chờ máy chủ trả bản chính xác chạy nền phía dưới.
+  function clientSort(results, key){
+    const dateVal = (x)=> x.date ? Date.parse(x.date) : (x.year ? Date.parse(x.year+'-06-30') : 0);
+    const arr = results.slice();
+    if(key === 'citations') arr.sort((a,b)=> (b.citations??0) - (a.citations??0));
+    else if(key === 'newest') arr.sort((a,b)=> dateVal(b) - dateVal(a));
+    else if(key === 'oldest') arr.sort((a,b)=> dateVal(a) - dateVal(b));
+    return arr;
+  }
+
+  function bindResultListeners(){
+    const p = document.getElementById('litPrev'), n = document.getElementById('litNext');
+    if(p) p.onclick = ()=> runLit(lastReq, lastPage - 1);
+    if(n) n.onclick = ()=> runLit(lastReq, lastPage + 1);
+
+    outEl.querySelectorAll('th.sortable').forEach(th=>{
+      th.addEventListener('click', ()=>{
+        const key = th.getAttribute('data-sort');
+        document.getElementById('lf-sort').value = key;
+        // 1) Sắp xếp lại NGAY tập đang có — cảm giác bấm phát ăn ngay, không chờ mạng.
+        if(lastData && lastData.results.length){
+          renderResults(Object.assign({}, lastData, { sort:key, results: clientSort(lastData.results, key) }));
+        }
+        // 2) Âm thầm xin lại đúng dữ liệu (đúng thứ hạng toàn cục) chạy nền, hoán vào khi xong.
+        runLit(lastReq, lastPage, { silent:true });
       });
-      data = await res.json();
-      if(!res.ok || !data.success) throw new Error(data.error || 'Lỗi tìm kiếm');
-    }catch(e){
-      outEl.innerHTML = `<div class="lit-state err">${esc(e.message)}</div>`;
-      return;
-    }
+    });
+    outEl.querySelectorAll('.qv-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const row = document.getElementById('qv-' + btn.getAttribute('data-qv'));
+        if(!row) return;
+        row.hidden = !row.hidden;
+        btn.querySelector('[data-label]').textContent = row.hidden ? (t('lit_quickview')||'Xem nhanh') : (t('lit_hide')||'Thu gọn');
+      });
+    });
+    outEl.querySelectorAll('.dl-btn[data-pdf]').forEach(btn=>{
+      btn.addEventListener('click', ()=> downloadPdf(btn));
+    });
+  }
 
+  // Tải 1 PDF: fetch trước để xác nhận đúng là PDF thật (không phải trang chặn-bot), rồi ép
+  // tải bằng blob + <a download> (cách duy nhất chắc chắn hoạt động — cross-origin href với
+  // `download` bị trình duyệt lờ đi). Thất bại → báo rõ lý do + gợi ý mở trang gốc.
+  async function downloadPdf(btn){
+    const orig = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '⬇ …';
+    try{
+      const res = await fetch(btn.getAttribute('data-pdf'));
+      const ct = res.headers.get('content-type') || '';
+      if(!res.ok || !ct.toLowerCase().includes('pdf')){
+        let msg = 'Không tải trực tiếp được PDF từ nguồn này — nguồn có thể chặn tải tự động.';
+        try{ const j = await res.json(); if(j && j.error) msg = j.error; }catch{}
+        const fb = btn.getAttribute('data-fallback');
+        if(fb && confirm(msg + '\n\nMở trang nguồn để tự tải?')) window.open(fb, '_blank', 'noopener');
+        return;
+      }
+      const blob = await res.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = (btn.getAttribute('data-fname') || 'tailieu') + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(()=> URL.revokeObjectURL(blobUrl), 4000);
+    }catch(e){
+      alert('Lỗi khi tải tệp: ' + e.message);
+    }finally{
+      btn.disabled = false;
+      btn.innerHTML = orig;
+    }
+  }
+
+  function renderResults(data){
+    outEl.classList.remove('lit-refreshing');
     if(!data.results.length){
       outEl.innerHTML = renderWarning(data.warning) + renderExpansion(data.expansion) +
         '<div class="lit-state">Không tìm thấy tài liệu phù hợp. Thử từ khoá khác hoặc bỏ bớt bộ lọc.</div>';
       return;
     }
-
+    lastData = data;
     const totalTxt = Object.entries(data.totalBySource||{})
       .map(([s,n])=>`${srcLabel(s)}: ~${Number(n).toLocaleString('vi-VN')}`).join(' · ');
     const srcErr = data.sourceErrors
@@ -850,24 +926,43 @@ document.addEventListener('click', (e)=>{
       </div>` +
       `<p class="lit-disc">Dữ liệu từ OpenAlex &amp; Europe PMC. Không có số liệu lượt xem/lượt tải (hai nguồn này không cung cấp) — chỉ sắp xếp được theo năm hoặc số trích dẫn. Nội dung phục vụ học tập, nghiên cứu — không thay thế tư vấn y khoa.</p>`;
 
-    const p = document.getElementById('litPrev'), n = document.getElementById('litNext');
-    if(p) p.onclick = ()=> runLit(lastReq, lastPage - 1);
-    if(n) n.onclick = ()=> runLit(lastReq, lastPage + 1);
+    bindResultListeners();
+  }
 
-    outEl.querySelectorAll('th.sortable').forEach(th=>{
-      th.addEventListener('click', ()=>{
-        document.getElementById('lf-sort').value = th.getAttribute('data-sort');
-        runLit(lastReq, 1);
+  async function runLit(req, page, opts){
+    opts = opts || {};
+    lastReq = req; lastPage = page || 1;
+    const filters = readFilters();
+    const perPage = parseInt(filters.perPage, 10) || 20;
+    const body = Object.assign({ page: lastPage, perPage }, filters, req);
+
+    if(!opts.silent){
+      qEl.innerHTML = req.advanced
+        ? '<b>Tra cứu nâng cao</b> · ' + req.advanced.map(r=>esc(r.field.toUpperCase()+':'+r.term)).join(' ')
+        : '<b>' + esc(req.q) + '</b>';
+      showPanel();
+      outEl.innerHTML = '<div class="lit-state"><div class="lit-spin"></div>Đang tra cứu OpenAlex và Europe PMC…</div>';
+      window.scrollTo({ top: panel.offsetTop - 70, behavior:'smooth' });
+    } else {
+      // Sắp xếp nền: không xoá bảng đang hiển thị (đã cập nhật tức thì phía client), chỉ làm mờ nhẹ.
+      outEl.classList.add('lit-refreshing');
+    }
+
+    let data;
+    try{
+      const res = await fetch('/api/research/search', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
       });
-    });
-    outEl.querySelectorAll('.qv-btn').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const row = document.getElementById('qv-' + btn.getAttribute('data-qv'));
-        if(!row) return;
-        row.hidden = !row.hidden;
-        btn.querySelector('[data-label]').textContent = row.hidden ? (t('lit_quickview')||'Xem nhanh') : (t('lit_hide')||'Thu gọn');
-      });
-    });
+      data = await res.json();
+      if(!res.ok || !data.success) throw new Error(data.error || 'Lỗi tìm kiếm');
+    }catch(e){
+      outEl.classList.remove('lit-refreshing');
+      if(!opts.silent) outEl.innerHTML = `<div class="lit-state err">${esc(e.message)}</div>`;
+      // Nếu là cập nhật nền (vd. sắp xếp) mà lỗi mạng: giữ nguyên bảng đã sắp xếp tạm ở client,
+      // không thay bằng thông báo lỗi — người dùng vẫn đang xem dữ liệu hợp lệ, chỉ chưa "chốt".
+      return;
+    }
+    renderResults(data);
   }
 
   // Ô tìm chính
