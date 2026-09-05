@@ -984,7 +984,13 @@ document.addEventListener('click', (e)=>{
       return;
     }
     lastData = data;
-    hlTerms = extractHighlightTerms(data.query?.effective);
+    // Tô màu cả cụm tiếng Anh đã gửi đi (từ `effective`) LẪN cụm gốc người dùng nhập được
+    // nhận diện (vi/chữ Hán trong expansion) — để bài tiếng Trung cũng thấy chỗ khớp.
+    hlTerms = [
+      ...extractHighlightTerms(data.query?.effective),
+      ...((data.expansion?.terms || []).flatMap(t => [t.vi, ...(t.syn || [])])
+        .filter(s => s && String(s).length >= (/[㐀-鿿]/.test(s) ? 1 : 3))),
+    ];
     const totalTxt = Object.entries(data.totalBySource||{})
       .map(([s,n])=>`${srcLabel(s)}: ~${Number(n).toLocaleString('vi-VN')}`).join(' · ');
     // OpenAlex/Europe PMC là nguồn chính — lỗi ở đây đáng báo rõ (kết quả có thể thiếu).
