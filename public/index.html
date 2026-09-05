@@ -729,7 +729,7 @@ document.addEventListener('click', (e)=>{
     });
     return out;
   }
-  function srcLabel(s){ return {openalex:'OpenAlex', europepmc:'Europe PMC'}[s] || s; }
+  function srcLabel(s){ return {openalex:'OpenAlex', europepmc:'Europe PMC', core:'CORE', semanticscholar:'Semantic Scholar'}[s] || s; }
 
   function selKey(selectEl, map, fallback){
     const opt = selectEl && selectEl.selectedOptions && selectEl.selectedOptions[0];
@@ -981,8 +981,20 @@ document.addEventListener('click', (e)=>{
     hlTerms = extractHighlightTerms(data.query?.effective);
     const totalTxt = Object.entries(data.totalBySource||{})
       .map(([s,n])=>`${srcLabel(s)}: ~${Number(n).toLocaleString('vi-VN')}`).join(' · ');
-    const srcErr = data.sourceErrors
-      ? `<div class="lit-state err" style="padding:10px;text-align:left">Một số nguồn lỗi: ${esc(JSON.stringify(data.sourceErrors))}</div>` : '';
+    // OpenAlex/Europe PMC là nguồn chính — lỗi ở đây đáng báo rõ (kết quả có thể thiếu).
+    // CORE/Semantic Scholar là nguồn BỔ SUNG (nhất là khi chưa có API key riêng) — lỗi/429
+    // ở đây là chuyện thường, không nên hiện như một sự cố đáng lo.
+    const PRIMARY_SOURCES = ['openalex', 'europepmc'];
+    const errKeys = Object.keys(data.sourceErrors || {});
+    const critical = errKeys.filter(k => PRIMARY_SOURCES.includes(k));
+    const minor = errKeys.filter(k => !PRIMARY_SOURCES.includes(k));
+    let srcErr = '';
+    if(critical.length){
+      srcErr += `<div class="lit-state err" style="padding:10px;text-align:left">Nguồn chính gặp lỗi: ${critical.map(srcLabel).join(', ')} — kết quả có thể chưa đầy đủ.</div>`;
+    }
+    if(minor.length){
+      srcErr += `<p class="lit-meta">Nguồn bổ sung tạm thời không phản hồi: ${minor.map(srcLabel).join(', ')}.</p>`;
+    }
     const startIdx = (data.page - 1) * data.perPage;
 
     outEl.innerHTML =

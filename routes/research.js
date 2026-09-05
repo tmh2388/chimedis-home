@@ -14,7 +14,7 @@ import { buildSearchQuery } from '../lib/tcm-vocab.js';
 
 const router = Router();
 
-const VALID_SOURCES = ['openalex', 'europepmc'];
+const VALID_SOURCES = ['openalex', 'europepmc', 'core', 'semanticscholar'];
 const VALID_OPS = ['AND', 'OR', 'NOT'];
 const VALID_DOCTYPES = ['systematic-review', 'rct', 'review', 'preprint'];
 const VALID_SORTS = ['relevance', 'citations', 'citations_asc', 'newest', 'oldest'];
