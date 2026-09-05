@@ -144,7 +144,27 @@ th{color:var(--muted-fg);font-size:11.5px;text-transform:uppercase;letter-spacin
 
       <div id="tab-users" hidden>
         <div class="card">
+          <h2>Tạo người dùng mới</h2>
+          <p class="hint">Tạo tài khoản đăng nhập thật (email + mật khẩu tạm) và cấp quyền ngay — dùng khi muốn thêm biên tập viên/tác giả trước khi họ tự đăng nhập lần đầu.</p>
+          <div id="createUserMsg"></div>
+          <div class="grid3">
+            <div class="field"><label>Email *</label><input type="email" id="nu_email" placeholder="ten@vidu.com"></div>
+            <div class="field"><label>Tên hiển thị</label><input id="nu_name" placeholder="Tuỳ chọn"></div>
+            <div class="field"><label>Vai trò</label>
+              <select id="nu_role">
+                <option value="reader">reader</option>
+                <option value="author">author</option>
+                <option value="editor" selected>editor</option>
+                <option value="admin">admin</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="createUser()">Tạo tài khoản</button>
+        </div>
+
+        <div class="card">
           <h2>Người dùng</h2>
+          <div class="field" style="max-width:320px"><input id="userSearch" placeholder="Tìm theo email/tên..." oninput="debounceLoadUsers()"></div>
           <table>
             <thead><tr><th>Email</th><th>Tên</th><th>ORCID</th><th>Vai trò</th><th></th></tr></thead>
             <tbody id="usersTableBody"></tbody>
@@ -372,7 +392,8 @@ window.deleteDoc = async function(id) {
 };
 
 async function loadUsers() {
-  const res = await authedFetch('/api/admin/users');
+  const q = document.getElementById('userSearch').value.trim();
+  const res = await authedFetch('/api/admin/users' + (q ? '?search=' + encodeURIComponent(q) : ''));
   const data = await res.json();
   if (!data.success) return alert(data.error);
   const body = document.getElementById('usersTableBody');
@@ -384,12 +405,34 @@ async function loadUsers() {
         ${['reader','author','editor','admin'].map(r => `<option value="${r}" ${r===u.role?'selected':''}>${r}</option>`).join('')}
       </select>
     </td><td></td>
-  </tr>`).join('');
+  </tr>`).join('') || '<tr><td colspan="4" class="hint">Không có người dùng nào khớp.</td></tr>';
 }
 window.changeRole = async function(id, role) {
   const res = await authedFetch(`/api/admin/users/${id}/role`, { method: 'PUT', body: JSON.stringify({ role }) });
   const data = await res.json();
   if (!data.success) { alert(data.error); loadUsers(); }
+};
+
+let userSearchTimer = null;
+window.debounceLoadUsers = function() {
+  clearTimeout(userSearchTimer);
+  userSearchTimer = setTimeout(loadUsers, 300);
+};
+
+window.createUser = async function() {
+  const email = document.getElementById('nu_email').value.trim();
+  const display_name = document.getElementById('nu_name').value.trim();
+  const role = document.getElementById('nu_role').value;
+  if (!email) return showMsg('createUserMsg', 'Nhập email');
+  const res = await authedFetch('/api/admin/users', { method: 'POST', body: JSON.stringify({ email, display_name, role }) });
+  const data = await res.json();
+  if (!data.success) return showMsg('createUserMsg', data.error);
+  showMsg('createUserMsg',
+    `Đã tạo tài khoản <strong>${data.email}</strong> (vai trò ${role}). Mật khẩu tạm: <code>${data.tempPassword}</code> — gửi cho người dùng và nhắc họ đổi mật khẩu sau khi đăng nhập lần đầu.`,
+    true);
+  document.getElementById('nu_email').value = '';
+  document.getElementById('nu_name').value = '';
+  loadUsers();
 };
 </script>
 </body>
