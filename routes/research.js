@@ -15,7 +15,9 @@ const router = Router();
 const VALID_SOURCES = ['openalex', 'europepmc'];
 const VALID_OPS = ['AND', 'OR', 'NOT'];
 const VALID_DOCTYPES = ['systematic-review', 'rct', 'review', 'preprint'];
-const MAX_PER_PAGE = 25;
+const VALID_SORTS = ['relevance', 'citations', 'newest', 'oldest'];
+const MAX_PER_PAGE = 100;
+const CUR_YEAR = new Date().getFullYear();
 const MAX_ADV_ROWS = 8;
 // Với các trường này, term được chạy qua từ điển YHCT để dịch sang tiếng Anh.
 const EXPANDABLE_FIELDS = new Set(['title', 'abstract', 'keyword', 'fulltext']);
@@ -48,14 +50,21 @@ function readFilters(src) {
     .split(',')
     .map((s) => s.trim().toLowerCase())
     .filter((s) => VALID_SOURCES.includes(s));
-  const yearFromRaw = parseInt(src.yearFrom, 10);
-  const yearFrom = yearFromRaw >= 1900 && yearFromRaw <= 2100 ? yearFromRaw : null;
+  const yr = (v) => {
+    const n = parseInt(v, 10);
+    return n >= 1800 && n <= CUR_YEAR + 1 ? n : null;
+  };
+  let yearFrom = yr(src.yearFrom);
+  let yearTo = yr(src.yearTo);
+  if (yearFrom && yearTo && yearFrom > yearTo) [yearFrom, yearTo] = [yearTo, yearFrom];
   const truthy = (v) => v === '1' || v === 'true' || v === true;
   return {
     page,
     perPage,
     sources,
     yearFrom,
+    yearTo,
+    sort: VALID_SORTS.includes(src.sort) ? src.sort : 'relevance',
     openAccessOnly: truthy(src.openAccess),
     pubmedOnly: truthy(src.pubmedOnly),
     pmcOnly: truthy(src.pmcOnly),
@@ -72,6 +81,7 @@ function normalizeAdvanced(raw) {
   if (raw.length > MAX_ADV_ROWS) throw `Tối đa ${MAX_ADV_ROWS} điều kiện.`;
   const rows = [];
   const expandedFrom = [];
+  const untranslated = [];
   for (const r of raw) {
     const term = String(r?.term || '').trim();
     if (!term) continue;
@@ -85,6 +95,7 @@ function normalizeAdvanced(raw) {
         effTerm = ex.text;
         expandedFrom.push(...ex.expandedFrom);
       }
+      if (ex.untranslated?.length) untranslated.push(...ex.untranslated);
     }
     rows.push({ term: effTerm, field, op });
   }
@@ -92,20 +103,21 @@ function normalizeAdvanced(raw) {
   return {
     rows,
     expansion: expandedFrom.length
-      ? { terms: expandedFrom, note: 'Đã dịch thuật ngữ YHCT trong điều kiện sang tiếng Anh.' }
+      ? { terms: expandedFrom, note: 'Đã dịch thuật ngữ y khoa trong điều kiện sang tiếng Anh.' }
       : null,
+    untranslated,
   };
 }
 
-async function runSearch({ mode, rawQ, advanced, filters, expansion, effective }, res) {
+async function runSearch({ mode, rawQ, advanced, filters, expansion, effective, untranslated }, res) {
   const cacheKey = JSON.stringify({ mode, effective, advanced, ...filters });
   const cached = cacheGet(cacheKey);
   if (cached) return res.json({ ...cached, cached: true });
 
   try {
-    const { results, perSource, errors } = await searchAll(effective, { ...filters, advanced });
+    const { results: merged, perSource, errors } = await searchAll(effective, { ...filters, advanced });
 
-    if (!results.length && Object.keys(errors).length === VALID_SOURCES.length) {
+    if (!merged.length && Object.keys(errors).length === VALID_SOURCES.length) {
       return res.status(502).json({
         success: false,
         error: 'Không kết nối được nguồn dữ liệu. Thử lại sau.',
@@ -113,15 +125,27 @@ async function runSearch({ mode, rawQ, advanced, filters, expansion, effective }
       });
     }
 
+    // Mỗi nguồn được gọi với đúng `perPage` nên khi gộp + khử trùng lặp, tổng có thể vượt (hai
+    // nguồn không trùng bài) hoặc hụt (trùng nhiều) so với perPage. Cắt về đúng perPage để chọn
+    // "Hiển thị: 10/20/30..." có ý nghĩa thật; `hasMore` (không phải so đếm) quyết định nút "Sau".
+    const results = merged.slice(0, filters.perPage);
+    const hasMore = merged.length > filters.perPage
+      || Object.entries(perSource).some(([name, total]) => !errors[name] && filters.page * filters.perPage < total);
+
     const payload = {
       success: true,
       mode,
       query: { raw: rawQ || null, effective, advanced: advanced || null },
       expansion,
+      warning: untranslated && untranslated.length
+        ? `Không nhận diện được cụm tiếng Việt: "${[...new Set(untranslated)].join(', ')}" — kết quả có thể thiếu. Hãy thử nhập bằng tiếng Anh hoặc thuật ngữ khác.`
+        : null,
       page: filters.page,
       perPage: filters.perPage,
+      sort: filters.sort,
       totalBySource: perSource,
       count: results.length,
+      hasMore,
       results,
       sourceErrors: Object.keys(errors).length ? errors : undefined,
     };
@@ -142,13 +166,14 @@ router.get('/search', async (req, res) => {
   if (rawQ.length > 300) {
     return res.status(400).json({ success: false, error: 'Từ khoá quá dài.' });
   }
-  const ex = buildSearchQuery(rawQ);
+  const ex = buildSearchQuery(rawQ, { orSynonyms: true });
   await runSearch({
     mode: 'GET',
     rawQ,
     advanced: null,
     filters: readFilters(req.query),
     expansion: ex.expandedFrom.length ? { terms: ex.expandedFrom, note: ex.note } : null,
+    untranslated: ex.untranslated,
     effective: ex.text || rawQ,
   }, res);
 });
@@ -171,6 +196,7 @@ router.post('/search', async (req, res) => {
       advanced: adv.rows,
       filters,
       expansion: adv.expansion,
+      untranslated: adv.untranslated,
       effective: advancedToDisplay(adv.rows),
     }, res);
   }
@@ -179,13 +205,14 @@ router.post('/search', async (req, res) => {
   if (rawQ.length < 2) {
     return res.status(400).json({ success: false, error: 'Nhập từ khoá tìm kiếm (ít nhất 2 ký tự).' });
   }
-  const ex = buildSearchQuery(rawQ);
+  const ex = buildSearchQuery(rawQ, { orSynonyms: true });
   await runSearch({
     mode: 'POST',
     rawQ,
     advanced: null,
     filters,
     expansion: ex.expandedFrom.length ? { terms: ex.expandedFrom, note: ex.note } : null,
+    untranslated: ex.untranslated,
     effective: ex.text || rawQ,
   }, res);
 });

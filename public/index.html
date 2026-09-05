@@ -224,6 +224,7 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
 .lit-chip{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid #CFE4D6;border-radius:999px;padding:3px 10px;margin:4px 6px 0 0;font-size:12.5px}
 .lit-chip .vi{color:var(--muted-fg)}
 .lit-meta{margin:0 0 12px;font-size:13px;color:var(--muted-fg)}
+.lit-warn{margin:0 0 16px;padding:11px 14px;background:#FBF1E4;border:1px solid #E9CFA0;border-radius:10px;font-size:13px;color:#7A5A22}
 .lit-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:13px}
 .lit-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 17px}
 .lit-card h3{margin:0 0 5px;font-size:16px;line-height:1.4;font-family:var(--font-serif);color:var(--ink)}
@@ -241,6 +242,42 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
 .lit-card .lk{margin-top:9px;display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px}
 .lit-card .lk a{color:var(--accent);font-weight:600}
 .lit-card .lk a:hover{text-decoration:underline}
+
+/* Bảng kết quả — bố cục theo cột kiểu Web of Science/Scopus, cuộn ngang trên màn nhỏ */
+.lit-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--card)}
+table.lit-table{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
+table.lit-table thead th{position:sticky;top:0;background:#FCFAF6;border-bottom:1px solid var(--border-strong);text-align:left;padding:10px 12px;font-size:12px;font-weight:700;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+table.lit-table th.sortable{cursor:pointer;user-select:none}
+table.lit-table th.sortable:hover{color:var(--ink)}
+table.lit-table th .arrow{display:inline-block;width:10px;opacity:.5}
+table.lit-table th.active .arrow{opacity:1;color:var(--accent)}
+table.lit-table td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+table.lit-table tr.lit-row:hover td{background:#FCFAF6}
+table.lit-table td.c-title{min-width:280px;max-width:420px}
+table.lit-table td.c-title a{font-weight:600;color:var(--ink)}
+table.lit-table td.c-title a:hover{color:var(--accent);text-decoration:underline}
+table.lit-table td.c-authors{min-width:160px;max-width:220px;color:var(--fg);font-size:12.5px}
+table.lit-table td.c-venue{min-width:140px;max-width:200px;color:var(--muted-fg);font-size:12.5px}
+table.lit-table td.c-year{white-space:nowrap;color:var(--fg)}
+table.lit-table td.c-cite{white-space:nowrap;color:var(--fg);font-weight:600}
+table.lit-table td.c-badges{min-width:130px}
+table.lit-table td.c-badges .lit-badge{display:inline-block;margin:0 4px 4px 0}
+table.lit-table td.c-actions{white-space:nowrap;text-align:right}
+.qv-btn,.dl-btn{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border-radius:7px;font-size:12px;font-weight:600;border:1px solid var(--border-strong);background:#fff;color:var(--ink);margin-left:6px;cursor:pointer}
+.qv-btn:hover{background:#EFE9DC}
+.dl-btn{color:#fff;background:var(--accent);border-color:var(--accent)}
+.dl-btn:hover{filter:brightness(1.06)}
+.dl-btn.disabled{background:#fff;color:var(--muted-fg);border-color:var(--border-strong);cursor:default;opacity:.6}
+tr.lit-detail td{background:#FCFAF6;padding:14px 16px}
+tr.lit-detail .ab{font-size:13px;color:#3C352C;margin:0 0 10px;max-width:820px}
+tr.lit-detail .lk{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px}
+tr.lit-detail .lk a{color:var(--accent);font-weight:600}
+tr.lit-detail .lk a:hover{text-decoration:underline}
+.lit-toolbar{display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:10px 20px;margin-bottom:10px;font-size:13px;color:var(--muted-fg)}
+.lit-toolbar label{display:flex;align-items:center;gap:6px}
+.lit-toolbar select{height:32px;border:1px solid var(--border-strong);border-radius:7px;background:#fff;font-family:inherit;font-size:13px;color:var(--fg);padding:0 8px}
+.lit-yr-range{display:flex;align-items:center;gap:6px}
+.lit-yr-range input[type=number]{width:64px;height:32px;border:1px solid var(--border-strong);border-radius:7px;background:#fff;font-family:inherit;font-size:13px;color:var(--fg);padding:0 6px}
 .lit-pager{display:flex;justify-content:center;align-items:center;gap:14px;margin:22px 0 8px}
 .lit-pager button{height:36px;padding:0 15px;border:1px solid var(--border-strong);border-radius:9px;background:var(--card);font-size:13px;font-weight:600;color:var(--ink)}
 .lit-pager button:disabled{opacity:.4;cursor:not-allowed}
@@ -401,18 +438,33 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
           <option value="preprint" data-i18n="lit_dt_preprint">Tiền ấn phẩm (preprint)</option>
         </select>
       </label>
-      <label><span data-i18n="lit_yearfrom">Từ năm</span>
-        <select id="lf-yearFrom">
-          <option value="" data-i18n="lit_nolimit">Không giới hạn</option>
-          <option value="2020">2020</option>
-          <option value="2015">2015</option>
-          <option value="2010">2010</option>
-          <option value="2000">2000</option>
-        </select>
+      <label class="lit-yr-range"><span data-i18n="lit_year">Năm</span>
+        <input type="number" id="lf-yearFrom" inputmode="numeric" min="1900" max="2100" placeholder="1900" data-i18n-ph="lit_from">
+        <span>–</span>
+        <input type="number" id="lf-yearTo" inputmode="numeric" min="1900" max="2100" placeholder="2026" data-i18n-ph="lit_to">
       </label>
       <label><input type="checkbox" id="lf-pubmedOnly"> <span data-i18n="lit_pubmed">Chỉ bài có trong PubMed/MEDLINE</span></label>
       <label><input type="checkbox" id="lf-pmcOnly"> <span data-i18n="lit_pmc">Có toàn văn trên PubMed Central</span></label>
       <label><input type="checkbox" id="lf-openAccess"> <span data-i18n="lit_oa">Chỉ bài đọc miễn phí (Open Access)</span></label>
+    </div>
+    <div class="lit-toolbar">
+      <label><span data-i18n="lit_sort">Sắp xếp</span>
+        <select id="lf-sort">
+          <option value="relevance" data-i18n="lit_sort_rel">Liên quan nhất</option>
+          <option value="newest" data-i18n="lit_sort_new">Mới nhất</option>
+          <option value="oldest" data-i18n="lit_sort_old">Cũ nhất</option>
+          <option value="citations" data-i18n="lit_sort_cite">Trích dẫn nhiều nhất</option>
+        </select>
+      </label>
+      <label><span data-i18n="lit_pagesize">Hiển thị</span>
+        <select id="lf-perPage">
+          <option value="10">10</option>
+          <option value="20" selected>20</option>
+          <option value="30">30</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+      </label>
     </div>
     <div id="litOut"></div>
   </section>
@@ -665,9 +717,12 @@ document.addEventListener('click', (e)=>{
     return {
       docType: document.getElementById('lf-docType').value,
       yearFrom: document.getElementById('lf-yearFrom').value,
+      yearTo: document.getElementById('lf-yearTo').value,
       openAccess: document.getElementById('lf-openAccess').checked ? '1' : '',
       pubmedOnly: document.getElementById('lf-pubmedOnly').checked ? '1' : '',
-      pmcOnly: document.getElementById('lf-pmcOnly').checked ? '1' : ''
+      pmcOnly: document.getElementById('lf-pmcOnly').checked ? '1' : '',
+      sort: document.getElementById('lf-sort').value,
+      perPage: document.getElementById('lf-perPage').value
     };
   }
 
@@ -688,39 +743,70 @@ document.addEventListener('click', (e)=>{
     return `<div class="lit-exp"><b>Đã nhận diện thuật ngữ YHCT</b> và dịch sang tiếng Anh để tra y văn quốc tế:<br>${chips}</div>`;
   }
 
-  function card(r){
+  function renderWarning(msg){
+    return msg ? `<div class="lit-warn">⚠ ${esc(msg)}</div>` : '';
+  }
+
+  // Mỗi bài → 1 hàng chính (tóm tắt theo cột) + 1 hàng chi tiết ẩn (Xem nhanh: toàn văn tóm tắt + mọi liên kết).
+  function tableRow(r, i){
     const au = (r.authors && r.authors.length)
-      ? esc(r.authors.slice(0,6).join(', ')) + (r.authors.length>6 ? ', …' : '')
-      : '<span style="color:var(--muted-fg)">Không rõ tác giả</span>';
-    const sub = [];
-    if(r.venue) sub.push(esc(r.venue));
-    if(r.year) sub.push(r.year);
-    if(r.type) sub.push(esc(r.type));
+      ? esc(r.authors.slice(0,3).join(', ')) + (r.authors.length>3 ? ' …' : '')
+      : `<span style="color:var(--muted-fg)">${t('lit_noauthor')||'Không rõ tác giả'}</span>`;
     const tg = [];
     if(r.inPubMed) tg.push('<span class="lit-badge pm">PubMed</span>');
-    if(r.isOpenAccess) tg.push('<span class="lit-badge oa">Open Access</span>');
-    if(typeof r.citations === 'number') tg.push(`<span class="lit-badge ct">${r.citations} trích dẫn</span>`);
+    if(r.isOpenAccess) tg.push('<span class="lit-badge oa">OA</span>');
     (r.sources||[]).forEach(s=> tg.push(`<span class="lit-badge sr">${srcLabel(s)}</span>`));
-    if(r.topic) tg.push(`<span class="lit-badge tp">${esc(r.topic)}</span>`);
-    const lk = [];
-    if(r.landingUrl) lk.push(`<a href="${esc(r.landingUrl)}" target="_blank" rel="noopener">Xem nguồn ↗</a>`);
-    if(r.oaUrl && r.oaUrl !== r.landingUrl) lk.push(`<a href="${esc(r.oaUrl)}" target="_blank" rel="noopener">Toàn văn miễn phí ↗</a>`);
-    if(r.pmid) lk.push(`<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(r.pmid)}/" target="_blank" rel="noopener">PubMed ↗</a>`);
-    if(r.doi) lk.push(`<a href="https://doi.org/${esc(r.doi)}" target="_blank" rel="noopener">DOI</a>`);
-    return `<li class="lit-card">
-      <h3>${r.landingUrl ? `<a href="${esc(r.landingUrl)}" target="_blank" rel="noopener">${esc(r.title)}</a>` : esc(r.title)}</h3>
-      <p class="au">${au}</p>
-      <p class="sl">${sub.map(x=>`<span>${x}</span>`).join('')}</p>
-      ${r.abstract ? `<p class="ab">${esc(r.abstract)}</p>` : ''}
-      <div class="tg">${tg.join('')}</div>
-      ${lk.length ? `<div class="lk">${lk.join('')}</div>` : ''}
-    </li>`;
+    if(r.type) tg.push(`<span class="lit-badge tp">${esc(r.type)}</span>`);
+
+    const dl = r.oaUrl
+      ? `<a class="dl-btn" href="${esc(r.oaUrl)}" target="_blank" rel="noopener" title="Toàn văn miễn phí">⬇ ${t('lit_dl')||'Tải PDF'}</a>`
+      : `<span class="dl-btn disabled" title="${t('lit_nodl')||'Không có PDF miễn phí'}">⬇ ${t('lit_dl')||'Tải PDF'}</span>`;
+
+    return `<tr class="lit-row">
+        <td class="c-title">${r.landingUrl ? `<a href="${esc(r.landingUrl)}" target="_blank" rel="noopener">${esc(r.title)}</a>` : esc(r.title)}
+          ${r.venue ? `<div style="margin-top:3px;color:var(--muted-fg);font-size:12px">${esc(r.venue)}</div>` : ''}</td>
+        <td class="c-authors">${au}</td>
+        <td class="c-venue">${r.venue ? esc(r.venue) : '—'}</td>
+        <td class="c-year">${r.year || '—'}</td>
+        <td class="c-cite">${typeof r.citations === 'number' ? r.citations.toLocaleString('vi-VN') : '—'}</td>
+        <td class="c-badges">${tg.join('')}</td>
+        <td class="c-actions">
+          <button type="button" class="qv-btn" data-qv="${i}">👁 <span data-label>${t('lit_quickview')||'Xem nhanh'}</span></button>
+          ${dl}
+        </td>
+      </tr>
+      <tr class="lit-detail" id="qv-${i}" hidden><td colspan="7">
+        ${r.abstract ? `<p class="ab">${esc(r.abstract)}</p>` : `<p class="ab" style="color:var(--muted-fg)">Không có tóm tắt.</p>`}
+        <div class="lk">
+          ${r.landingUrl ? `<a href="${esc(r.landingUrl)}" target="_blank" rel="noopener">Xem nguồn ↗</a>` : ''}
+          ${r.oaUrl && r.oaUrl !== r.landingUrl ? `<a href="${esc(r.oaUrl)}" target="_blank" rel="noopener">Toàn văn miễn phí ↗</a>` : ''}
+          ${r.pmid ? `<a href="https://pubmed.ncbi.nlm.nih.gov/${esc(r.pmid)}/" target="_blank" rel="noopener">PubMed ↗</a>` : ''}
+          ${r.doi ? `<a href="https://doi.org/${esc(r.doi)}" target="_blank" rel="noopener">DOI: ${esc(r.doi)}</a>` : ''}
+          ${r.topic ? `<span class="lit-badge tp">${esc(r.topic)}</span>` : ''}
+        </div>
+      </td></tr>`;
+  }
+
+  const SORT_COLS = { newest: 'year', citations: 'cite' };
+  function tableHead(sort){
+    const arrow = (key) => Object.entries(SORT_COLS).find(([,v])=>v===key)?.[0] === sort ? '▾' : '';
+    const active = (key) => Object.entries(SORT_COLS).find(([,v])=>v===key)?.[0] === sort ? ' active' : '';
+    return `<thead><tr>
+      <th>${t('fld_title')}</th>
+      <th>${t('fld_author')}</th>
+      <th>${t('fld_journal')}</th>
+      <th class="sortable${active('year')}" data-sort="newest">${t('lit_year')} <span class="arrow">${arrow('year')}</span></th>
+      <th class="sortable${active('cite')}" data-sort="citations">${t('lit_col_cite')} <span class="arrow">${arrow('cite')}</span></th>
+      <th>${t('lit_tags')}</th>
+      <th></th>
+    </tr></thead>`;
   }
 
   async function runLit(req, page){
     lastReq = req; lastPage = page || 1;
     const filters = readFilters();
-    const body = Object.assign({ page: lastPage, perPage: 20 }, filters, req);
+    const perPage = parseInt(filters.perPage, 10) || 20;
+    const body = Object.assign({ page: lastPage, perPage }, filters, req);
     qEl.innerHTML = req.advanced
       ? '<b>Tra cứu nâng cao</b> · ' + req.advanced.map(r=>esc(r.field.toUpperCase()+':'+r.term)).join(' ')
       : '<b>' + esc(req.q) + '</b>';
@@ -741,7 +827,7 @@ document.addEventListener('click', (e)=>{
     }
 
     if(!data.results.length){
-      outEl.innerHTML = renderExpansion(data.expansion) +
+      outEl.innerHTML = renderWarning(data.warning) + renderExpansion(data.expansion) +
         '<div class="lit-state">Không tìm thấy tài liệu phù hợp. Thử từ khoá khác hoặc bỏ bớt bộ lọc.</div>';
       return;
     }
@@ -752,20 +838,36 @@ document.addEventListener('click', (e)=>{
       ? `<div class="lit-state err" style="padding:10px;text-align:left">Một số nguồn lỗi: ${esc(JSON.stringify(data.sourceErrors))}</div>` : '';
 
     outEl.innerHTML =
+      renderWarning(data.warning) +
       renderExpansion(data.expansion) +
       `<p class="lit-meta">Trang ${data.page} — ${data.count} kết quả đã gộp trùng. Tổng khớp: ${totalTxt}</p>` +
       srcErr +
-      `<ul class="lit-list">${data.results.map(card).join('')}</ul>` +
+      `<div class="lit-table-wrap"><table class="lit-table">${tableHead(data.sort)}<tbody>${data.results.map(tableRow).join('')}</tbody></table></div>` +
       `<div class="lit-pager">
         <button id="litPrev" ${data.page<=1?'disabled':''}>← Trước</button>
         <span>Trang ${data.page}</span>
-        <button id="litNext" ${data.count < data.perPage ? 'disabled':''}>Sau →</button>
+        <button id="litNext" ${data.hasMore ? '' : 'disabled'}>Sau →</button>
       </div>` +
-      `<p class="lit-disc">Dữ liệu từ OpenAlex &amp; Europe PMC. Nội dung phục vụ học tập, nghiên cứu — không thay thế tư vấn y khoa.</p>`;
+      `<p class="lit-disc">Dữ liệu từ OpenAlex &amp; Europe PMC. Không có số liệu lượt xem/lượt tải (hai nguồn này không cung cấp) — chỉ sắp xếp được theo năm hoặc số trích dẫn. Nội dung phục vụ học tập, nghiên cứu — không thay thế tư vấn y khoa.</p>`;
 
     const p = document.getElementById('litPrev'), n = document.getElementById('litNext');
     if(p) p.onclick = ()=> runLit(lastReq, lastPage - 1);
     if(n) n.onclick = ()=> runLit(lastReq, lastPage + 1);
+
+    outEl.querySelectorAll('th.sortable').forEach(th=>{
+      th.addEventListener('click', ()=>{
+        document.getElementById('lf-sort').value = th.getAttribute('data-sort');
+        runLit(lastReq, 1);
+      });
+    });
+    outEl.querySelectorAll('.qv-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const row = document.getElementById('qv-' + btn.getAttribute('data-qv'));
+        if(!row) return;
+        row.hidden = !row.hidden;
+        btn.querySelector('[data-label]').textContent = row.hidden ? (t('lit_quickview')||'Xem nhanh') : (t('lit_hide')||'Thu gọn');
+      });
+    });
   }
 
   // Ô tìm chính
@@ -800,7 +902,7 @@ document.addEventListener('click', (e)=>{
       if(hq) setTimeout(()=> hq.focus(), 300);
     });
   }
-  ['lf-docType','lf-yearFrom','lf-openAccess','lf-pubmedOnly','lf-pmcOnly'].forEach(id=>{
+  ['lf-docType','lf-yearFrom','lf-yearTo','lf-openAccess','lf-pubmedOnly','lf-pmcOnly','lf-sort','lf-perPage'].forEach(id=>{
     document.getElementById(id).addEventListener('change', ()=>{ if(lastReq) runLit(lastReq, 1); });
   });
 
@@ -816,8 +918,10 @@ document.addEventListener('click', (e)=>{
 const I18N = {
   vi: {
     nav_discover:"Khám phá y văn", nav_journal:"Tạp chí", nav_report:"Báo cáo", nav_article:"Bài viết", nav_book:"Thư viện sách", nav_video:"Video", nav_about:"Giới thiệu",
-    lit_back:"Quay lại", lit_yearfrom:"Từ năm", lit_nolimit:"Không giới hạn", lit_oa:"Chỉ bài đọc miễn phí (Open Access)", lit_pubmed:"Chỉ bài có trong PubMed/MEDLINE",
+    lit_back:"Quay lại", lit_oa:"Chỉ bài đọc miễn phí (Open Access)", lit_pubmed:"Chỉ bài có trong PubMed/MEDLINE",
     lit_pmc:"Có toàn văn trên PubMed Central", lit_doctype:"Loại tài liệu", lit_dt_all:"Tất cả", lit_dt_sr:"Tổng quan hệ thống & phân tích gộp", lit_dt_rct:"Thử nghiệm lâm sàng (RCT)", lit_dt_review:"Bài tổng quan", lit_dt_preprint:"Tiền ấn phẩm (preprint)",
+    lit_year:"Năm", lit_from:"Từ năm", lit_to:"Đến năm", lit_sort:"Sắp xếp", lit_sort_rel:"Liên quan nhất", lit_sort_new:"Mới nhất", lit_sort_old:"Cũ nhất", lit_sort_cite:"Trích dẫn nhiều nhất", lit_pagesize:"Hiển thị",
+    lit_quickview:"Xem nhanh", lit_hide:"Thu gọn", lit_dl:"Tải PDF", lit_nodl:"Không có PDF miễn phí", lit_noauthor:"Không rõ tác giả", lit_col_cite:"Trích dẫn", lit_tags:"Nhãn",
     dict_cta:"Tra từ điển",
     hero_title:"Tra cứu và khám phá tri thức<br>Trung Y",
     hero_lead:"Thư viện tạp chí, báo cáo, bài viết học thuật và sách chuyên khảo về Trung Y — song ngữ Việt–Trung–Anh.",
@@ -845,8 +949,10 @@ const I18N = {
   },
   zh: {
     nav_discover:"文献检索", nav_journal:"期刊", nav_report:"报告", nav_article:"文章", nav_book:"书库", nav_video:"视频", nav_about:"关于我们",
-    lit_back:"返回", lit_yearfrom:"起始年份", lit_nolimit:"不限", lit_oa:"仅开放获取（Open Access）", lit_pubmed:"仅 PubMed/MEDLINE 收录",
+    lit_back:"返回", lit_oa:"仅开放获取（Open Access）", lit_pubmed:"仅 PubMed/MEDLINE 收录",
     lit_pmc:"PubMed Central 有全文", lit_doctype:"文献类型", lit_dt_all:"全部", lit_dt_sr:"系统评价与荟萃分析", lit_dt_rct:"随机对照试验（RCT）", lit_dt_review:"综述", lit_dt_preprint:"预印本",
+    lit_year:"年份", lit_from:"起始年", lit_to:"截止年", lit_sort:"排序", lit_sort_rel:"相关度", lit_sort_new:"最新", lit_sort_old:"最早", lit_sort_cite:"被引最多", lit_pagesize:"每页显示",
+    lit_quickview:"快速查看", lit_hide:"收起", lit_dl:"下载 PDF", lit_nodl:"无免费 PDF", lit_noauthor:"作者不详", lit_col_cite:"被引次数", lit_tags:"标签",
     dict_cta:"查词典",
     hero_title:"查询与探索<br>中医知识",
     hero_lead:"中医期刊、报告、学术文章与专著图书馆 — 越南语–中文–英语三语。",
@@ -874,8 +980,10 @@ const I18N = {
   },
   en: {
     nav_discover:"Discover literature", nav_journal:"Journals", nav_report:"Reports", nav_article:"Articles", nav_book:"Book Library", nav_video:"Video", nav_about:"About",
-    lit_back:"Back", lit_yearfrom:"From year", lit_nolimit:"No limit", lit_oa:"Open Access only", lit_pubmed:"In PubMed/MEDLINE only",
+    lit_back:"Back", lit_oa:"Open Access only", lit_pubmed:"In PubMed/MEDLINE only",
     lit_pmc:"Full text in PubMed Central", lit_doctype:"Document type", lit_dt_all:"All", lit_dt_sr:"Systematic review & meta-analysis", lit_dt_rct:"Randomized controlled trial (RCT)", lit_dt_review:"Review", lit_dt_preprint:"Preprint",
+    lit_year:"Year", lit_from:"From year", lit_to:"To year", lit_sort:"Sort by", lit_sort_rel:"Most relevant", lit_sort_new:"Newest", lit_sort_old:"Oldest", lit_sort_cite:"Most cited", lit_pagesize:"Show",
+    lit_quickview:"Quick view", lit_hide:"Hide", lit_dl:"Download PDF", lit_nodl:"No free PDF", lit_noauthor:"Author unknown", lit_col_cite:"Citations", lit_tags:"Tags",
     dict_cta:"Dictionary",
     hero_title:"Search & Discover<br>Chinese Medicine",
     hero_lead:"A library of TCM journals, reports, academic articles and reference books — in Vietnamese, Chinese and English.",
