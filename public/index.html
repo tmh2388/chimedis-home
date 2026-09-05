@@ -246,6 +246,7 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
 
 /* Bảng kết quả — bố cục theo cột kiểu Web of Science/Scopus, cuộn ngang trên màn nhỏ */
 #litOut.lit-refreshing{opacity:.55;transition:opacity .15s ease}
+mark.hl{background:#FCE8A0;color:#3C352C;padding:0 1px;border-radius:2px}
 .lit-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--card)}
 table.lit-table{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
 table.lit-table thead th{position:sticky;top:0;background:#FCFAF6;border-bottom:1px solid var(--border-strong);text-align:left;padding:10px 12px;font-size:12px;font-weight:700;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
@@ -255,6 +256,8 @@ table.lit-table th .arrow{display:inline-block;width:10px;opacity:.5}
 table.lit-table th.active .arrow{opacity:1;color:var(--accent)}
 table.lit-table td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:top}
 table.lit-table tr.lit-row:hover td{background:#FCFAF6}
+table.lit-table th.c-stt,table.lit-table td.c-stt{width:1%;white-space:nowrap;text-align:center;color:var(--muted-fg)}
+table.lit-table td.c-type{white-space:nowrap}
 table.lit-table td.c-title{min-width:280px;max-width:420px}
 table.lit-table td.c-title a{font-weight:600;color:var(--ink)}
 table.lit-table td.c-title a:hover{color:var(--accent);text-decoration:underline}
@@ -456,6 +459,9 @@ tr.lit-detail .lk a:hover{text-decoration:underline}
           <option value="newest" data-i18n="lit_sort_new">Mới nhất</option>
           <option value="oldest" data-i18n="lit_sort_old">Cũ nhất</option>
           <option value="citations" data-i18n="lit_sort_cite">Trích dẫn nhiều nhất</option>
+          <option value="citations_asc" data-i18n="lit_sort_cite_asc">Trích dẫn ít nhất</option>
+          <option value="title_asc" data-i18n="lit_sort_title_asc">Tên (A→Z)</option>
+          <option value="title_desc" data-i18n="lit_sort_title_desc">Tên (Z→A)</option>
         </select>
       </label>
       <label><span data-i18n="lit_pagesize">Hiển thị</span>
@@ -691,8 +697,38 @@ document.addEventListener('click', (e)=>{
   const OP_BY_I18N = { op_and:'AND', op_or:'OR', op_not:'NOT' };
   let lastReq = null;   // { q } hoặc { advanced }
   let lastPage = 1;
+  let hlTerms = [];     // từ khoá đang tìm (đã dịch) — tô màu trong tiêu đề/tóm tắt để thấy vì sao khớp
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+  // Trích các cụm/​từ đã thực sự gửi đi tra cứu (nằm trong dấu ngoặc kép của `effective`)
+  // để tô màu lại trong kết quả — vd effective = ("stroke" OR "cerebrovascular accident") →
+  // tô cả "stroke" lẫn "cerebrovascular accident" nếu xuất hiện trong tiêu đề/tóm tắt.
+  function extractHighlightTerms(effective){
+    if(!effective) return [];
+    const s = String(effective);
+    const quoted = [...s.matchAll(/"([^"]{2,})"/g)].map(m=>m[1]);
+    // Truy vấn tiếng Anh gõ thẳng (không khớp từ điển) không được đặt trong ngoặc kép — vẫn
+    // cần tô màu, nên lấy thêm các từ trần, bỏ toán tử AND/OR/NOT và tiền tố trường (TITLE:...).
+    const bare = s.replace(/"[^"]*"/g, ' ')
+      .replace(/\b(AND|OR|NOT)\b/g, ' ')
+      .replace(/\b[A-Za-z_]+:/g, ' ')
+      .split(/[\s()]+/)
+      .map(w => w.trim())
+      .filter(w => w.length >= 3);
+    return [...new Set([...quoted, ...bare])];
+  }
+  function highlightText(str, terms){
+    const escaped = esc(str);
+    if(!terms || !terms.length) return escaped;
+    let out = escaped;
+    [...terms].sort((a,b)=>b.length-a.length).forEach(term=>{
+      if(term.length < 3) return;
+      const re = new RegExp('(' + term.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+      out = out.replace(re, '<mark class="hl">$1</mark>');
+    });
+    return out;
+  }
   function srcLabel(s){ return {openalex:'OpenAlex', europepmc:'Europe PMC'}[s] || s; }
 
   function selKey(selectEl, map, fallback){
@@ -758,21 +794,23 @@ document.addEventListener('click', (e)=>{
     return '/api/research/pdf?' + new URLSearchParams({ url: r.oaUrl, name }).toString();
   }
 
-  function tableRow(r, i){
+  function tableRow(r, i, stt){
     const au = (r.authors && r.authors.length)
       ? esc(r.authors.slice(0,3).join(', ')) + (r.authors.length>3 ? ' …' : '')
       : `<span style="color:var(--muted-fg)">${t('lit_noauthor')||'Không rõ tác giả'}</span>`;
-    // Nhãn trạng thái (nguồn/loại/OA) — thông tin thư mục học, đặt gọn dưới tiêu đề.
+    // Nhãn trạng thái (nguồn/OA) — thông tin thư mục học, đặt gọn dưới tiêu đề. Loại tài liệu
+    // giờ có cột riêng (c-type) nên không lặp lại ở đây.
     const meta = [];
     if(r.inPubMed) meta.push('<span class="lit-badge pm">PubMed</span>');
     if(r.isOpenAccess) meta.push('<span class="lit-badge oa">OA</span>');
     (r.sources||[]).forEach(s=> meta.push(`<span class="lit-badge sr">${srcLabel(s)}</span>`));
-    if(r.type) meta.push(`<span class="lit-badge tp">${esc(r.type)}</span>`);
-    // Cột "Nhãn" = từ khoá THẬT của bài (OpenAlex keywords / Europe PMC keywordList),
-    // không phải nhãn hệ thống — mới đúng nghĩa "Keyword" như các CSDL học thuật.
+    // Cột "Nhãn" = từ khoá THẬT do TÁC GIẢ khai báo (Europe PMC keywordList) — OpenAlex
+    // không cung cấp từ khoá tác giả thật (chỉ có nhãn chủ đề tự phân loại bằng thuật toán,
+    // không đáng tin để gọi là "keyword"), nên khi không có từ Europe PMC, hiện chủ đề
+    // OpenAlex dưới dạng nhãn "Chủ đề" tách biệt để không gây hiểu nhầm.
     const kw = (r.keywords && r.keywords.length)
       ? r.keywords.slice(0,5).map(k=>`<span class="lit-badge kw">${esc(k)}</span>`).join('')
-      : (r.topic ? `<span class="lit-badge tp">${esc(r.topic)}</span>` : '<span style="color:var(--muted-fg)">—</span>');
+      : (r.topic ? `<span class="lit-badge tp" title="Chủ đề (tự động phân loại, không phải từ khoá tác giả)">${esc(r.topic)}</span>` : '<span style="color:var(--muted-fg)">—</span>');
 
     // Nút này KHÔNG dùng thẻ <a href> đơn thuần: nhiều nguồn (PMC, một số nhà xuất bản)
     // chặn tải tự động và trả về trang HTML "đang xác minh…" thay vì PDF thật. Phải fetch()
@@ -782,13 +820,16 @@ document.addEventListener('click', (e)=>{
       ? `<button type="button" class="dl-btn" data-pdf="${esc(pdfProxyUrl(r))}" data-fallback="${esc(r.landingUrl||r.oaUrl)}" data-fname="${esc(String(r.title||'tailieu').slice(0,80))}" title="Toàn văn miễn phí">⬇ ${t('lit_dl')||'Tải PDF'}</button>`
       : `<span class="dl-btn disabled" title="${t('lit_nodl')||'Không có PDF miễn phí'}">⬇ ${t('lit_dl')||'Tải PDF'}</span>`;
 
+    const titleHtml = highlightText(r.title, hlTerms);
     return `<tr class="lit-row">
-        <td class="c-title">${r.landingUrl ? `<a href="${esc(r.landingUrl)}" target="_blank" rel="noopener">${esc(r.title)}</a>` : esc(r.title)}
+        <td class="c-stt">${stt}</td>
+        <td class="c-title">${r.landingUrl ? `<a href="${esc(r.landingUrl)}" target="_blank" rel="noopener">${titleHtml}</a>` : titleHtml}
           <div style="margin-top:4px;display:flex;flex-wrap:wrap;gap:5px;align-items:center">
             ${r.venue ? `<span style="color:var(--muted-fg);font-size:12px">${esc(r.venue)}</span>` : ''}${meta.join('')}
           </div></td>
         <td class="c-authors">${au}</td>
         <td class="c-venue">${r.venue ? esc(r.venue) : '—'}</td>
+        <td class="c-type">${r.type ? `<span class="lit-badge tp">${esc(r.type)}</span>` : '—'}</td>
         <td class="c-year">${r.year || '—'}</td>
         <td class="c-cite">${typeof r.citations === 'number' ? r.citations.toLocaleString('vi-VN') : '—'}</td>
         <td class="c-badges">${kw}</td>
@@ -797,8 +838,8 @@ document.addEventListener('click', (e)=>{
           ${dl}
         </td>
       </tr>
-      <tr class="lit-detail" id="qv-${i}" hidden><td colspan="7">
-        ${r.abstract ? `<p class="ab">${esc(r.abstract)}</p>` : `<p class="ab" style="color:var(--muted-fg)">Không có tóm tắt.</p>`}
+      <tr class="lit-detail" id="qv-${i}" hidden><td colspan="9">
+        ${r.abstract ? `<p class="ab">${highlightText(r.abstract, hlTerms)}</p>` : `<p class="ab" style="color:var(--muted-fg)">Không có tóm tắt.</p>`}
         <div class="lk">
           ${r.landingUrl ? `<a href="${esc(r.landingUrl)}" target="_blank" rel="noopener">Xem nguồn ↗</a>` : ''}
           ${r.oaUrl && r.oaUrl !== r.landingUrl ? `<a href="${esc(r.oaUrl)}" target="_blank" rel="noopener">Toàn văn miễn phí ↗</a>` : ''}
@@ -808,16 +849,34 @@ document.addEventListener('click', (e)=>{
       </td></tr>`;
   }
 
-  const SORT_COLS = { newest: 'year', citations: 'cite' };
+  // Mỗi cột sắp xếp được ánh xạ [khoá-giảm-dần, khoá-tăng-dần] — bấm lần đầu vào cột dùng
+  // khoá giảm dần, bấm lại (đang ở khoá đó) thì đảo chiều. "title" chỉ sắp phía client (không
+  // nguồn nào hỗ trợ sắp theo tên) nên không kích hoạt gọi lại máy chủ — xem SERVER_SORT_KEYS.
+  const SORT_COL_KEYS = { title: ['title_desc','title_asc'], year: ['newest','oldest'], cite: ['citations','citations_asc'] };
+  const SERVER_SORT_KEYS = new Set(['relevance','newest','oldest','citations','citations_asc']);
+  function nextSortForColumn(colKey, current){
+    const [descKey, ascKey] = SORT_COL_KEYS[colKey];
+    return current === descKey ? ascKey : descKey;
+  }
+  function sortArrow(colKey, sort){
+    const [descKey, ascKey] = SORT_COL_KEYS[colKey];
+    if(sort === descKey) return '▼';
+    if(sort === ascKey) return '▲';
+    return '⇅'; // chưa active — vẫn hiện mờ để biết cột này bấm được
+  }
   function tableHead(sort){
-    const arrow = (key) => Object.entries(SORT_COLS).find(([,v])=>v===key)?.[0] === sort ? '▾' : '';
-    const active = (key) => Object.entries(SORT_COLS).find(([,v])=>v===key)?.[0] === sort ? ' active' : '';
+    const th = (colKey, label) => {
+      const active = SORT_COL_KEYS[colKey].includes(sort);
+      return `<th class="sortable${active?' active':''}" data-sort-col="${colKey}">${label} <span class="arrow">${sortArrow(colKey, sort)}</span></th>`;
+    };
     return `<thead><tr>
-      <th>${t('fld_title')}</th>
+      <th class="c-stt">#</th>
+      ${th('title', t('fld_title'))}
       <th>${t('fld_author')}</th>
       <th>${t('fld_journal')}</th>
-      <th class="sortable${active('year')}" data-sort="newest">${t('lit_year')} <span class="arrow">${arrow('year')}</span></th>
-      <th class="sortable${active('cite')}" data-sort="citations">${t('lit_col_cite')} <span class="arrow">${arrow('cite')}</span></th>
+      <th>${t('lit_doctype_col')}</th>
+      ${th('year', t('lit_year'))}
+      ${th('cite', t('lit_col_cite'))}
       <th>${t('lit_tags')}</th>
       <th></th>
     </tr></thead>`;
@@ -831,9 +890,26 @@ document.addEventListener('click', (e)=>{
     const dateVal = (x)=> x.date ? Date.parse(x.date) : (x.year ? Date.parse(x.year+'-06-30') : 0);
     const arr = results.slice();
     if(key === 'citations') arr.sort((a,b)=> (b.citations??0) - (a.citations??0));
+    else if(key === 'citations_asc') arr.sort((a,b)=> (a.citations??0) - (b.citations??0));
     else if(key === 'newest') arr.sort((a,b)=> dateVal(b) - dateVal(a));
     else if(key === 'oldest') arr.sort((a,b)=> dateVal(a) - dateVal(b));
+    else if(key === 'title_asc') arr.sort((a,b)=> a.title.localeCompare(b.title, 'vi', {sensitivity:'base'}));
+    else if(key === 'title_desc') arr.sort((a,b)=> b.title.localeCompare(a.title, 'vi', {sensitivity:'base'}));
     return arr;
+  }
+
+  // Áp 1 khoá sắp xếp: luôn sắp lại tức thì phía client trước; chỉ xin lại máy chủ (chạy nền)
+  // khi khoá đó máy chủ thật sự hỗ trợ — "title_*" không nguồn nào hỗ trợ nên chỉ sắp cục bộ,
+  // KHÔNG gọi mạng (nếu gọi, máy chủ sẽ từ chối và âm thầm trả về "relevance", đè mất kết quả
+  // đã sắp theo tên).
+  function applySort(key){
+    document.getElementById('lf-sort').value = key;
+    if(lastData && lastData.results.length){
+      renderResults(Object.assign({}, lastData, { sort:key, results: clientSort(lastData.results, key) }));
+    }
+    if(lastReq && SERVER_SORT_KEYS.has(key)){
+      runLit(lastReq, lastPage, { silent:true });
+    }
   }
 
   function bindResultListeners(){
@@ -843,14 +919,8 @@ document.addEventListener('click', (e)=>{
 
     outEl.querySelectorAll('th.sortable').forEach(th=>{
       th.addEventListener('click', ()=>{
-        const key = th.getAttribute('data-sort');
-        document.getElementById('lf-sort').value = key;
-        // 1) Sắp xếp lại NGAY tập đang có — cảm giác bấm phát ăn ngay, không chờ mạng.
-        if(lastData && lastData.results.length){
-          renderResults(Object.assign({}, lastData, { sort:key, results: clientSort(lastData.results, key) }));
-        }
-        // 2) Âm thầm xin lại đúng dữ liệu (đúng thứ hạng toàn cục) chạy nền, hoán vào khi xong.
-        runLit(lastReq, lastPage, { silent:true });
+        const colKey = th.getAttribute('data-sort-col');
+        applySort(nextSortForColumn(colKey, document.getElementById('lf-sort').value));
       });
     });
     outEl.querySelectorAll('.qv-btn').forEach(btn=>{
@@ -908,23 +978,25 @@ document.addEventListener('click', (e)=>{
       return;
     }
     lastData = data;
+    hlTerms = extractHighlightTerms(data.query?.effective);
     const totalTxt = Object.entries(data.totalBySource||{})
       .map(([s,n])=>`${srcLabel(s)}: ~${Number(n).toLocaleString('vi-VN')}`).join(' · ');
     const srcErr = data.sourceErrors
       ? `<div class="lit-state err" style="padding:10px;text-align:left">Một số nguồn lỗi: ${esc(JSON.stringify(data.sourceErrors))}</div>` : '';
+    const startIdx = (data.page - 1) * data.perPage;
 
     outEl.innerHTML =
       renderWarning(data.warning) +
       renderExpansion(data.expansion) +
       `<p class="lit-meta">Trang ${data.page} — ${data.count} kết quả đã gộp trùng. Tổng khớp: ${totalTxt}</p>` +
       srcErr +
-      `<div class="lit-table-wrap"><table class="lit-table">${tableHead(data.sort)}<tbody>${data.results.map(tableRow).join('')}</tbody></table></div>` +
+      `<div class="lit-table-wrap"><table class="lit-table">${tableHead(data.sort)}<tbody>${data.results.map((r,i)=>tableRow(r,i,startIdx+i+1)).join('')}</tbody></table></div>` +
       `<div class="lit-pager">
         <button id="litPrev" ${data.page<=1?'disabled':''}>← Trước</button>
         <span>Trang ${data.page}</span>
         <button id="litNext" ${data.hasMore ? '' : 'disabled'}>Sau →</button>
       </div>` +
-      `<p class="lit-disc">Dữ liệu từ OpenAlex &amp; Europe PMC. Không có số liệu lượt xem/lượt tải (hai nguồn này không cung cấp) — chỉ sắp xếp được theo năm hoặc số trích dẫn. Nội dung phục vụ học tập, nghiên cứu — không thay thế tư vấn y khoa.</p>`;
+      `<p class="lit-disc">Dữ liệu từ OpenAlex &amp; Europe PMC. Không có số liệu lượt xem/lượt tải (hai nguồn này không cung cấp) — chỉ sắp xếp được theo năm, số trích dẫn hoặc tên bài. Nội dung phục vụ học tập, nghiên cứu — không thay thế tư vấn y khoa.</p>`;
 
     bindResultListeners();
   }
@@ -997,7 +1069,8 @@ document.addEventListener('click', (e)=>{
       if(hq) setTimeout(()=> hq.focus(), 300);
     });
   }
-  ['lf-docType','lf-yearFrom','lf-yearTo','lf-openAccess','lf-pubmedOnly','lf-pmcOnly','lf-sort','lf-perPage'].forEach(id=>{
+  document.getElementById('lf-sort').addEventListener('change', (e)=>{ if(lastReq) applySort(e.target.value); });
+  ['lf-docType','lf-yearFrom','lf-yearTo','lf-openAccess','lf-pubmedOnly','lf-pmcOnly','lf-perPage'].forEach(id=>{
     document.getElementById(id).addEventListener('change', ()=>{ if(lastReq) runLit(lastReq, 1); });
   });
 
@@ -1016,7 +1089,7 @@ const I18N = {
     lit_back:"Quay lại", lit_oa:"Chỉ bài đọc miễn phí (Open Access)", lit_pubmed:"Chỉ bài có trong PubMed/MEDLINE",
     lit_pmc:"Có toàn văn trên PubMed Central", lit_doctype:"Loại tài liệu", lit_dt_all:"Tất cả", lit_dt_sr:"Tổng quan hệ thống & phân tích gộp", lit_dt_rct:"Thử nghiệm lâm sàng (RCT)", lit_dt_review:"Bài tổng quan", lit_dt_preprint:"Tiền ấn phẩm (preprint)",
     lit_year:"Năm", lit_from:"Từ năm", lit_to:"Đến năm", lit_sort:"Sắp xếp", lit_sort_rel:"Liên quan nhất", lit_sort_new:"Mới nhất", lit_sort_old:"Cũ nhất", lit_sort_cite:"Trích dẫn nhiều nhất", lit_pagesize:"Hiển thị",
-    lit_quickview:"Xem nhanh", lit_hide:"Thu gọn", lit_dl:"Tải PDF", lit_nodl:"Không có PDF miễn phí", lit_noauthor:"Không rõ tác giả", lit_col_cite:"Trích dẫn", lit_tags:"Nhãn",
+    lit_quickview:"Xem nhanh", lit_hide:"Thu gọn", lit_dl:"Tải PDF", lit_nodl:"Không có PDF miễn phí", lit_noauthor:"Không rõ tác giả", lit_col_cite:"Trích dẫn", lit_tags:"Nhãn", lit_doctype_col:"Loại", lit_sort_cite_asc:"Trích dẫn ít nhất", lit_sort_title_asc:"Tên (A→Z)", lit_sort_title_desc:"Tên (Z→A)",
     dict_cta:"Tra từ điển",
     hero_title:"Tra cứu và khám phá tri thức<br>Trung Y",
     hero_lead:"Thư viện tạp chí, báo cáo, bài viết học thuật và sách chuyên khảo về Trung Y — song ngữ Việt–Trung–Anh.",
@@ -1047,7 +1120,7 @@ const I18N = {
     lit_back:"返回", lit_oa:"仅开放获取（Open Access）", lit_pubmed:"仅 PubMed/MEDLINE 收录",
     lit_pmc:"PubMed Central 有全文", lit_doctype:"文献类型", lit_dt_all:"全部", lit_dt_sr:"系统评价与荟萃分析", lit_dt_rct:"随机对照试验（RCT）", lit_dt_review:"综述", lit_dt_preprint:"预印本",
     lit_year:"年份", lit_from:"起始年", lit_to:"截止年", lit_sort:"排序", lit_sort_rel:"相关度", lit_sort_new:"最新", lit_sort_old:"最早", lit_sort_cite:"被引最多", lit_pagesize:"每页显示",
-    lit_quickview:"快速查看", lit_hide:"收起", lit_dl:"下载 PDF", lit_nodl:"无免费 PDF", lit_noauthor:"作者不详", lit_col_cite:"被引次数", lit_tags:"标签",
+    lit_quickview:"快速查看", lit_hide:"收起", lit_dl:"下载 PDF", lit_nodl:"无免费 PDF", lit_noauthor:"作者不详", lit_col_cite:"被引次数", lit_tags:"标签", lit_doctype_col:"类型", lit_sort_cite_asc:"被引最少", lit_sort_title_asc:"标题（A→Z）", lit_sort_title_desc:"标题（Z→A）",
     dict_cta:"查词典",
     hero_title:"查询与探索<br>中医知识",
     hero_lead:"中医期刊、报告、学术文章与专著图书馆 — 越南语–中文–英语三语。",
@@ -1078,7 +1151,7 @@ const I18N = {
     lit_back:"Back", lit_oa:"Open Access only", lit_pubmed:"In PubMed/MEDLINE only",
     lit_pmc:"Full text in PubMed Central", lit_doctype:"Document type", lit_dt_all:"All", lit_dt_sr:"Systematic review & meta-analysis", lit_dt_rct:"Randomized controlled trial (RCT)", lit_dt_review:"Review", lit_dt_preprint:"Preprint",
     lit_year:"Year", lit_from:"From year", lit_to:"To year", lit_sort:"Sort by", lit_sort_rel:"Most relevant", lit_sort_new:"Newest", lit_sort_old:"Oldest", lit_sort_cite:"Most cited", lit_pagesize:"Show",
-    lit_quickview:"Quick view", lit_hide:"Hide", lit_dl:"Download PDF", lit_nodl:"No free PDF", lit_noauthor:"Author unknown", lit_col_cite:"Citations", lit_tags:"Tags",
+    lit_quickview:"Quick view", lit_hide:"Hide", lit_dl:"Download PDF", lit_nodl:"No free PDF", lit_noauthor:"Author unknown", lit_col_cite:"Citations", lit_tags:"Tags", lit_doctype_col:"Type", lit_sort_cite_asc:"Fewest citations", lit_sort_title_asc:"Title (A→Z)", lit_sort_title_desc:"Title (Z→A)",
     dict_cta:"Dictionary",
     hero_title:"Search & Discover<br>Chinese Medicine",
     hero_lead:"A library of TCM journals, reports, academic articles and reference books — in Vietnamese, Chinese and English.",
