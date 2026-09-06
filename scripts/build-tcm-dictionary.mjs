@@ -72,10 +72,13 @@ for (const t of sorted) {
   // chữ Hán thô (giản thể + phồn thể) — dùng trực tiếp làm khoá, không chuẩn hoá
   if (t.hz) keys.add(t.hz);
   if (t.hz_traditional && t.hz_traditional !== t.hz) keys.add(t.hz_traditional);
-  // pinyin: có dấu → bỏ dấu, cả dạng có và không khoảng trắng
+  // pinyin: có dấu → bỏ dấu, cả dạng có và không khoảng trắng. BỎ pinyin 1 âm tiết ngắn
+  // (≤4 ký tự, không khoảng trắng) — vd "bi" (鼻/mũi) đụng "bì" (da) tiếng Việt sau khi bỏ dấu.
   if (t.py) {
     const p = norm(t.py);
-    if (p.length >= 2) { keys.add(p); keys.add(p.replace(/ /g, '')); }
+    const spaceless = p.replace(/ /g, '');
+    if (p.includes(' ') || p.length >= 5) keys.add(p);
+    if (spaceless.length >= 5 || p.includes(' ')) keys.add(spaceless);
   }
 
   for (const k of keys) {
