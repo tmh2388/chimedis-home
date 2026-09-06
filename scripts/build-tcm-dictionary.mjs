@@ -61,10 +61,13 @@ for (const t of sorted) {
   const entry = { en, syn: [...synSet].filter((s) => s && s.toLowerCase() !== en.toLowerCase()).slice(0, 6) };
 
   const keys = new Set();
-  // tiếng Việt (kể cả tách theo dấu phẩy / chấm phẩy nếu là danh sách đồng nghĩa)
+  // tiếng Việt (kể cả tách theo dấu phẩy / chấm phẩy nếu là danh sách đồng nghĩa).
+  // BỎ khoá tiếng Việt 1 âm tiết ngắn (≤3 ký tự sau khi bỏ dấu): sau khi bỏ dấu, "trị"
+  // (điều trị) == "trĩ" (bệnh trĩ), "tri" (tri thức)... — khớp lẻ những âm tiết này gây
+  // dịch sai trong câu dài. Thuật ngữ dược liệu/huyệt vị/giải phẫu thật đều ≥2 âm tiết.
   for (const part of String(t.vi).split(/[,;/]/)) {
     const k = norm(part);
-    if (k.length >= 2) keys.add(k);
+    if (k.length >= 2 && (k.includes(' ') || k.length >= 4)) keys.add(k);
   }
   // chữ Hán thô (giản thể + phồn thể) — dùng trực tiếp làm khoá, không chuẩn hoá
   if (t.hz) keys.add(t.hz);
