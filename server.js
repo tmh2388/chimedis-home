@@ -8,6 +8,7 @@ import documentRoutes, { adminRouter as adminDocumentRoutes } from './routes/doc
 import userRoutes from './routes/users.js';
 import orcidRoutes from './routes/orcid.js';
 import researchRoutes from './routes/research.js';
+import workbenchRoutes from './routes/workbench.js';
 import dictMissRoutes from './routes/dict-misses.js';
 import { startDictLearn } from './lib/dict-learn.js';
 
@@ -23,6 +24,7 @@ app.use(express.json());
 // ===== API (dùng chung cho cả 2 domain) =====
 app.use('/api/auth', authRoutes);
 app.use('/api/research', researchRoutes);
+app.use('/api/workbench', workbenchRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/admin/documents', adminDocumentRoutes);
 app.use('/api/admin/users', userRoutes);
