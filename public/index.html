@@ -735,7 +735,6 @@ document.addEventListener('click', (e)=>{
     });
     return out;
   }
-  function srcLabel(s){ return {openalex:'OpenAlex', europepmc:'Europe PMC', core:'CORE', semanticscholar:'Semantic Scholar'}[s] || s; }
 
   function selKey(selectEl, map, fallback){
     const opt = selectEl && selectEl.selectedOptions && selectEl.selectedOptions[0];
@@ -804,12 +803,11 @@ document.addEventListener('click', (e)=>{
     const au = (r.authors && r.authors.length)
       ? esc(r.authors.slice(0,3).join(', ')) + (r.authors.length>3 ? ' …' : '')
       : `<span style="color:var(--muted-fg)">${t('lit_noauthor')||'Không rõ tác giả'}</span>`;
-    // Nhãn trạng thái (nguồn/OA) — thông tin thư mục học, đặt gọn dưới tiêu đề. Loại tài liệu
-    // giờ có cột riêng (c-type) nên không lặp lại ở đây.
+    // Nhãn trạng thái nội dung (chỉ PubMed / Open Access — KHÔNG hiện tên cơ sở dữ liệu
+    // tổng hợp, người dùng chỉ quan tâm nội dung chứ không quan tâm bài lấy từ đâu).
     const meta = [];
     if(r.inPubMed) meta.push('<span class="lit-badge pm">PubMed</span>');
     if(r.isOpenAccess) meta.push('<span class="lit-badge oa">OA</span>');
-    (r.sources||[]).forEach(s=> meta.push(`<span class="lit-badge sr">${srcLabel(s)}</span>`));
     // Cột "Nhãn" = từ khoá THẬT do TÁC GIẢ khai báo (Europe PMC keywordList) — OpenAlex
     // không cung cấp từ khoá tác giả thật (chỉ có nhãn chủ đề tự phân loại bằng thuật toán,
     // không đáng tin để gọi là "keyword"), nên khi không có từ Europe PMC, hiện chủ đề
@@ -991,28 +989,20 @@ document.addEventListener('click', (e)=>{
       ...((data.expansion?.terms || []).flatMap(t => [t.vi, ...(t.syn || [])])
         .filter(s => s && String(s).length >= (/[㐀-鿿]/.test(s) ? 1 : 3))),
     ];
-    const totalTxt = Object.entries(data.totalBySource||{})
-      .map(([s,n])=>`${srcLabel(s)}: ~${Number(n).toLocaleString('vi-VN')}`).join(' · ');
-    // OpenAlex/Europe PMC là nguồn chính — lỗi ở đây đáng báo rõ (kết quả có thể thiếu).
-    // CORE/Semantic Scholar là nguồn BỔ SUNG (nhất là khi chưa có API key riêng) — lỗi/429
-    // ở đây là chuyện thường, không nên hiện như một sự cố đáng lo.
-    const PRIMARY_SOURCES = ['openalex', 'europepmc'];
-    const errKeys = Object.keys(data.sourceErrors || {});
-    const critical = errKeys.filter(k => PRIMARY_SOURCES.includes(k));
-    const minor = errKeys.filter(k => !PRIMARY_SOURCES.includes(k));
-    let srcErr = '';
-    if(critical.length){
-      srcErr += `<div class="lit-state err" style="padding:10px;text-align:left">Nguồn chính gặp lỗi: ${critical.map(srcLabel).join(', ')} — kết quả có thể chưa đầy đủ.</div>`;
-    }
-    if(minor.length){
-      srcErr += `<p class="lit-meta">Nguồn bổ sung tạm thời không phản hồi: ${minor.map(srcLabel).join(', ')}.</p>`;
-    }
+    // Tổng số tài liệu khớp (gộp các cơ sở dữ liệu, có thể trùng lặp — chỉ mang tính ước
+    // lượng độ lớn). KHÔNG hiển thị tách theo từng nguồn — người dùng chỉ cần con số tổng.
+    const totalMatched = Object.values(data.totalBySource || {}).reduce((a, b) => a + (Number(b) || 0), 0);
+    // Chỉ báo khi kết quả có thể chưa đầy đủ, KHÔNG nêu tên cơ sở dữ liệu nào.
+    const anyErr = Object.keys(data.sourceErrors || {}).length > 0;
+    const srcErr = (anyErr && data.count === 0)
+      ? `<div class="lit-state err" style="padding:10px;text-align:left">Có lỗi khi tra cứu — kết quả có thể chưa đầy đủ, thử lại sau.</div>`
+      : '';
     const startIdx = (data.page - 1) * data.perPage;
 
     outEl.innerHTML =
       renderWarning(data.warning) +
       renderExpansion(data.expansion) +
-      `<p class="lit-meta">Trang ${data.page} — ${data.count} kết quả đã gộp trùng. Tổng khớp: ${totalTxt}</p>` +
+      `<p class="lit-meta">Trang ${data.page} · ${data.count} kết quả trên trang${totalMatched ? ` · khoảng ${Number(totalMatched).toLocaleString('vi-VN')} tài liệu khớp` : ''}</p>` +
       srcErr +
       `<div class="lit-table-wrap"><table class="lit-table">${tableHead(data.sort)}<tbody>${data.results.map((r,i)=>tableRow(r,i,startIdx+i+1)).join('')}</tbody></table></div>` +
       `<div class="lit-pager">
@@ -1020,7 +1010,7 @@ document.addEventListener('click', (e)=>{
         <span>Trang ${data.page}</span>
         <button id="litNext" ${data.hasMore ? '' : 'disabled'}>Sau →</button>
       </div>` +
-      `<p class="lit-disc">Dữ liệu từ OpenAlex &amp; Europe PMC. Không có số liệu lượt xem/lượt tải (hai nguồn này không cung cấp) — chỉ sắp xếp được theo năm, số trích dẫn hoặc tên bài. Nội dung phục vụ học tập, nghiên cứu — không thay thế tư vấn y khoa.</p>`;
+      `<p class="lit-disc">Tổng hợp từ nhiều cơ sở dữ liệu y văn mở. Không có số liệu lượt xem/lượt tải — sắp xếp được theo năm, số trích dẫn hoặc tên bài. Nội dung phục vụ học tập, nghiên cứu — không thay thế tư vấn y khoa.</p>`;
 
     bindResultListeners();
   }
@@ -1037,7 +1027,7 @@ document.addEventListener('click', (e)=>{
         ? '<b>Tra cứu nâng cao</b> · ' + req.advanced.map(r=>esc(r.field.toUpperCase()+':'+r.term)).join(' ')
         : '<b>' + esc(req.q) + '</b>';
       showPanel();
-      outEl.innerHTML = '<div class="lit-state"><div class="lit-spin"></div>Đang tra cứu OpenAlex và Europe PMC…</div>';
+      outEl.innerHTML = '<div class="lit-state"><div class="lit-spin"></div>Đang tra cứu y văn…</div>';
       window.scrollTo({ top: panel.offsetTop - 70, behavior:'smooth' });
     } else {
       // Sắp xếp nền: không xoá bảng đang hiển thị (đã cập nhật tức thì phía client), chỉ làm mờ nhẹ.
