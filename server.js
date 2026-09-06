@@ -8,6 +8,7 @@ import documentRoutes, { adminRouter as adminDocumentRoutes } from './routes/doc
 import userRoutes from './routes/users.js';
 import orcidRoutes from './routes/orcid.js';
 import researchRoutes from './routes/research.js';
+import dictMissRoutes from './routes/dict-misses.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -24,6 +25,7 @@ app.use('/api/research', researchRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/admin/documents', adminDocumentRoutes);
 app.use('/api/admin/users', userRoutes);
+app.use('/api/admin/dict-misses', dictMissRoutes);
 app.use('/api/orcid', orcidRoutes);
 
 // ===== Định tuyến theo domain =====

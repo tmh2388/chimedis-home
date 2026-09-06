@@ -99,6 +99,7 @@ th{color:var(--muted-fg);font-size:11.5px;text-transform:uppercase;letter-spacin
     <div id="workArea" hidden>
       <div class="tabs">
         <div class="tab active" data-tab="docs" onclick="switchTab('docs')">Tài liệu</div>
+        <div class="tab" data-tab="dict" onclick="switchTab('dict')" id="dictTabBtn" hidden>Từ điển tra cứu</div>
         <div class="tab" data-tab="users" onclick="switchTab('users')" id="usersTabBtn" hidden>Người dùng</div>
       </div>
 
@@ -138,6 +139,36 @@ th{color:var(--muted-fg);font-size:11.5px;text-transform:uppercase;letter-spacin
           <table>
             <thead><tr><th>ID</th><th>Loại</th><th>Tiêu đề</th><th>Tác giả tạo</th><th>Trạng thái</th><th>Cập nhật</th><th>Thao tác</th></tr></thead>
             <tbody id="docsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="tab-dict" hidden>
+        <div class="card">
+          <h2>Cụm truy vấn chưa dịch được</h2>
+          <p class="hint">Hàng đợi tự động: những cụm người dùng tìm y văn mà hệ thống <b>chưa dịch sang tiếng Anh được</b> (hoặc ra rất ít kết quả), xếp theo số lần gặp. Thêm cụm hay gặp vào <code>lib/tcm-vocab.js</code> rồi push — lần rebuild sau nó tự biến mất khỏi đây (cột "Đã có trong từ điển").</p>
+          <div id="dictMsg"></div>
+          <div class="grid3" style="align-items:end">
+            <div class="field"><label>Khoảng thời gian</label>
+              <select id="dm_days" onchange="loadDictMisses()">
+                <option value="7">7 ngày qua</option>
+                <option value="30" selected>30 ngày qua</option>
+                <option value="90">90 ngày qua</option>
+                <option value="0">Tất cả</option>
+              </select>
+            </div>
+            <div class="field"><label>Lý do</label>
+              <select id="dm_reason" onchange="loadDictMisses()">
+                <option value="">Tất cả</option>
+                <option value="untranslated">Không nhận diện được cụm</option>
+                <option value="low_results">Dịch được nhưng ra ít kết quả</option>
+              </select>
+            </div>
+            <div class="field"><label><input type="checkbox" id="dm_hideResolved" checked onchange="renderDictMisses()"> Ẩn cụm đã có trong từ điển / đã bỏ qua</label></div>
+          </div>
+          <table>
+            <thead><tr><th>Cụm</th><th>Lý do</th><th>Số lần</th><th>Truy vấn khác nhau</th><th>KQ ít nhất</th><th>Ngôn ngữ</th><th>Lần cuối</th><th>Ví dụ truy vấn</th><th></th></tr></thead>
+            <tbody id="dictMissBody"></tbody>
           </table>
         </div>
       </div>
@@ -283,6 +314,7 @@ function renderApp() {
   document.getElementById('readerNotice').hidden = isAuthorPlus;
   document.getElementById('workArea').hidden = !isAuthorPlus;
   document.getElementById('usersTabBtn').hidden = currentUser.role !== 'admin';
+  document.getElementById('dictTabBtn').hidden = !['editor', 'admin'].includes(currentUser.role);
 
   if (isAuthorPlus) loadDocs();
 }
@@ -302,8 +334,67 @@ window.unlinkOrcid = async function() {
 window.switchTab = function(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   document.getElementById('tab-docs').hidden = name !== 'docs';
+  document.getElementById('tab-dict').hidden = name !== 'dict';
   document.getElementById('tab-users').hidden = name !== 'users';
   if (name === 'users') loadUsers();
+  if (name === 'dict') loadDictMisses();
+};
+
+let dictMissData = [];
+window.loadDictMisses = async function() {
+  const days = document.getElementById('dm_days').value;
+  const reason = document.getElementById('dm_reason').value;
+  const q = new URLSearchParams({ days }); if (reason) q.set('reason', reason);
+  try {
+    const res = await authedFetch('/api/admin/dict-misses?' + q.toString());
+    const data = await res.json();
+    if (!data.success) return showMsg('dictMsg', data.error);
+    dictMissData = data.items;
+    renderDictMisses();
+  } catch (e) { showMsg('dictMsg', 'Lỗi tải: ' + e.message); }
+};
+
+const REASON_LABEL = { untranslated: 'Không nhận diện', low_results: 'Ít kết quả' };
+window.renderDictMisses = function() {
+  const hideResolved = document.getElementById('dm_hideResolved').checked;
+  const rows = dictMissData.filter(x => !hideResolved || (!x.inDictionaryNow && !x.dismissed));
+  const body = document.getElementById('dictMissBody');
+  body.innerHTML = rows.map(x => {
+    const badge = x.inDictionaryNow ? '<span class="badge b-published">đã có trong từ điển</span>'
+      : x.dismissed ? '<span class="badge">đã bỏ qua</span>' : '';
+    const act = (x.inDictionaryNow || x.dismissed)
+      ? (x.dismissed ? `<button class="btn btn-sm" onclick="undismissTerm('${encodeURIComponent(x.term)}')">Khôi phục</button>` : '')
+      : `<button class="btn btn-sm" onclick="dismissTerm('${encodeURIComponent(x.term)}')">Bỏ qua</button>`;
+    return `<tr${(x.inDictionaryNow||x.dismissed)?' style="opacity:.5"':''}>
+      <td><code>${escapeHtml(x.term)}</code> ${badge}</td>
+      <td>${REASON_LABEL[x.reason] || x.reason}</td>
+      <td><b>${x.hits}</b></td>
+      <td>${x.distinctQueries}</td>
+      <td>${x.minResults}</td>
+      <td>${x.lang || ''}</td>
+      <td>${x.lastSeen ? new Date(x.lastSeen).toLocaleDateString('vi-VN') : ''}</td>
+      <td class="hint" style="max-width:280px">${x.samples.map(escapeHtml).join('<br>')}</td>
+      <td>${act}</td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="9" class="hint">Không có cụm nào — hệ thống đang dịch tốt, hoặc chưa có lưu lượng.</td></tr>';
+};
+
+function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+
+window.dismissTerm = async function(termEnc) {
+  const term = decodeURIComponent(termEnc);
+  const note = prompt('Ghi chú (tuỳ chọn) — vd. "gõ sai", "rác":', '') ?? '';
+  const res = await authedFetch('/api/admin/dict-misses/dismiss', { method: 'POST', body: JSON.stringify({ term, note }) });
+  const data = await res.json();
+  if (data.success) { const it = dictMissData.find(x => x.term === term); if (it) it.dismissed = true; renderDictMisses(); }
+  else showMsg('dictMsg', data.error);
+};
+window.undismissTerm = async function(termEnc) {
+  const term = decodeURIComponent(termEnc);
+  const res = await authedFetch('/api/admin/dict-misses/dismiss', { method: 'DELETE', body: JSON.stringify({ term }) });
+  const data = await res.json();
+  if (data.success) { const it = dictMissData.find(x => x.term === term); if (it) it.dismissed = false; renderDictMisses(); }
+  else showMsg('dictMsg', data.error);
 };
 
 const DOC_TYPE_LABEL = { journal: 'Tạp chí', report: 'Báo cáo', article: 'Bài viết', book: 'Sách' };
