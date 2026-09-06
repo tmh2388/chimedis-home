@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS portal_documents (
 CREATE TABLE IF NOT EXISTS dict_term_misses (
   id            BIGINT AUTO_INCREMENT PRIMARY KEY,
   term          VARCHAR(190) NOT NULL COMMENT 'Cụm chưa dịch được (đã chuẩn hoá); với reason=low_results là truy vấn gốc rút gọn',
-  reason        ENUM('untranslated','low_results') NOT NULL,
+  reason        ENUM('untranslated','low_results','thin_results') NOT NULL COMMENT 'untranslated: có cụm không dịch được | low_results: <3 kết quả | thin_results: đã dịch nhưng chỉ 3-8 kết quả (nghi bản dịch chưa phủ đủ biến thể tiếng Anh)',
   raw_query     VARCHAR(500) NOT NULL,
   effective     VARCHAR(1000) NULL COMMENT 'Truy vấn tiếng Anh đã dựng (nếu có)',
   result_count  INT NOT NULL DEFAULT 0,

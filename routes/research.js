@@ -157,7 +157,10 @@ async function runSearch({ mode, rawQ, advanced, filters, expansion, effective, 
     res.json(payload);
 
     // GĐ1 "từ điển tự học": lưu vết nếu dịch không hết hoặc ra quá ít kết quả (fire-and-forget).
-    logSearchMiss({ rawQ, effective, untranslated, resultCount: results.length, mode });
+    logSearchMiss({
+      rawQ, effective, untranslated, resultCount: results.length, mode,
+      wasTranslated: !!(expansion && expansion.terms && expansion.terms.length),
+    });
   } catch (err) {
     console.error(`${mode} /api/research/search error:`, err.message);
     res.status(500).json({ success: false, error: 'Lỗi tìm kiếm y văn.' });

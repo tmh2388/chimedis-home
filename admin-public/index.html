@@ -161,7 +161,8 @@ th{color:var(--muted-fg);font-size:11.5px;text-transform:uppercase;letter-spacin
               <select id="dm_reason" onchange="loadDictMisses()">
                 <option value="">Tất cả</option>
                 <option value="untranslated">Không nhận diện được cụm</option>
-                <option value="low_results">Dịch được nhưng ra ít kết quả</option>
+                <option value="low_results">Ra &lt;3 kết quả</option>
+                <option value="thin_results">Dịch được nhưng kết quả mỏng (3–8) — nghi thiếu biến thể</option>
               </select>
             </div>
             <div class="field"><label><input type="checkbox" id="dm_hideResolved" checked onchange="renderDictMisses()"> Ẩn cụm đã có trong từ điển / đã bỏ qua</label></div>
@@ -186,7 +187,7 @@ th{color:var(--muted-fg);font-size:11.5px;text-transform:uppercase;letter-spacin
             </select>
           </div>
           <table>
-            <thead><tr><th>Cụm</th><th>Bản dịch (LLM) — sửa được</th><th>Đồng nghĩa</th><th>Truy vấn khác nhau</th><th>Trạng thái</th><th>Ví dụ</th><th>Thao tác</th></tr></thead>
+            <thead><tr><th>Cụm</th><th>Bản dịch (LLM) — sửa được</th><th>Đồng nghĩa</th><th>7 ngày</th><th>Truy vấn khác nhau</th><th>Lần cuối</th><th>Trạng thái</th><th>Ví dụ</th><th>Thao tác</th></tr></thead>
             <tbody id="candBody"></tbody>
           </table>
         </div>
@@ -373,7 +374,7 @@ window.loadDictMisses = async function() {
   } catch (e) { showMsg('dictMsg', 'Lỗi tải: ' + e.message); }
 };
 
-const REASON_LABEL = { untranslated: 'Không nhận diện', low_results: 'Ít kết quả' };
+const REASON_LABEL = { untranslated: 'Không nhận diện', low_results: '<3 kết quả', thin_results: 'Kết quả mỏng' };
 window.renderDictMisses = function() {
   const hideResolved = document.getElementById('dm_hideResolved').checked;
   const rows = dictMissData.filter(x => !hideResolved || (!x.inDictionaryNow && !x.dismissed));
@@ -429,7 +430,9 @@ window.loadCandidates = async function() {
       <td><code>${escapeHtml(c.term)}</code><div class="hint">${c.lang || ''} · ${c.llmModel || ''}</div></td>
       <td><input class="cand-en" value="${escapeHtml(c.en)}" style="width:220px"></td>
       <td><input class="cand-syn" value="${escapeHtml((c.syn || []).join(', '))}" placeholder="đồng nghĩa, cách nhau dấu phẩy" style="width:200px"></td>
+      <td><b>${c.hits7d || 0}</b></td>
       <td>${c.distinctQueries}</td>
+      <td class="hint">${c.lastSeen ? new Date(c.lastSeen).toLocaleDateString('vi-VN') : ''}</td>
       <td><span class="badge">${CAND_STATUS_LABEL[c.status] || c.status}</span></td>
       <td class="hint" style="max-width:240px">${(c.samples || []).map(escapeHtml).join('<br>')}</td>
       <td><div class="actions">
@@ -437,7 +440,7 @@ window.loadCandidates = async function() {
         <button class="btn btn-sm" onclick="reviewCand(${c.id},'auto_active')">Chỉ dùng tìm kiếm</button>
         <button class="btn btn-sm btn-danger" onclick="reviewCand(${c.id},'reject')">Từ chối</button>
       </div></td>
-    </tr>`).join('') || '<tr><td colspan="7" class="hint">Chưa có ứng viên nào (cần ANTHROPIC_API_KEY + lưu lượng tìm kiếm).</td></tr>';
+    </tr>`).join('') || '<tr><td colspan="9" class="hint">Chưa có ứng viên nào (cần ANTHROPIC_API_KEY + lưu lượng tìm kiếm).</td></tr>';
   } catch (e) { showMsg('candMsg', 'Lỗi tải: ' + e.message); }
 };
 window.reviewCand = async function(id, action) {

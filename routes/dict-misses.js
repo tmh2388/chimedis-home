@@ -21,7 +21,7 @@ function requireDb(req, res, next) {
 router.get('/', requireDb, requireUser, requireRole('editor'), async (req, res) => {
   try {
     const days = Math.min(parseInt(req.query.days, 10) || 30, 3650); // 0 = tất cả
-    const reason = ['untranslated', 'low_results'].includes(req.query.reason) ? req.query.reason : null;
+    const reason = ['untranslated', 'low_results', 'thin_results'].includes(req.query.reason) ? req.query.reason : null;
 
     const where = [];
     const params = [];
@@ -107,11 +107,15 @@ router.get('/candidates', requireDb, requireUser, requireRole('editor'), async (
       `SELECT c.id, c.term_norm, c.term_display, c.lang, c.en, c.syn, c.status, c.seen_count,
               c.llm_model, c.first_seen, c.last_seen, c.reviewed_at,
               (SELECT COUNT(DISTINCT raw_query) FROM dict_term_misses WHERE term = c.term_norm) AS distinct_queries,
+              (SELECT COUNT(*) FROM dict_term_misses
+                 WHERE term = c.term_norm AND created_at >= (NOW() - INTERVAL 7 DAY)) AS hits_7d,
               (SELECT SUBSTRING(GROUP_CONCAT(DISTINCT raw_query SEPARATOR '\\n'), 1, 300)
                  FROM dict_term_misses WHERE term = c.term_norm) AS samples
        FROM dict_candidates c
        ${status ? 'WHERE c.status = ?' : ''}
-       ORDER BY c.status = 'new' DESC, distinct_queries DESC, c.seen_count DESC
+       ORDER BY c.status = 'new' DESC,
+                (hits_7d * 3 + distinct_queries) DESC,   -- ưu tiên cụm ĐANG được tìm nhiều
+                c.seen_count DESC
        LIMIT 400`,
       status ? [status] : []
     );
@@ -122,6 +126,7 @@ router.get('/candidates', requireDb, requireUser, requireRole('editor'), async (
         id: r.id, term: r.term_display, termNorm: r.term_norm, lang: r.lang,
         en: r.en, syn, status: r.status,
         seenCount: Number(r.seen_count), distinctQueries: Number(r.distinct_queries || 0),
+        hits7d: Number(r.hits_7d || 0),
         llmModel: r.llm_model, firstSeen: r.first_seen, lastSeen: r.last_seen, reviewedAt: r.reviewed_at,
         samples: String(r.samples || '').split('\n').filter(Boolean).slice(0, 3),
       };
