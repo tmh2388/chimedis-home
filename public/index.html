@@ -248,27 +248,35 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
 #litOut.lit-refreshing{opacity:.55;transition:opacity .15s ease}
 mark.hl{background:#FCE8A0;color:#3C352C;padding:0 1px;border-radius:2px}
 .lit-table-wrap{overflow-x:auto;border:1px solid var(--border);border-radius:12px;background:var(--card)}
-table.lit-table{width:100%;border-collapse:collapse;font-size:13px;min-width:760px}
-table.lit-table thead th{position:sticky;top:0;background:#FCFAF6;border-bottom:1px solid var(--border-strong);text-align:left;padding:10px 12px;font-size:12px;font-weight:700;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.02em;white-space:nowrap}
+/* table-layout:fixed → tỷ lệ cột do <colgroup> quyết định, ỔN ĐỊNH trên mọi màn hình (không
+   co giãn theo độ dài nội dung). Màn hẹp hơn min-width thì .lit-table-wrap cuộn ngang. */
+table.lit-table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;min-width:1040px}
+table.lit-table col.col-stt{width:38px}
+table.lit-table col.col-title{width:30%}
+table.lit-table col.col-authors{width:13%}
+table.lit-table col.col-source{width:12%}
+table.lit-table col.col-type{width:9%}
+table.lit-table col.col-year{width:54px}
+table.lit-table col.col-cite{width:84px}
+table.lit-table col.col-tags{width:12%}
+table.lit-table col.col-actions{width:128px}
+table.lit-table thead th{position:sticky;top:0;background:#FCFAF6;border-bottom:1px solid var(--border-strong);text-align:left;padding:10px 10px;font-size:12px;font-weight:700;color:var(--muted-fg);text-transform:uppercase;letter-spacing:.02em;line-height:1.25}
 table.lit-table th.sortable{cursor:pointer;user-select:none}
 table.lit-table th.sortable:hover{color:var(--ink)}
 table.lit-table th .arrow{display:inline-block;width:10px;opacity:.5}
 table.lit-table th.active .arrow{opacity:1;color:var(--accent)}
-table.lit-table td{padding:11px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+table.lit-table td{padding:11px 10px;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
 table.lit-table tr.lit-row:hover td{background:#FCFAF6}
-table.lit-table th.c-stt,table.lit-table td.c-stt{width:1%;white-space:nowrap;text-align:center;color:var(--muted-fg)}
-table.lit-table td.c-type{white-space:nowrap}
-table.lit-table td.c-title{min-width:240px;max-width:340px}
+table.lit-table td.c-stt{text-align:center;color:var(--muted-fg)}
 table.lit-table td.c-title a{font-weight:600;color:var(--ink)}
 table.lit-table td.c-title a:hover{color:var(--accent);text-decoration:underline}
-table.lit-table td.c-authors{min-width:130px;max-width:170px;color:var(--fg);font-size:12.5px}
-table.lit-table td.c-venue{min-width:110px;max-width:150px;color:var(--muted-fg);font-size:12.5px}
+table.lit-table td.c-authors{color:var(--fg);font-size:12.5px}
+table.lit-table td.c-venue{color:var(--muted-fg);font-size:12.5px}
 table.lit-table td.c-year{white-space:nowrap;color:var(--fg)}
 table.lit-table td.c-cite{white-space:nowrap;color:var(--fg);font-weight:600}
-table.lit-table td.c-badges{min-width:130px}
-table.lit-table td.c-badges .lit-badge{display:inline-block;margin:0 4px 4px 0}
-table.lit-table td.c-actions{white-space:nowrap;text-align:right;width:1%}
-table.lit-table td.c-actions .act-wrap{display:flex;flex-direction:column;gap:6px;align-items:stretch;min-width:116px}
+table.lit-table td.c-badges .lit-badge{display:inline-block;margin:0 4px 4px 0;max-width:100%;overflow-wrap:anywhere}
+table.lit-table td.c-actions{text-align:right}
+table.lit-table td.c-actions .act-wrap{display:flex;flex-direction:column;gap:6px;align-items:stretch}
 .qv-btn,.dl-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:26px;padding:0 9px;border-radius:7px;font-size:12px;font-family:inherit;font-weight:600;border:1px solid var(--border-strong);background:#fff;color:var(--ink);cursor:pointer}
 .qv-btn:hover{background:#EFE9DC}
 .dl-btn{color:#fff;background:var(--accent);border-color:var(--accent)}
@@ -874,7 +882,9 @@ document.addEventListener('click', (e)=>{
       const active = SORT_COL_KEYS[colKey].includes(sort);
       return `<th class="sortable${active?' active':''}" data-sort-col="${colKey}">${label} <span class="arrow">${sortArrow(colKey, sort)}</span></th>`;
     };
-    return `<thead><tr>
+    return `<colgroup>
+      <col class="col-stt"><col class="col-title"><col class="col-authors"><col class="col-source"><col class="col-type"><col class="col-year"><col class="col-cite"><col class="col-tags"><col class="col-actions">
+    </colgroup><thead><tr>
       <th class="c-stt">#</th>
       ${th('title', t('fld_title'))}
       <th>${t('fld_author')}</th>
@@ -883,7 +893,7 @@ document.addEventListener('click', (e)=>{
       ${th('year', t('lit_year'))}
       ${th('cite', t('lit_col_cite'))}
       <th>${t('lit_tags')}</th>
-      <th></th>
+      <th aria-label="${t('lit_quickview')||'Thao tác'}"></th>
     </tr></thead>`;
   }
 
