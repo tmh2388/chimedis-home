@@ -258,17 +258,18 @@ table.lit-table td{padding:11px 12px;border-bottom:1px solid var(--border);verti
 table.lit-table tr.lit-row:hover td{background:#FCFAF6}
 table.lit-table th.c-stt,table.lit-table td.c-stt{width:1%;white-space:nowrap;text-align:center;color:var(--muted-fg)}
 table.lit-table td.c-type{white-space:nowrap}
-table.lit-table td.c-title{min-width:280px;max-width:420px}
+table.lit-table td.c-title{min-width:240px;max-width:340px}
 table.lit-table td.c-title a{font-weight:600;color:var(--ink)}
 table.lit-table td.c-title a:hover{color:var(--accent);text-decoration:underline}
-table.lit-table td.c-authors{min-width:160px;max-width:220px;color:var(--fg);font-size:12.5px}
-table.lit-table td.c-venue{min-width:140px;max-width:200px;color:var(--muted-fg);font-size:12.5px}
+table.lit-table td.c-authors{min-width:130px;max-width:170px;color:var(--fg);font-size:12.5px}
+table.lit-table td.c-venue{min-width:110px;max-width:150px;color:var(--muted-fg);font-size:12.5px}
 table.lit-table td.c-year{white-space:nowrap;color:var(--fg)}
 table.lit-table td.c-cite{white-space:nowrap;color:var(--fg);font-weight:600}
 table.lit-table td.c-badges{min-width:130px}
 table.lit-table td.c-badges .lit-badge{display:inline-block;margin:0 4px 4px 0}
-table.lit-table td.c-actions{white-space:nowrap;text-align:right}
-.qv-btn,.dl-btn{display:inline-flex;align-items:center;gap:4px;height:26px;padding:0 9px;border-radius:7px;font-size:12px;font-family:inherit;font-weight:600;border:1px solid var(--border-strong);background:#fff;color:var(--ink);margin-left:6px;cursor:pointer}
+table.lit-table td.c-actions{white-space:nowrap;text-align:right;width:1%}
+table.lit-table td.c-actions .act-wrap{display:flex;flex-direction:column;gap:6px;align-items:stretch;min-width:116px}
+.qv-btn,.dl-btn{display:inline-flex;align-items:center;justify-content:center;gap:4px;height:26px;padding:0 9px;border-radius:7px;font-size:12px;font-family:inherit;font-weight:600;border:1px solid var(--border-strong);background:#fff;color:var(--ink);cursor:pointer}
 .qv-btn:hover{background:#EFE9DC}
 .dl-btn{color:#fff;background:var(--accent);border-color:var(--accent)}
 .dl-btn:hover{filter:brightness(1.06)}
@@ -837,10 +838,10 @@ document.addEventListener('click', (e)=>{
         <td class="c-year">${r.year || '—'}</td>
         <td class="c-cite">${typeof r.citations === 'number' ? r.citations.toLocaleString('vi-VN') : '—'}</td>
         <td class="c-badges">${kw}</td>
-        <td class="c-actions">
+        <td class="c-actions"><div class="act-wrap">
           <button type="button" class="qv-btn" data-qv="${i}">👁 <span data-label>${t('lit_quickview')||'Xem nhanh'}</span></button>
           ${dl}
-        </td>
+        </div></td>
       </tr>
       <tr class="lit-detail" id="qv-${i}" hidden><td colspan="9">
         ${r.abstract ? `<p class="ab">${highlightText(r.abstract, hlTerms)}</p>` : `<p class="ab" style="color:var(--muted-fg)">Không có tóm tắt.</p>`}
@@ -877,7 +878,7 @@ document.addEventListener('click', (e)=>{
       <th class="c-stt">#</th>
       ${th('title', t('fld_title'))}
       <th>${t('fld_author')}</th>
-      <th>${t('fld_journal')}</th>
+      <th>${t('lit_col_source')}</th>
       <th>${t('lit_doctype_col')}</th>
       ${th('year', t('lit_year'))}
       ${th('cite', t('lit_col_cite'))}
@@ -1109,7 +1110,7 @@ const I18N = {
     hero_lead:"Thư viện tạp chí, báo cáo, bài viết học thuật và sách chuyên khảo về Trung Y — song ngữ Việt–Trung–Anh.",
     search_ph:"Tìm theo tiêu đề, tác giả, từ khoá...", search_btn:"Tìm kiếm",
     adv_toggle:"Tra cứu nâng cao",
-    fld_title:"Tiêu đề", fld_author:"Tác giả", fld_abstract:"Tóm tắt", fld_keyword:"Từ khoá", fld_fulltext:"Toàn văn", fld_journal:"Tên tạp chí / nguồn", fld_affil:"Đơn vị công tác",
+    fld_title:"Tiêu đề", fld_author:"Tác giả", fld_abstract:"Tóm tắt", fld_keyword:"Từ khoá", fld_fulltext:"Toàn văn", fld_journal:"Tên tạp chí / nguồn", fld_affil:"Đơn vị công tác", lit_col_source:"Nguồn",
     op_and:"VÀ", op_or:"HOẶC", op_not:"KHÔNG", add_condition:"Thêm điều kiện",
     filter_doctype:"Loại tài liệu", doctype_book:"Sách",
     filter_category:"Chuyên mục", cat_all:"Tất cả", cat_acupuncture:"Châm cứu", cat_herbal:"Dược liệu học", cat_internal:"Nội khoa TCM", cat_diagnostics:"Chẩn đoán học",
@@ -1140,7 +1141,7 @@ const I18N = {
     hero_lead:"中医期刊、报告、学术文章与专著图书馆 — 越南语–中文–英语三语。",
     search_ph:"按标题、作者、关键词搜索...", search_btn:"搜索",
     adv_toggle:"高级检索",
-    fld_title:"题名", fld_author:"作者", fld_abstract:"摘要", fld_keyword:"关键词", fld_fulltext:"全文", fld_journal:"期刊/来源", fld_affil:"单位",
+    fld_title:"题名", fld_author:"作者", fld_abstract:"摘要", fld_keyword:"关键词", fld_fulltext:"全文", fld_journal:"期刊/来源", fld_affil:"单位", lit_col_source:"来源",
     op_and:"并且", op_or:"或者", op_not:"不含", add_condition:"添加条件",
     filter_doctype:"文献类型", doctype_book:"图书",
     filter_category:"分类", cat_all:"全部", cat_acupuncture:"针灸", cat_herbal:"中药学", cat_internal:"中医内科学", cat_diagnostics:"中医诊断学",
@@ -1171,7 +1172,7 @@ const I18N = {
     hero_lead:"A library of TCM journals, reports, academic articles and reference books — in Vietnamese, Chinese and English.",
     search_ph:"Search by title, author, keyword...", search_btn:"Search",
     adv_toggle:"Advanced search",
-    fld_title:"Title", fld_author:"Author", fld_abstract:"Abstract", fld_keyword:"Keyword", fld_fulltext:"Full Text", fld_journal:"Journal / Source", fld_affil:"Affiliation",
+    fld_title:"Title", fld_author:"Author", fld_abstract:"Abstract", fld_keyword:"Keyword", fld_fulltext:"Full Text", fld_journal:"Journal / Source", fld_affil:"Affiliation", lit_col_source:"Source",
     op_and:"AND", op_or:"OR", op_not:"NOT", add_condition:"Add condition",
     filter_doctype:"Document type", doctype_book:"Book",
     filter_category:"Category", cat_all:"All", cat_acupuncture:"Acupuncture", cat_herbal:"Herbal Medicine", cat_internal:"TCM Internal Medicine", cat_diagnostics:"TCM Diagnostics",
