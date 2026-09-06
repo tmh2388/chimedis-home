@@ -224,6 +224,13 @@ footer.site{background:#0A2828;color:#B9CDCB;padding:44px 0 26px;margin-top:20px
 .lit-chip{display:inline-flex;align-items:center;gap:5px;background:#fff;border:1px solid #CFE4D6;border-radius:999px;padding:3px 10px;margin:4px 6px 0 0;font-size:12.5px}
 .lit-chip .vi{color:var(--muted-fg)}
 .lit-meta{margin:0 0 12px;font-size:13px;color:var(--muted-fg)}
+.lit-refine{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 12px}
+.lit-refine select,.lit-refine input{height:34px;border:1px solid var(--border-strong);border-radius:8px;background:#FCFAF6;font-family:inherit;font-size:13px;color:var(--fg);padding:0 10px}
+.lit-refine input{flex:1 1 220px;min-width:180px}
+.lit-refine input:focus,.lit-refine select:focus{outline:2px solid var(--accent);outline-offset:1px}
+.lit-refine .lit-refine-count{font-size:12.5px;color:var(--muted-fg);white-space:nowrap}
+.lit-refine button{height:34px;padding:0 12px;border:1px solid var(--border-strong);border-radius:8px;background:#fff;font-family:inherit;font-size:12.5px;font-weight:600;color:var(--ink);cursor:pointer}
+.lit-refine button:hover{background:#EFE9DC}
 .lit-warn{margin:0 0 16px;padding:11px 14px;background:#FBF1E4;border:1px solid #E9CFA0;border-radius:10px;font-size:13px;color:#7A5A22}
 .lit-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:13px}
 .lit-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:15px 17px}
@@ -707,6 +714,53 @@ document.addEventListener('click', (e)=>{
   let lastReq = null;   // { q } hoặc { advanced }
   let lastPage = 1;
   let hlTerms = [];     // từ khoá đang tìm (đã dịch) — tô màu trong tiêu đề/tóm tắt để thấy vì sao khớp
+  // "Lọc trong kết quả" — thu hẹp danh sách ĐÃ tải về (KHÔNG gọi lại máy chủ). Reset mỗi lần tìm mới.
+  let refineQ = '';
+  let refineField = 'all';
+
+  const REFINE_FIELDS = ['all', 'title', 'authors', 'abstract', 'venue', 'keywords', 'year', 'type'];
+  // Tách chuỗi lọc: hỗ trợ "cụm trong ngoặc kép" + từ rời; TẤT CẢ phải khớp (AND).
+  function refineTokens(q){
+    const out = []; const re = /"([^"]+)"|(\S+)/g; let m;
+    while((m = re.exec(q || ''))) out.push((m[1] || m[2]).toLowerCase());
+    return out;
+  }
+  function refineHaystack(r, field){
+    if(field === 'authors')  return (r.authors  || []).join(' ');
+    if(field === 'keywords') return (r.keywords || []).join(' ');
+    if(field === 'all'){
+      return [r.title, r.abstract, (r.authors || []).join(' '), r.venue,
+              (r.keywords || []).join(' '), r.year, r.type].filter(Boolean).join(' • ');
+    }
+    return r[field] == null ? '' : String(r[field]);
+  }
+  function filterByRefine(list){
+    const toks = refineTokens(refineQ.trim());
+    if(!toks.length) return list;
+    return list.filter(r => {
+      const hay = refineHaystack(r, refineField).toLowerCase();
+      return toks.every(tk => hay.includes(tk));
+    });
+  }
+  function currentSortKey(){
+    const el = document.getElementById('lf-sort');
+    return el ? el.value : (lastData && lastData.sort) || 'relevance';
+  }
+  // Dữ liệu để VẼ = dữ liệu máy chủ (lastData) → sắp xếp phía client → lọc "trong kết quả".
+  function viewData(){
+    const sorted = clientSort(lastData.results, currentSortKey());
+    const shown = filterByRefine(sorted);
+    return Object.assign({}, lastData, {
+      sort: currentSortKey(), results: shown,
+      _pageTotal: sorted.length, _refined: refineQ.trim().length > 0,
+    });
+  }
+  function applyRefine(){
+    if(!lastData || !lastData.results || !lastData.results.length) return;
+    renderResults(viewData());
+    const inp = document.getElementById('litRefine');
+    if(inp){ inp.focus(); try{ const n = inp.value.length; inp.setSelectionRange(n, n); }catch(e){} }
+  }
 
   function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
@@ -919,9 +973,7 @@ document.addEventListener('click', (e)=>{
   // đã sắp theo tên).
   function applySort(key){
     document.getElementById('lf-sort').value = key;
-    if(lastData && lastData.results.length){
-      renderResults(Object.assign({}, lastData, { sort:key, results: clientSort(lastData.results, key) }));
-    }
+    applyRefine(); // vẽ lại: sắp theo `key` (đọc từ #lf-sort) + giữ bộ lọc "trong kết quả"
     if(lastReq && SERVER_SORT_KEYS.has(key)){
       runLit(lastReq, lastPage, { silent:true });
     }
@@ -949,6 +1001,23 @@ document.addEventListener('click', (e)=>{
     outEl.querySelectorAll('.dl-btn[data-pdf]').forEach(btn=>{
       btn.addEventListener('click', ()=> downloadPdf(btn));
     });
+
+    // "Lọc trong kết quả"
+    const rInp = document.getElementById('litRefine');
+    if(rInp){
+      let dt;
+      rInp.addEventListener('input', ()=>{
+        refineQ = rInp.value;
+        clearTimeout(dt); dt = setTimeout(applyRefine, 130);
+      });
+      rInp.addEventListener('keydown', (e)=>{
+        if(e.key === 'Escape'){ rInp.value = ''; refineQ = ''; applyRefine(); }
+      });
+    }
+    const rSel = document.getElementById('litRefineField');
+    if(rSel) rSel.addEventListener('change', ()=>{ refineField = rSel.value; applyRefine(); });
+    const rClr = document.getElementById('litRefineClear');
+    if(rClr) rClr.addEventListener('click', ()=>{ refineQ = ''; refineField = 'all'; applyRefine(); });
   }
 
   // Tải 1 PDF: fetch trước để xác nhận đúng là PDF thật (không phải trang chặn-bot), rồi ép
@@ -987,19 +1056,32 @@ document.addEventListener('click', (e)=>{
 
   function renderResults(data){
     outEl.classList.remove('lit-refreshing');
-    if(!data.results.length){
+
+    // `data` chưa qua "view" (payload máy chủ) → lưu lại làm nguồn, rồi vẽ VIEW của nó
+    // (đã sắp xếp + lọc "trong kết quả"). Nhờ vậy xoá bộ lọc là khôi phục đủ danh sách gốc.
+    if(!('_pageTotal' in data)){
+      lastData = data;
+      if(!data.results.length){
+        outEl.innerHTML = renderWarning(data.warning) + renderExpansion(data.expansion) +
+          '<div class="lit-state">Không tìm thấy tài liệu phù hợp. Thử từ khoá khác hoặc bỏ bớt bộ lọc.</div>';
+        return;
+      }
+      return renderResults(viewData());
+    }
+
+    // Tô màu cả cụm tiếng Anh đã gửi đi (từ `effective`) LẪN cụm gốc người dùng nhập được
+    // nhận diện (vi/chữ Hán trong expansion), CỘNG các từ đang lọc "trong kết quả".
+    hlTerms = [
+      ...extractHighlightTerms(lastData.query?.effective),
+      ...((lastData.expansion?.terms || []).flatMap(t => [t.vi, ...(t.syn || [])])
+        .filter(s => s && String(s).length >= (/[㐀-鿿]/.test(s) ? 1 : 3))),
+      ...(refineQ.trim() ? refineTokens(refineQ.trim()).filter(w => w.length >= minHlLen(w)) : []),
+    ];
+    if(!data.results.length && !data._refined){
       outEl.innerHTML = renderWarning(data.warning) + renderExpansion(data.expansion) +
         '<div class="lit-state">Không tìm thấy tài liệu phù hợp. Thử từ khoá khác hoặc bỏ bớt bộ lọc.</div>';
       return;
     }
-    lastData = data;
-    // Tô màu cả cụm tiếng Anh đã gửi đi (từ `effective`) LẪN cụm gốc người dùng nhập được
-    // nhận diện (vi/chữ Hán trong expansion) — để bài tiếng Trung cũng thấy chỗ khớp.
-    hlTerms = [
-      ...extractHighlightTerms(data.query?.effective),
-      ...((data.expansion?.terms || []).flatMap(t => [t.vi, ...(t.syn || [])])
-        .filter(s => s && String(s).length >= (/[㐀-鿿]/.test(s) ? 1 : 3))),
-    ];
     // Tổng số tài liệu khớp (gộp các cơ sở dữ liệu, có thể trùng lặp — chỉ mang tính ước
     // lượng độ lớn). KHÔNG hiển thị tách theo từng nguồn — người dùng chỉ cần con số tổng.
     const totalMatched = Object.values(data.totalBySource || {}).reduce((a, b) => a + (Number(b) || 0), 0);
@@ -1009,13 +1091,43 @@ document.addEventListener('click', (e)=>{
       ? `<div class="lit-state err" style="padding:10px;text-align:left">Có lỗi khi tra cứu — kết quả có thể chưa đầy đủ, thử lại sau.</div>`
       : '';
     const startIdx = (data.page - 1) * data.perPage;
+    const pageTotal = data._pageTotal;
+
+    // "Lọc trong kết quả" — thu hẹp danh sách ĐÃ tải (client, không gọi lại máy chủ).
+    const FIELD_LABEL = {
+      all: t('lit_refine_all') || 'Mọi trường', title: t('fld_title'), authors: t('fld_author'),
+      abstract: t('fld_abstract'), venue: t('lit_col_source'), keywords: t('lit_tags'),
+      year: t('lit_year'), type: t('lit_doctype_col'),
+    };
+    const refineBar =
+      `<div class="lit-refine" translate="no">` +
+        `<select id="litRefineField" aria-label="Trường lọc">` +
+          REFINE_FIELDS.map(f => `<option value="${f}"${f === refineField ? ' selected' : ''}>${esc(FIELD_LABEL[f] || f)}</option>`).join('') +
+        `</select>` +
+        `<input id="litRefine" type="search" autocomplete="off" spellcheck="false" ` +
+          `placeholder="${esc(t('lit_refine_ph') || 'Lọc nhanh trong danh sách đã tìm (không gọi lại máy chủ)…')}" ` +
+          `value="${esc(refineQ)}">` +
+        (data._refined
+          ? `<span class="lit-refine-count">${data.results.length} / ${pageTotal}</span>` +
+            `<button type="button" id="litRefineClear">${esc(t('lit_refine_clear') || 'Xoá lọc')}</button>`
+          : '') +
+      `</div>`;
+
+    const metaCount = data._refined
+      ? `Trang ${data.page} · ${data.results.length}/${pageTotal} kết quả sau lọc`
+      : `Trang ${data.page} · ${data.count} kết quả trên trang${totalMatched ? ` · khoảng ${Number(totalMatched).toLocaleString('vi-VN')} tài liệu khớp` : ''}`;
+
+    const tableOrEmpty = data.results.length
+      ? `<div class="lit-table-wrap"><table class="lit-table">${tableHead(data.sort)}<tbody>${data.results.map((r,i)=>tableRow(r,i,startIdx+i+1)).join('')}</tbody></table></div>`
+      : `<div class="lit-state">Không có kết quả nào khớp bộ lọc trên trang này. Xoá lọc hoặc chuyển trang.</div>`;
 
     outEl.innerHTML =
       renderWarning(data.warning) +
       renderExpansion(data.expansion) +
-      `<p class="lit-meta">Trang ${data.page} · ${data.count} kết quả trên trang${totalMatched ? ` · khoảng ${Number(totalMatched).toLocaleString('vi-VN')} tài liệu khớp` : ''}</p>` +
+      refineBar +
+      `<p class="lit-meta">${metaCount}</p>` +
       srcErr +
-      `<div class="lit-table-wrap"><table class="lit-table">${tableHead(data.sort)}<tbody>${data.results.map((r,i)=>tableRow(r,i,startIdx+i+1)).join('')}</tbody></table></div>` +
+      tableOrEmpty +
       `<div class="lit-pager">
         <button id="litPrev" ${data.page<=1?'disabled':''}>← Trước</button>
         <span>Trang ${data.page}</span>
@@ -1029,6 +1141,9 @@ document.addEventListener('click', (e)=>{
   async function runLit(req, page, opts){
     opts = opts || {};
     lastReq = req; lastPage = page || 1;
+    // Truy vấn ĐỔI (không phải chuyển trang / sắp xếp nền) → bỏ bộ lọc "trong kết quả" cũ.
+    const sig = JSON.stringify(req);
+    if(!opts.silent && sig !== runLit._sig){ refineQ = ''; refineField = 'all'; runLit._sig = sig; }
     const filters = readFilters();
     const perPage = parseInt(filters.perPage, 10) || 20;
     const body = Object.assign({ page: lastPage, perPage }, filters, req);
@@ -1084,6 +1199,11 @@ document.addEventListener('click', (e)=>{
     });
   }
   document.getElementById('litBack').addEventListener('click', hidePanel);
+  // Mở/đóng bảng "Tra cứu nâng cao" làm DOM thay đổi — một số tiện ích dịch trang (Google
+  // Dịch, bộ gõ pinyin...) quét lại và bọc/thay text node, xoá lớp tô màu <mark>. Vẽ lại kết
+  // quả từ dữ liệu gốc để khôi phục tô màu.
+  const advT = document.getElementById('advToggle');
+  if(advT) advT.addEventListener('click', ()=>{ setTimeout(()=>{ if(lastData && lastData.results && lastData.results.length) applyRefine(); }, 0); });
   const navDiscover = document.getElementById('navDiscover');
   if(navDiscover){
     navDiscover.addEventListener('click',(e)=>{
@@ -1114,7 +1234,7 @@ const I18N = {
     lit_back:"Quay lại", lit_oa:"Chỉ bài đọc miễn phí (Open Access)", lit_pubmed:"Chỉ bài có trong PubMed/MEDLINE",
     lit_pmc:"Có toàn văn trên PubMed Central", lit_doctype:"Loại tài liệu", lit_dt_all:"Tất cả", lit_dt_sr:"Tổng quan hệ thống & phân tích gộp", lit_dt_rct:"Thử nghiệm lâm sàng (RCT)", lit_dt_review:"Bài tổng quan", lit_dt_preprint:"Tiền ấn phẩm (preprint)",
     lit_year:"Năm", lit_from:"Từ năm", lit_to:"Đến năm", lit_sort:"Sắp xếp", lit_sort_rel:"Liên quan nhất", lit_sort_new:"Mới nhất", lit_sort_old:"Cũ nhất", lit_sort_cite:"Trích dẫn nhiều nhất", lit_pagesize:"Hiển thị",
-    lit_quickview:"Xem nhanh", lit_hide:"Thu gọn", lit_dl:"Tải PDF", lit_nodl:"Không có PDF miễn phí", lit_noauthor:"Không rõ tác giả", lit_col_cite:"Trích dẫn", lit_tags:"Nhãn", lit_doctype_col:"Loại", lit_sort_cite_asc:"Trích dẫn ít nhất", lit_sort_title_asc:"Tên (A→Z)", lit_sort_title_desc:"Tên (Z→A)",
+    lit_quickview:"Xem nhanh", lit_hide:"Thu gọn", lit_dl:"Tải PDF", lit_nodl:"Không có PDF miễn phí", lit_noauthor:"Không rõ tác giả", lit_col_cite:"Trích dẫn", lit_tags:"Nhãn", lit_doctype_col:"Loại", lit_sort_cite_asc:"Trích dẫn ít nhất", lit_sort_title_asc:"Tên (A→Z)", lit_sort_title_desc:"Tên (Z→A)", lit_refine_all:"Mọi trường", lit_refine_ph:"Lọc trong danh sách đã tìm (không gọi lại máy chủ)…", lit_refine_clear:"Xoá lọc",
     dict_cta:"Tra từ điển",
     hero_title:"Tra cứu và khám phá tri thức<br>Trung Y",
     hero_lead:"Thư viện tạp chí, báo cáo, bài viết học thuật và sách chuyên khảo về Trung Y — song ngữ Việt–Trung–Anh.",
@@ -1145,7 +1265,7 @@ const I18N = {
     lit_back:"返回", lit_oa:"仅开放获取（Open Access）", lit_pubmed:"仅 PubMed/MEDLINE 收录",
     lit_pmc:"PubMed Central 有全文", lit_doctype:"文献类型", lit_dt_all:"全部", lit_dt_sr:"系统评价与荟萃分析", lit_dt_rct:"随机对照试验（RCT）", lit_dt_review:"综述", lit_dt_preprint:"预印本",
     lit_year:"年份", lit_from:"起始年", lit_to:"截止年", lit_sort:"排序", lit_sort_rel:"相关度", lit_sort_new:"最新", lit_sort_old:"最早", lit_sort_cite:"被引最多", lit_pagesize:"每页显示",
-    lit_quickview:"快速查看", lit_hide:"收起", lit_dl:"下载 PDF", lit_nodl:"无免费 PDF", lit_noauthor:"作者不详", lit_col_cite:"被引次数", lit_tags:"标签", lit_doctype_col:"类型", lit_sort_cite_asc:"被引最少", lit_sort_title_asc:"标题（A→Z）", lit_sort_title_desc:"标题（Z→A）",
+    lit_quickview:"快速查看", lit_hide:"收起", lit_dl:"下载 PDF", lit_nodl:"无免费 PDF", lit_noauthor:"作者不详", lit_col_cite:"被引次数", lit_tags:"标签", lit_doctype_col:"类型", lit_sort_cite_asc:"被引最少", lit_sort_title_asc:"标题（A→Z）", lit_sort_title_desc:"标题（Z→A）", lit_refine_all:"所有字段", lit_refine_ph:"在已检索列表中筛选（不重新请求服务器）…", lit_refine_clear:"清除筛选",
     dict_cta:"查词典",
     hero_title:"查询与探索<br>中医知识",
     hero_lead:"中医期刊、报告、学术文章与专著图书馆 — 越南语–中文–英语三语。",
@@ -1176,7 +1296,7 @@ const I18N = {
     lit_back:"Back", lit_oa:"Open Access only", lit_pubmed:"In PubMed/MEDLINE only",
     lit_pmc:"Full text in PubMed Central", lit_doctype:"Document type", lit_dt_all:"All", lit_dt_sr:"Systematic review & meta-analysis", lit_dt_rct:"Randomized controlled trial (RCT)", lit_dt_review:"Review", lit_dt_preprint:"Preprint",
     lit_year:"Year", lit_from:"From year", lit_to:"To year", lit_sort:"Sort by", lit_sort_rel:"Most relevant", lit_sort_new:"Newest", lit_sort_old:"Oldest", lit_sort_cite:"Most cited", lit_pagesize:"Show",
-    lit_quickview:"Quick view", lit_hide:"Hide", lit_dl:"Download PDF", lit_nodl:"No free PDF", lit_noauthor:"Author unknown", lit_col_cite:"Citations", lit_tags:"Tags", lit_doctype_col:"Type", lit_sort_cite_asc:"Fewest citations", lit_sort_title_asc:"Title (A→Z)", lit_sort_title_desc:"Title (Z→A)",
+    lit_quickview:"Quick view", lit_hide:"Hide", lit_dl:"Download PDF", lit_nodl:"No free PDF", lit_noauthor:"Author unknown", lit_col_cite:"Citations", lit_tags:"Tags", lit_doctype_col:"Type", lit_sort_cite_asc:"Fewest citations", lit_sort_title_asc:"Title (A→Z)", lit_sort_title_desc:"Title (Z→A)", lit_refine_all:"All fields", lit_refine_ph:"Filter within the retrieved list (no server call)…", lit_refine_clear:"Clear filter",
     dict_cta:"Dictionary",
     hero_title:"Search & Discover<br>Chinese Medicine",
     hero_lead:"A library of TCM journals, reports, academic articles and reference books — in Vietnamese, Chinese and English.",
