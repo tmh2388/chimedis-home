@@ -171,6 +171,25 @@ th{color:var(--muted-fg);font-size:11.5px;text-transform:uppercase;letter-spacin
             <tbody id="dictMissBody"></tbody>
           </table>
         </div>
+
+        <div class="card">
+          <h2>Ứng viên dịch máy (GĐ2 — LLM)</h2>
+          <p class="hint">Cụm đã được LLM dịch tự động từ lưu lượng thật. <b>new</b> = mới, chưa đủ tần suất · <b>auto_active</b> = đủ tần suất, đã dùng cho tìm kiếm (chưa vào CSDL chính) · <b>approved</b> = bạn đã duyệt → chảy sang kho từ điển Chimedis (dict.chimedis.vn). Duyệt nhanh theo lô: sửa lại bản dịch nếu cần rồi bấm Duyệt.</p>
+          <div id="candMsg"></div>
+          <div class="field" style="max-width:260px"><label>Trạng thái</label>
+            <select id="cand_status" onchange="loadCandidates()">
+              <option value="">Tất cả</option>
+              <option value="new" selected>new (chờ)</option>
+              <option value="auto_active">auto_active</option>
+              <option value="approved">approved</option>
+              <option value="rejected">rejected</option>
+            </select>
+          </div>
+          <table>
+            <thead><tr><th>Cụm</th><th>Bản dịch (LLM) — sửa được</th><th>Đồng nghĩa</th><th>Truy vấn khác nhau</th><th>Trạng thái</th><th>Ví dụ</th><th>Thao tác</th></tr></thead>
+            <tbody id="candBody"></tbody>
+          </table>
+        </div>
       </div>
 
       <div id="tab-users" hidden>
@@ -337,7 +356,7 @@ window.switchTab = function(name) {
   document.getElementById('tab-dict').hidden = name !== 'dict';
   document.getElementById('tab-users').hidden = name !== 'users';
   if (name === 'users') loadUsers();
-  if (name === 'dict') loadDictMisses();
+  if (name === 'dict') { loadDictMisses(); loadCandidates(); }
 };
 
 let dictMissData = [];
@@ -395,6 +414,42 @@ window.undismissTerm = async function(termEnc) {
   const data = await res.json();
   if (data.success) { const it = dictMissData.find(x => x.term === term); if (it) it.dismissed = false; renderDictMisses(); }
   else showMsg('dictMsg', data.error);
+};
+
+// ===== GĐ2: ứng viên dịch máy =====
+const CAND_STATUS_LABEL = { new: 'chờ', auto_active: 'đang dùng', approved: 'đã duyệt', rejected: 'từ chối' };
+window.loadCandidates = async function() {
+  const status = document.getElementById('cand_status').value;
+  try {
+    const res = await authedFetch('/api/admin/dict-misses/candidates' + (status ? '?status=' + status : ''));
+    const data = await res.json();
+    if (!data.success) return showMsg('candMsg', data.error);
+    const body = document.getElementById('candBody');
+    body.innerHTML = data.items.map(c => `<tr data-id="${c.id}">
+      <td><code>${escapeHtml(c.term)}</code><div class="hint">${c.lang || ''} · ${c.llmModel || ''}</div></td>
+      <td><input class="cand-en" value="${escapeHtml(c.en)}" style="width:220px"></td>
+      <td><input class="cand-syn" value="${escapeHtml((c.syn || []).join(', '))}" placeholder="đồng nghĩa, cách nhau dấu phẩy" style="width:200px"></td>
+      <td>${c.distinctQueries}</td>
+      <td><span class="badge">${CAND_STATUS_LABEL[c.status] || c.status}</span></td>
+      <td class="hint" style="max-width:240px">${(c.samples || []).map(escapeHtml).join('<br>')}</td>
+      <td><div class="actions">
+        <button class="btn btn-sm btn-primary" onclick="reviewCand(${c.id},'approve')">Duyệt → CSDL</button>
+        <button class="btn btn-sm" onclick="reviewCand(${c.id},'auto_active')">Chỉ dùng tìm kiếm</button>
+        <button class="btn btn-sm btn-danger" onclick="reviewCand(${c.id},'reject')">Từ chối</button>
+      </div></td>
+    </tr>`).join('') || '<tr><td colspan="7" class="hint">Chưa có ứng viên nào (cần ANTHROPIC_API_KEY + lưu lượng tìm kiếm).</td></tr>';
+  } catch (e) { showMsg('candMsg', 'Lỗi tải: ' + e.message); }
+};
+window.reviewCand = async function(id, action) {
+  const tr = document.querySelector(`#candBody tr[data-id="${id}"]`);
+  const en = tr?.querySelector('.cand-en')?.value.trim();
+  const syn = (tr?.querySelector('.cand-syn')?.value || '').split(',').map(s => s.trim()).filter(Boolean);
+  const res = await authedFetch(`/api/admin/dict-misses/candidates/${id}/review`, {
+    method: 'POST', body: JSON.stringify({ action, en, syn }),
+  });
+  const data = await res.json();
+  if (data.success) loadCandidates();
+  else showMsg('candMsg', data.error);
 };
 
 const DOC_TYPE_LABEL = { journal: 'Tạp chí', report: 'Báo cáo', article: 'Bài viết', book: 'Sách' };

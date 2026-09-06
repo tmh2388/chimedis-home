@@ -72,3 +72,29 @@ CREATE TABLE IF NOT EXISTS dict_term_dismissed (
   note         VARCHAR(255) NULL,
   dismissed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- ===== GĐ2: từ điển TỰ HỌC — ứng viên dịch máy (LLM) từ lưu lượng tìm kiếm thật =====
+-- Khi truy vấn có cụm hệ thống chưa dịch được, gọi LLM dịch cụm đó, dùng NGAY cho lượt tìm
+-- hiện tại, và lưu ứng viên vào bảng này. Ứng viên gặp đủ nhiều (distinct_queries ≥ ngưỡng)
+-- → status='auto_active' → được nạp vào bảng tra khi khởi động (overlay), dùng cho mọi truy
+-- vấn sau mà KHÔNG gọi lại LLM. Editor duyệt → status='approved' → chảy sang CoreDB
+-- (dict.chimedis.vn /api/terms union các dòng approved) → làm giàu kho từ điển chính.
+CREATE TABLE IF NOT EXISTS dict_candidates (
+  id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+  term_norm        VARCHAR(190) NOT NULL COMMENT 'Khoá chuẩn hoá: tiếng Việt đã bỏ dấu, hoặc chuỗi Hán thô',
+  term_display     VARCHAR(190) NOT NULL COMMENT 'Dạng người dùng gõ (còn dấu / chữ Hán)',
+  lang             VARCHAR(8) NULL,
+  en               VARCHAR(255) NOT NULL COMMENT 'Bản dịch LLM (Anh/Latin chuẩn PubMed/MeSH)',
+  syn              JSON NULL COMMENT 'Mảng đồng nghĩa tiếng Anh',
+  status           ENUM('new','auto_active','approved','rejected') NOT NULL DEFAULT 'new',
+  seen_count       INT NOT NULL DEFAULT 1,
+  distinct_queries INT NOT NULL DEFAULT 1,
+  llm_model        VARCHAR(64) NULL,
+  reviewed_by      INT NULL COMMENT 'users.id',
+  reviewed_at      TIMESTAMP NULL,
+  first_seen       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_seen        TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_term_norm (term_norm),
+  INDEX idx_status (status),
+  INDEX idx_seen_count (seen_count)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

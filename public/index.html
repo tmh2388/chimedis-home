@@ -782,8 +782,8 @@ document.addEventListener('click', (e)=>{
 
   function renderExpansion(exp){
     if(!exp) return '';
-    const chips = exp.terms.map(tm=>`<span class="lit-chip"><span class="vi">${esc(tm.vi)}</span> → <b>${esc(tm.en)}</b></span>`).join('');
-    return `<div class="lit-exp"><b>Đã nhận diện thuật ngữ YHCT</b> và dịch sang tiếng Anh để tra y văn quốc tế:<br>${chips}</div>`;
+    const chips = exp.terms.map(tm=>`<span class="lit-chip"${tm.viaLLM?' title="dịch tự động — có thể chưa chuẩn"':''}><span class="vi">${esc(tm.vi)}</span> → <b>${esc(tm.en)}</b>${tm.viaLLM?' <span style="opacity:.6;font-size:11px">(tự động)</span>':''}</span>`).join('');
+    return `<div class="lit-exp"><b>Đã nhận diện thuật ngữ</b> và dịch sang tiếng Anh để tra y văn quốc tế:<br>${chips}</div>`;
   }
 
   function renderWarning(msg){

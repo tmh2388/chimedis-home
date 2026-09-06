@@ -9,6 +9,7 @@ import userRoutes from './routes/users.js';
 import orcidRoutes from './routes/orcid.js';
 import researchRoutes from './routes/research.js';
 import dictMissRoutes from './routes/dict-misses.js';
+import { startDictLearn } from './lib/dict-learn.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -58,4 +59,5 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Chimedis portal listening on port ${PORT}`);
+  startDictLearn(); // GĐ2: nạp + làm mới lớp phủ từ điển tự học (no-op nếu chưa cấu hình MySQL)
 });

@@ -1,7 +1,7 @@
-// API tìm kiếm y văn cho chimedis.vn — Giai đoạn 1: chỉ tìm kiếm + chuẩn hoá, KHÔNG LLM.
-// Nguồn: OpenAlex + Europe PMC (miễn phí, không khoá). Xem lib/research-sources.js.
-// Điểm khác biệt Chimedis: truy vấn tiếng Việt được dịch thuật ngữ YHCT sang tiếng Anh
-// trước khi tra (lib/tcm-vocab.js).
+// API tìm kiếm y văn cho chimedis.vn. Nguồn: OpenAlex + Europe PMC + CORE + Semantic Scholar
+// (xem lib/research-sources.js). Điểm khác biệt Chimedis: truy vấn tiếng Việt/Trung được dịch
+// thuật ngữ YHCT sang tiếng Anh trước khi tra (lib/tcm-vocab.js). Cụm chưa có trong từ điển
+// tĩnh → LLM dịch + tự học vào bảng tra (lib/dict-learn.js, GĐ2).
 //
 //   GET  /api/research/search?q=...        — tìm đơn giản (1 ô)
 //   POST /api/research/search  { q } hoặc { advanced: [{term,field,op}] } — tìm nâng cao
@@ -12,6 +12,7 @@ import { Readable } from 'node:stream';
 import { searchAll, ADV_FIELDS, advancedToDisplay } from '../lib/research-sources.js';
 import { buildSearchQuery } from '../lib/tcm-vocab.js';
 import { logSearchMiss } from '../lib/search-log.js';
+import { enrichUntranslated } from '../lib/dict-learn.js';
 
 const router = Router();
 
@@ -172,7 +173,8 @@ router.get('/search', async (req, res) => {
   if (rawQ.length > 300) {
     return res.status(400).json({ success: false, error: 'Từ khoá quá dài.' });
   }
-  const ex = buildSearchQuery(rawQ, { orSynonyms: true });
+  let ex = buildSearchQuery(rawQ, { orSynonyms: true });
+  if (ex.untranslated?.length) ex = await enrichUntranslated(rawQ, ex); // GĐ2: LLM dịch cụm còn sót
   await runSearch({
     mode: 'GET',
     rawQ,
@@ -211,7 +213,8 @@ router.post('/search', async (req, res) => {
   if (rawQ.length < 2) {
     return res.status(400).json({ success: false, error: 'Nhập từ khoá tìm kiếm (ít nhất 2 ký tự).' });
   }
-  const ex = buildSearchQuery(rawQ, { orSynonyms: true });
+  let ex = buildSearchQuery(rawQ, { orSynonyms: true });
+  if (ex.untranslated?.length) ex = await enrichUntranslated(rawQ, ex); // GĐ2: LLM dịch cụm còn sót
   await runSearch({
     mode: 'POST',
     rawQ,
