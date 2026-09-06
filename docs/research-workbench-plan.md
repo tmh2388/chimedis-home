@@ -22,7 +22,7 @@
 | 6 | Evidence matrix = tiện ích của phần soạn thảo | Evidence matrix = **lõi**. Luồng: `paper → extraction → appraisal → comparison → synthesis → claim → writing` |
 | 7 | 1 loại "Search" | Tách **Discovery Search** (rộng, nhanh) vs **Evidence Search** (tái lập được, phục vụ verification/SR) |
 | 8 | 4 nguồn, mỗi nguồn logic riêng | **Connector contract** chuẩn hoá + **`CanonicalResearchRecord`**; dedup theo **identity graph** (nhiều ID/record) |
-| 9 | Nguồn: OpenAlex/EPMC/CORE/S2 | Thêm **PubMed E-utilities (độc lập)**, **ClinicalTrials.gov v2**, **Crossref**; lộ trình **Wanfang → SinoMed/CNKI/维普 (licensed)**, **ChiCTR/WHO ICTRP** |
+| 9 | Nguồn: OpenAlex/EPMC/CORE/S2 | Thêm **PubMed E-utilities (độc lập)**, **ClinicalTrials.gov v2**, **Crossref**; lộ trình **Wanfang → SinoMed/CNKI/维普 (licensed)**, **ChiCTR/WHO ICTRP**. Thêm **Connector Status Registry** (§12.1): Wanfang = `official API exists; access/license unverified; blocked_pending_license` |
 | 10 | Dịch 1 chiều Việt/Trung → Anh | **Multilingual query expansion**: `VN ↔ 中文规范词/同义词 ↔ EN ↔ MeSH ↔ pinyin/variant`, lưu toàn bộ trong `search_run` |
 | 11 | Phụ lục = 5 bảng `wb_*` sẵn sàng code | Phụ lục = **identity/relationship model mở rộng theo vòng đời** + **tập con MVP** được đánh dấu rõ |
 | 12 | Không có critical appraisal | Có **registry appraisal** (RoB 2 / ROBINS-I / AMSTAR 2 / ROBIS / QUADAS / PROBAST / GRADE) — schema-ready, chưa impl đầy đủ ở MVP |
@@ -58,6 +58,7 @@
 23. [Phụ lục A: identity/relationship model](#23-phụ-lục-a-identityrelationship-model)
 24. [Phụ lục B: tập con schema cho MVP v1](#24-phụ-lục-b-tập-con-schema-cho-mvp-v1)
 25. [Phụ lục C: nguồn cần đối chiếu trước khi code connector](#25-phụ-lục-c-nguồn-cần-đối-chiếu-trước-khi-code-connector)
+26. [Phụ lục D: bộ câu hỏi licensing Wanfang](#26-phụ-lục-d-bộ-câu-hỏi-licensing-wanfang)
 
 ---
 
@@ -367,10 +368,41 @@ Một công trình có thể có nhiều ID và xuất hiện ở nhiều nguồ
 
 ### Tier 2 — Trung văn, đi theo connector chính thức/licensed (M2)
 
-5. **万方数据 / Wanfang Open Platform** — đã xác minh có `开放平台` + API catalog + tài liệu API `文献查询` (AppKey/AppSecret/signature). **Ứng viên khả thi nhất để mở corpus Trung văn hợp pháp.** Cần liên hệ: gói API, quyền thương mại, rate limit, trường metadata/full text.
+5. **万方数据 / Wanfang** — **`official_api_exists = true; access_status = unverified; production_status = blocked_pending_license`.**
+   - Đã xác minh từ nguồn chính thức: `万方数据开放平台` (`apps.wanfangdata.com.cn/open`, có `API目录 / 我的API / 我的应用`); sản phẩm `万方选题API` công bố mục `API接口`; có endpoint **文献查询** chính thức, ví dụ `POST https://api.wanfangdata.com.cn/reader/papers` với header bắt buộc `X-Ca-Version` / `X-Ca-AppKey` / `X-Ca-Signature` (ký bằng AppSecret); response trả `id, title, keywords, abstracts, publishYear, creators, unitNames, sourceDbs, isOa, periodicalTitle, issue, citedCount, doi, volume, page…` (đủ cho `CanonicalResearchRecord`). Tài liệu: `open.wf.pub/api.html`.
+   - **Chưa xác minh (đây là bài toán licensing, không phải "có API hay không"):** API có public/miễn phí cho mọi developer không; tài khoản Chimedis có tự cấp AppKey/AppSecret được không; gói API có cho dùng dữ liệu trên web bên thứ ba không; quyền commercial/public-display, cache, retention, quota/rate-limit, chi phí.
+   - `reader/papers` thuộc sản phẩm `万方选题API` — **không** phải bằng chứng Wanfang mở toàn bộ `万方智搜` như public general-search API; nhưng endpoint này thực sự tìm literature theo keyword + trả abstract/metadata ⇒ **đủ để xếp Wanfang vào nhóm `candidate connector cần xác minh thương mại`, KHÔNG phải nhóm "không có API".**
+   - Cách ghi chuẩn trong mọi tài liệu: *"official API exists; access/license for Chimedis unverified"*. Không viết "Wanfang không có API"; không viết "Wanfang tích hợp được ngay".
 6. **SinoMed / 中国生物医学文献服务系统** (中国医学科学院医学信息研究所) — rất hợp biomedical/Trung Y; chưa xác minh public API; liên hệ sales/technical hỏi institutional/data-service API.
 7. **CNKI / 中国知网** — corpus rất quan trọng cho Trung Y; chưa có bằng chứng public API; cần đàm phán licensed/institutional; **không** reverse-engineer/scrape khi chưa rõ license.
 8. **维普 / VIP** — như CNKI: xác minh data/API agreement trước.
+
+### 12.1 Connector Status Registry (trạng thái chuẩn hoá, chốt ở M0)
+
+Mỗi nguồn mang một trong các trạng thái sau; chỉ `approved` mới được gọi API thật trong production:
+
+| Connector | `official_api_exists` | `access_status` | `production_status` | Ghi chú |
+|---|---|---|---|---|
+| OpenAlex | ✅ | ✅ open | **approved** | đang chạy |
+| Europe PMC | ✅ | ✅ open | **approved** | đang chạy |
+| Semantic Scholar | ✅ | ✅ (có key) | **approved** | rate 1 req/s theo key |
+| CORE | ✅ | ✅ (có/không key) | **approved** | rate chặt khi không key |
+| PubMed E-utilities | ✅ | ✅ open (+`NCBI_API_KEY` miễn phí) | **candidate → build M1** | nguồn độc lập |
+| Crossref REST | ✅ | ✅ open (polite pool) | **candidate → build M1** | metadata/DOI/dedup |
+| ClinicalTrials.gov v2 | ✅ | ✅ open | **candidate → build M1** | trial registry |
+| WHO ICTRP | ✅ (Web Service) | ⚠️ phải xin quyền/chi phí | **blocked_pending_access** | không scrape |
+| **Wanfang** | ✅ | ⚠️ **unverified** | **blocked_pending_license** | chỉ tạo adapter **skeleton/config**, KHÔNG gọi production API |
+| SinoMed | ❓ chưa rõ | ⚠️ unverified | **blocked_pending_license** | hỏi institutional API |
+| CNKI / 维普 | ❓ chưa rõ | ⚠️ unverified | **blocked_pending_license** | đàm phán; không scrape |
+| ChiCTR | ✅ (là WHO Primary Registry) | ⚠️ qua ICTRP | **blocked_pending_access** | lấy gián tiếp qua ICTRP |
+
+Chuyển `blocked_*` → `approved` chỉ khi có đủ (tiêu chí đóng issue): key/agreement, quyền cache+display, pricing/quota rõ, **và** 1 test call thành công với truy vấn Trung Y thực tế. Xem [Phụ lục D](#26-phụ-lục-d-bộ-câu-hỏi-licensing-wanfang) cho bộ câu hỏi Wanfang.
+
+### 12.2 Nguyên tắc "không để licensing chặn development"
+
+- **Track kỹ thuật M1 chạy ngay, không chờ Trung văn:** PubMed + ClinicalTrials.gov + Crossref + lớp connector abstraction (`SearchConnector` contract + registry + `CanonicalResearchRecord` + identity-graph dedup).
+- Với Wanfang/SinoMed/CNKI/维普: chỉ tạo **adapter skeleton + entry trong Connector Status Registry** ở trạng thái `blocked_pending_license`. `healthCheck()` trả `disabled`, `search()` ném lỗi rõ ràng "connector chưa được cấp phép". Không có secret nào được commit.
+- **Track business/licensing chạy song song** — 1 nhiệm vụ, chủ sở hữu là phía Hạ Vân Y Đạo (xem [mục 22](#22-quyết-định-còn-mở--cần-chốt-ở-m0) câu 3 + [Phụ lục D](#26-phụ-lục-d-bộ-câu-hỏi-licensing-wanfang)).
 
 ### Tier 3 — Trial registry Trung Quốc
 
@@ -525,10 +557,11 @@ Kiến trúc v2 **không** tăng chi phí LLM — phần lớn entity mới là 
 Khóa: lifecycle 14 stage · `CanonicalResearchRecord` · search provenance (`search_runs`) · connector contract · guideline registry concept · identity graph dedup · tập nguồn tối thiểu theo domain (6.4) · quyết định job+polling. **Đầu ra: bản ký duyệt kiến trúc.**
 
 ### M1 — Search Foundation + Provenance
-Giữ 4 nguồn Discovery hiện có (refactor sang connector) · thêm **PubMed E-utilities**, **Crossref**, **ClinicalTrials.gov** · `search_runs` + canonical dedup + Search Log export · project workspace + research question form.
+Giữ 4 nguồn Discovery hiện có (refactor sang connector) · thêm **PubMed E-utilities**, **Crossref**, **ClinicalTrials.gov** · **Connector Status Registry** (§12.1) + adapter skeleton `blocked_pending_license` cho Wanfang/SinoMed/CNKI/维普 (không gọi API thật, không secret) · `search_runs` + canonical dedup + Search Log export · project workspace + research question form.
 
-### M2 — China Evidence Pilot *(song song M3–M4 nếu licensing chậm)*
-Liên hệ & tích hợp **Wanfang Open Platform** · khảo sát hợp đồng SinoMed/CNKI/维普 · query expansion Trung–Anh–Việt lưu trong `search_run` · trial-registry coverage qua ChiCTR/WHO ICTRP.
+### M2 — China Evidence Pilot *(track business chạy SONG SONG từ M1; track code chỉ khởi động khi connector → `approved`)*
+**Track business (chủ sở hữu: Hạ Vân Y Đạo):** liên hệ Wanfang theo [Phụ lục D](#26-phụ-lục-d-bộ-câu-hỏi-licensing-wanfang) · khảo sát hợp đồng SinoMed/CNKI/维普.
+**Track code (chỉ khi có key/agreement):** hoàn thiện `wanfang` adapter từ skeleton → production · query expansion Trung–Anh–Việt lưu trong `search_run` · trial-registry coverage qua ChiCTR/WHO ICTRP · test call truy vấn Trung Y thực tế → chuyển `blocked_pending_license` → `approved`.
 
 ### M3 — Evidence Workspace
 Project library · import RIS/BibTeX · screening nhẹ · **evidence matrix** + xuất `.xlsx`/`.docx` · phân loại study type.
@@ -592,7 +625,7 @@ Claim builder · supporting/contradicting evidence links · AI-assisted drafting
 **Chiến lược**
 1. **Ranh giới MVP v1** ([mục 20](#20-ranh-giới-mvp-v1-đề-xuất)) — chấp nhận đề xuất cắt, hay điều chỉnh?
 2. **Trần ngân sách LLM/tháng** là bao nhiêu? Phần này miễn phí cho user hay có gói trả phí?
-3. **Sở hữu việc liên hệ licensing Trung văn** (Wanfang → SinoMed/CNKI/维普): ai đứng ra? M2 chạy **song song** M3–M4 hay là điều kiện tiên quyết?
+3. **Sở hữu việc liên hệ licensing Trung văn** (Wanfang → SinoMed/CNKI/维普): ai đứng ra? — *Đề xuất đã chốt theo phản biện: track business chạy **song song** từ M1; track code Wanfang chỉ khởi động khi connector → `approved`. Cần xác nhận người chủ trì phía Hạ Vân Y Đạo + gửi [bộ câu hỏi Phụ lục D](#26-phụ-lục-d-bộ-câu-hỏi-licensing-wanfang) tới Wanfang (`4000115888` / `service@wanfangdata.com.cn`).*
 4. Định vị "công cụ lập kế hoạch + dựng khung, KHÔNG viết hộ" có đủ an toàn cho môi trường đào tạo NCS ở Việt Nam?
 
 **Học thuật / phương pháp**
@@ -899,4 +932,31 @@ CREATE TABLE IF NOT EXISTS wb_llm_usage (
 
 ---
 
-*Hết v2. Góp ý xin ghi vào PR `tmh2388/chimedis-home#1`.*
+## 26. Phụ lục D: bộ câu hỏi licensing Wanfang
+
+> **Nhiệm vụ business duy nhất, chủ sở hữu: Hạ Vân Y Đạo.** Không chặn track code M1.
+> Kênh chính thức: `4000115888` · `service@wanfangdata.com.cn` · `open.wf.pub/api.html`.
+
+Gửi Wanfang đúng 6 câu:
+
+1. `万方选题API` có cấp AppKey/AppSecret cho **doanh nghiệp/tổ chức nước ngoài** hoặc nền tảng nghiên cứu như Chimedis không?
+2. Endpoint `reader/papers` bao phủ nguồn nào (中国学术期刊 / 学位论文 / 会议 / 外文)? Có giới hạn riêng với **y khoa / 中医药** không?
+3. Giá / quota / rate-limit?
+4. Có cho phép **server-side integration** vào website của bên thứ ba không?
+5. Có cho phép **lưu/cache metadata + abstract** và hiển thị lại cho người dùng không? Thời hạn retention?
+6. Có gói **API / 数据服务** khác phù hợp hơn cho **文献检索 tổng quát** thay vì `万方选题API` không?
+
+### Tiêu chí đóng issue Wanfang (`blocked_pending_license` → `approved`)
+
+Đủ **tất cả**:
+- [ ] AppKey/AppSecret đã cấp (hoặc văn bản xác nhận cấp được);
+- [ ] Terms / API agreement rõ ràng;
+- [ ] quyền cache + hiển thị lại cho user được nêu rõ;
+- [ ] pricing / quota / rate-limit rõ;
+- [ ] **1 test call thành công** với truy vấn Trung Y thực tế, trả `CanonicalResearchRecord` hợp lệ.
+
+Trong lúc chờ: `lib/connectors/wanfang.js` chỉ ở dạng skeleton — `healthCheck()` → `disabled`, `search()` → ném `ConnectorNotLicensedError`, không secret trong repo.
+
+---
+
+*Hết v2 (đã cập nhật §12 + Phụ lục D theo phản hồi Wanfang 2026-09-06). Góp ý xin ghi vào PR `tmh2388/chimedis-home#1`.*
