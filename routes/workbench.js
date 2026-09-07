@@ -177,6 +177,62 @@ router.post('/projects/:id/questions', requireDb, requireUser, async (req, res) 
   }
 });
 
+// Kiểm tra một câu hỏi thuộc về user (join qua project). Trả row hoặc null (đã res 404).
+async function ownedQuestion(req, res) {
+  const [rows] = await getPool().query(
+    `SELECT q.* FROM wb_research_questions q
+       JOIN wb_projects p ON p.id = q.project_id
+     WHERE q.id = ? AND p.user_id = ? LIMIT 1`,
+    [req.params.qid, req.user.id]
+  );
+  if (!rows.length) {
+    res.status(404).json({ success: false, error: 'Không tìm thấy câu hỏi (hoặc không thuộc về bạn)' });
+    return null;
+  }
+  return rows[0];
+}
+
+// PATCH /api/workbench/questions/:qid — sửa nội dung / hồ sơ / framework
+router.patch('/questions/:qid', requireDb, requireUser, async (req, res) => {
+  try {
+    const q = await ownedQuestion(req, res);
+    if (!q) return;
+    const { question_text, question_profile, framework } = req.body || {};
+    await getPool().query(
+      `UPDATE wb_research_questions SET
+         question_text = ?,
+         question_profile = ?,
+         framework = ?
+       WHERE id = ?`,
+      [
+        question_text != null ? String(question_text).slice(0, 1000) : q.question_text,
+        isValidProfile(question_profile) ? question_profile : q.question_profile,
+        ['PICO', 'PECO', 'PICo', 'SPIDER'].includes(framework) ? framework : q.framework,
+        q.id,
+      ]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('PATCH /workbench/questions/:qid:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi cập nhật câu hỏi' });
+  }
+});
+
+// DELETE /api/workbench/questions/:qid — gỡ liên kết khỏi search_runs rồi xoá
+router.delete('/questions/:qid', requireDb, requireUser, async (req, res) => {
+  try {
+    const q = await ownedQuestion(req, res);
+    if (!q) return;
+    const pool = getPool();
+    await pool.query('UPDATE wb_search_runs SET question_id = NULL WHERE question_id = ?', [q.id]);
+    await pool.query('DELETE FROM wb_research_questions WHERE id = ?', [q.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /workbench/questions/:qid:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi xoá câu hỏi' });
+  }
+});
+
 // ===== Tìm kiếm + provenance =====
 
 // POST /api/workbench/projects/:id/search

@@ -75,6 +75,9 @@
       <h2>Dự án của tôi</h2>
       <div id="projList"></div>
       <button class="btn sm sec" style="width:100%;margin-top:10px" onclick="wbNewProject()">+ Tạo dự án</button>
+      <p class="hint" style="margin-top:16px">
+        <a href="#" onclick="wbResetAll();return false" style="color:var(--bad)">Đặt lại — xoá toàn bộ dự án của tôi</a>
+      </p>
     </div>
     <div class="content" id="content">
       <p class="muted">Chọn hoặc tạo một dự án để bắt đầu.</p>
@@ -161,11 +164,11 @@ window.wbOpen = async (id) => {
 };
 
 const PROFILES = [
-  ['general', 'Chủ đề chung / chưa phân loại'],
-  ['tcm-clinical', 'Can thiệp TCM / châm cứu / thảo dược (lâm sàng)'],
-  ['preclinical', 'In-vitro / animal (tiền lâm sàng)'],
-  ['vn-context', 'Câu hỏi bối cảnh / dân số Việt Nam'],
-  ['tcm-literature', 'Văn hiến / lý luận YHCT'],
+  ['general', 'Chủ đề chung / chưa phân loại', 'Không phân loại được → độ phủ trần là partial. Chọn hồ sơ cụ thể nếu có thể.'],
+  ['tcm-clinical', 'Can thiệp TCM / châm cứu / thảo dược (lâm sàng)', 'Cần: PubMed + 1 nguồn Trung văn + 1 trial registry. Nguồn Trung văn (Wanfang/CNKI) chưa cấp phép → hiện luôn partial (đúng: đề tài lâm sàng chưa tra y văn Trung Quốc thì chưa thể coi là đủ).'],
+  ['preclinical', 'In-vitro / animal (tiền lâm sàng)', 'Cần: PubMed + Europe PMC/OpenAlex. KHÔNG đòi trial registry. Có thể đạt complete.'],
+  ['vn-context', 'Câu hỏi bối cảnh / dân số Việt Nam', 'Cần: PubMed + Europe PMC/OpenAlex + nguồn Việt. Nguồn Trung văn không bắt buộc.'],
+  ['tcm-literature', 'Văn hiến / lý luận YHCT', 'Cần: nguồn Trung văn (chưa cấp phép) + nguồn Việt → hiện thường partial.'],
 ];
 
 function renderProject() {
@@ -181,21 +184,39 @@ function renderProject() {
 
     <div class="card">
       <h3>Câu hỏi nghiên cứu</h3>
-      ${qs.map((q) => `<div style="margin-bottom:6px"><span class="pill">${esc(q.question_profile)}</span> ${esc(q.question_text || '(chưa nhập nội dung)')}</div>`).join('') || '<p class="hint">Chưa có câu hỏi. Thêm để chọn Minimum Source Policy khi tìm.</p>'}
+      <p class="hint" style="margin-bottom:10px">
+        Đây <b>không phải</b> ô tìm kiếm. Viết <b>một câu hoàn chỉnh</b> mô tả điều bạn muốn trả lời bằng đề tài,
+        theo khung PICO: <i>Ở [đối tượng], [can thiệp] so với [đối chứng] có [kết cục] không?</i><br>
+        <b>Hồ sơ câu hỏi</b> quyết định những nhóm nguồn <b>bắt buộc</b> phải tìm thấy thì độ phủ mới là
+        <span class="cov complete">complete</span>, chưa đủ thì <span class="cov partial">partial</span>.
+      </p>
+      ${qs.map((q) => `<div style="margin-bottom:6px;display:flex;gap:6px;align-items:baseline">
+        <span class="pill">${esc(q.question_profile)}</span>
+        <span style="flex:1">${esc(q.question_text || '(chưa nhập nội dung)')}</span>
+        <a href="#" class="hint" onclick="wbEditQuestion(${q.id});return false">sửa</a>
+        <a href="#" class="hint" onclick="wbDeleteQuestion(${q.id});return false">xoá</a>
+      </div>`).join('') || '<p class="hint">Chưa có câu hỏi.</p>'}
       <label>Nội dung câu hỏi (PICO tóm tắt)</label>
-      <input id="qText" placeholder="vd: Điện châm có cải thiện phục hồi vận động sau đột quỵ ở bệnh nhân Việt Nam?" />
+      <input id="qText" placeholder="vd: Ở người lớn nguy cơ cao, châm cứu dự phòng so với không châm có làm giảm tỷ lệ đột quỵ lần đầu không?" />
       <label>Hồ sơ câu hỏi (quyết định nguồn tối thiểu)</label>
-      <select id="qProfile">${PROFILES.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
-      <button class="btn sm" style="margin-top:10px" onclick="wbAddQuestion()">Lưu câu hỏi</button>
+      <select id="qProfile" onchange="wbProfileHint()">${PROFILES.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
+      <p class="hint" id="qProfileHint" style="margin-top:4px"></p>
+      <button class="btn sm" style="margin-top:6px" onclick="wbAddQuestion()">Lưu câu hỏi</button>
     </div>
 
     <div class="card">
       <h3>Tìm y văn</h3>
-      <label>Truy vấn (Việt / Trung / Anh — thuật ngữ YHCT sẽ được dịch)</label>
+      <p class="hint" style="margin-bottom:10px">
+        <b>Discovery</b> = tìm rộng để khám phá chủ đề (khi chưa rõ câu hỏi).<br>
+        <b>Evidence</b> = lượt tìm được ghi nhật ký bất biến, để đưa vào phần "Chiến lược tìm kiếm" của luận án và
+        (về sau) xác minh khoảng trống. <b>Nhớ chọn "Gắn câu hỏi"</b> — nếu để trống, hệ thống dùng hồ sơ
+        <i>chung</i> và độ phủ luôn chỉ đạt <span class="cov partial">partial</span>.
+      </p>
+      <label>Truy vấn (Việt / Trung / Anh — thuật ngữ YHCT sẽ được dịch tự động)</label>
       <input id="sQ" placeholder="vd: điện châm phục hồi chức năng sau đột quỵ" />
       <div class="row" style="margin-top:8px">
         <div><label>Chế độ</label><select id="sMode"><option value="discovery">Discovery (rộng, nhanh)</option><option value="evidence">Evidence (tái lập, cho verification)</option></select></div>
-        <div><label>Gắn câu hỏi</label><select id="sQuestion"><option value="">— không —</option>${qs.map((q) => `<option value="${q.id}">${esc((q.question_text || q.question_profile).slice(0, 40))}</option>`).join('')}</select></div>
+        <div><label>Gắn câu hỏi ⚠️</label><select id="sQuestion"><option value="">— không (hồ sơ chung) —</option>${qs.map((q) => `<option value="${q.id}">[${esc(q.question_profile)}] ${esc((q.question_text || '').slice(0, 40))}</option>`).join('')}</select></div>
         <div><label>Từ năm</label><input id="sYearFrom" type="number" min="1900" max="2100" /></div>
         <div><label>Đến năm</label><input id="sYearTo" type="number" min="1900" max="2100" /></div>
       </div>
@@ -205,11 +226,17 @@ function renderProject() {
 
     <div class="card">
       <h3>Nhật ký tìm kiếm (${runs.length})</h3>
-      <p class="hint">Xuất: <a href="#" onclick="wbLog('md');return false">Markdown</a> ·
+      <p class="hint">
+        <span class="cov complete">complete</span> = đã tìm thấy ở mọi nhóm nguồn bắt buộc của hồ sơ câu hỏi ·
+        <span class="cov partial">partial</span> = còn thiếu nhóm nguồn hoặc có nguồn lỗi ·
+        <span class="cov incomplete">incomplete</span> = không nguồn nào trả kết quả.<br>
+        Xuất: <a href="#" onclick="wbLog('md');return false">Markdown</a> ·
         <a href="#" onclick="wbLog('csv');return false">CSV</a> ·
-        <a href="#" onclick="wbLog('docx');return false">Word</a></p>
+        <a href="#" onclick="wbLog('docx');return false">Word</a>
+      </p>
       ${renderRuns(runs)}
     </div>`;
+  wbProfileHint();
 }
 
 function renderRuns(runs) {
@@ -227,11 +254,46 @@ function renderRuns(runs) {
   }</tbody></table>`;
 }
 
+window.wbResetAll = async () => {
+  if (!projects.length) { alert('Không có dự án nào để xoá.'); return; }
+  if (!confirm(`Xoá TẤT CẢ ${projects.length} dự án của bạn (kèm câu hỏi + nhật ký tìm kiếm)? Không hoàn tác được.\n\nLưu ý: kho bài báo dùng chung (wb_research_records) KHÔNG bị xoá.`)) return;
+  for (const p of [...projects]) {
+    await api('/api/workbench/projects/' + p.id, { method: 'DELETE' });
+  }
+  activeId = null; activeDetail = null;
+  $('content').innerHTML = '<p class="muted">Đã đặt lại. Tạo dự án mới để bắt đầu.</p>';
+  await loadProjects();
+};
+
+window.wbProfileHint = () => {
+  const el = $('qProfileHint');
+  if (!el) return;
+  const row = PROFILES.find(([v]) => v === $('qProfile').value);
+  el.textContent = row ? row[2] : '';
+};
+
 window.wbAddQuestion = async () => {
+  const text = $('qText').value.trim();
+  if (!text) { alert('Nhập nội dung câu hỏi (một câu hoàn chỉnh, không phải từ khoá tìm kiếm).'); return; }
   await api('/api/workbench/projects/' + activeId + '/questions', {
     method: 'POST',
-    body: JSON.stringify({ question_text: $('qText').value.trim(), question_profile: $('qProfile').value, framework: 'PICO' }),
+    body: JSON.stringify({ question_text: text, question_profile: $('qProfile').value, framework: 'PICO' }),
   });
+  await wbOpen(activeId);
+};
+
+window.wbEditQuestion = async (qid) => {
+  const q = (activeDetail.questions || []).find((x) => x.id === qid);
+  if (!q) return;
+  const text = prompt('Sửa nội dung câu hỏi:', q.question_text || '');
+  if (text == null) return;
+  await api('/api/workbench/questions/' + qid, { method: 'PATCH', body: JSON.stringify({ question_text: text.trim() }) });
+  await wbOpen(activeId);
+};
+
+window.wbDeleteQuestion = async (qid) => {
+  if (!confirm('Xoá câu hỏi này? Các lượt tìm đã gắn sẽ được gỡ liên kết (không bị xoá).')) return;
+  await api('/api/workbench/questions/' + qid, { method: 'DELETE' });
   await wbOpen(activeId);
 };
 
