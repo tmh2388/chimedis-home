@@ -224,7 +224,14 @@ function renderProject() {
       <div id="sResult"></div>
     </div>
 
-    <div class="card">
+    <div class="card" id="runsCard">
+      ${renderRunsCard(runs)}
+    </div>`;
+  wbProfileHint();
+}
+
+function renderRunsCard(runs) {
+  return `
       <h3>Nhật ký tìm kiếm (${runs.length})</h3>
       <p class="hint">
         <span class="cov complete">complete</span> = đã tìm thấy ở mọi nhóm nguồn bắt buộc của hồ sơ câu hỏi ·
@@ -234,9 +241,7 @@ function renderProject() {
         <a href="#" onclick="wbLog('csv');return false">CSV</a> ·
         <a href="#" onclick="wbLog('docx');return false">Word</a>
       </p>
-      ${renderRuns(runs)}
-    </div>`;
-  wbProfileHint();
+      ${renderRuns(runs)}`;
 }
 
 function renderRuns(runs) {
@@ -323,11 +328,9 @@ window.wbRunSearch = async () => {
     });
     $('sResult').innerHTML = renderSearchResult(d);
     activeDetail = await api('/api/workbench/projects/' + activeId);
-    // chỉ vẽ lại phần nhật ký + đếm, giữ nguyên ô tìm
-    const runsCard = document.querySelectorAll('.card')[3];
-    if (runsCard) runsCard.innerHTML = `<h3>Nhật ký tìm kiếm (${activeDetail.searchRuns.length})</h3>
-      <p class="hint">Xuất: <a href="#" onclick="wbLog('md');return false">Markdown</a> · <a href="#" onclick="wbLog('csv');return false">CSV</a> · <a href="#" onclick="wbLog('docx');return false">Word</a></p>
-      ${renderRuns(activeDetail.searchRuns)}`;
+    // vẽ lại nhật ký ngay (giữ nguyên ô tìm + kết quả vừa hiện)
+    const runsCard = $('runsCard');
+    if (runsCard) runsCard.innerHTML = renderRunsCard(activeDetail.searchRuns);
     loadProjects();
   } catch (e) {
     $('sResult').innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
