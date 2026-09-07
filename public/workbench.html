@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Bàn làm việc nghiên cứu — Chimedis</title>
+<link rel="icon" href="/assets/logo.png" />
+<style>
+  :root { --bg:#f6f3ec; --card:#fff; --ink:#2b2b26; --muted:#6b6b60; --line:#e3ddcf; --accent:#3d6b4f; --accent-ink:#fff; --warn:#8a5a00; --bad:#9a2f2f; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  a { color:var(--accent); }
+  header { display:flex; align-items:center; gap:12px; padding:12px 20px; background:var(--card); border-bottom:1px solid var(--line); }
+  header h1 { font-size:16px; margin:0; font-weight:700; }
+  header .who { margin-left:auto; font-size:13px; color:var(--muted); }
+  .btn { border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink); border-radius:7px; padding:7px 13px; font-size:14px; cursor:pointer; }
+  .btn.sec { background:transparent; color:var(--accent); }
+  .btn.sm { padding:4px 9px; font-size:12.5px; }
+  .btn:disabled { opacity:.5; cursor:default; }
+  main { display:grid; grid-template-columns:260px 1fr; gap:0; min-height:calc(100vh - 53px); }
+  .side { background:var(--card); border-right:1px solid var(--line); padding:14px; }
+  .side h2 { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:0 0 8px; }
+  .proj { padding:8px 10px; border-radius:7px; cursor:pointer; font-size:14px; border:1px solid transparent; }
+  .proj:hover { background:var(--bg); }
+  .proj.on { background:var(--bg); border-color:var(--line); font-weight:600; }
+  .proj small { display:block; color:var(--muted); font-weight:400; }
+  .content { padding:20px 24px; max-width:1100px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-bottom:16px; }
+  .card h3 { margin:0 0 12px; font-size:15px; }
+  label { display:block; font-size:12.5px; color:var(--muted); margin:8px 0 3px; }
+  input, select, textarea { width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font:inherit; background:#fff; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; }
+  .row > div { flex:1; min-width:130px; }
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { color:var(--muted); font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; }
+  .cov { display:inline-block; padding:2px 9px; border-radius:20px; font-size:12px; font-weight:600; }
+  .cov.complete { background:#e2efe6; color:var(--accent); }
+  .cov.partial { background:#f6ecd6; color:var(--warn); }
+  .cov.incomplete { background:#f3dede; color:var(--bad); }
+  .pill { display:inline-block; padding:1px 7px; border-radius:5px; background:var(--bg); border:1px solid var(--line); font-size:11.5px; margin:1px 3px 1px 0; }
+  .muted { color:var(--muted); font-size:13px; }
+  .exec-success { color:var(--accent); } .exec-timeout,.exec-unavailable,.exec-partial { color:var(--warn); } .exec-not_licensed,.exec-not_searched { color:var(--muted); }
+  #loginView { max-width:360px; margin:60px auto; text-align:center; }
+  #loginView .card { text-align:left; }
+  .msg { padding:8px 10px; border-radius:6px; font-size:13px; margin-top:8px; }
+  .msg.err { background:#f3dede; color:var(--bad); } .msg.ok { background:#e2efe6; color:var(--accent); }
+  .hint { font-size:12px; color:var(--muted); margin:4px 0 0; }
+</style>
+</head>
+<body>
+
+<div id="loginView" hidden>
+  <h1 style="font-size:18px">Bàn làm việc nghiên cứu</h1>
+  <p class="muted">Đăng nhập bằng tài khoản Chimedis để tạo dự án, tìm y văn và lưu nhật ký tìm kiếm.</p>
+  <div class="card">
+    <button class="btn" style="width:100%" onclick="wbSignInGoogle()">Đăng nhập với Google</button>
+    <div style="text-align:center;margin:10px 0;color:var(--muted);font-size:12px">hoặc</div>
+    <label>Email</label><input id="loginEmail" type="email" />
+    <label>Mật khẩu</label><input id="loginPass" type="password" />
+    <button class="btn sec" style="width:100%;margin-top:10px" onclick="wbSignInEmail()">Đăng nhập</button>
+    <div id="loginMsg"></div>
+  </div>
+  <p class="hint"><a href="/">← Về trang chủ Chimedis</a></p>
+</div>
+
+<div id="appView" hidden>
+  <header>
+    <h1>Bàn làm việc nghiên cứu</h1>
+    <span class="muted" style="font-size:12px">M1 · Tìm kiếm + Nhật ký tìm kiếm</span>
+    <span class="who"><span id="whoLabel"></span> · <a href="#" onclick="wbSignOut();return false">Thoát</a></span>
+  </header>
+  <main>
+    <div class="side">
+      <h2>Dự án của tôi</h2>
+      <div id="projList"></div>
+      <button class="btn sm sec" style="width:100%;margin-top:10px" onclick="wbNewProject()">+ Tạo dự án</button>
+    </div>
+    <div class="content" id="content">
+      <p class="muted">Chọn hoặc tạo một dự án để bắt đầu.</p>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {
+  getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword,
+  onAuthStateChanged, signOut,
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyDwzEBH7JpKiPakwilNfv5Eu5cFvJ6CiyY',
+  authDomain: 'chimedis.firebaseapp.com',
+  projectId: 'chimedis',
+  appId: '1:969178764176:web:1dc0f34903b052bb691915',
+};
+let auth = null, currentUser = null, projects = [], activeId = null, activeDetail = null;
+try { auth = getAuth(initializeApp(FIREBASE_CONFIG)); } catch (e) { console.error(e); }
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+
+async function api(url, opts = {}) {
+  const token = await auth.currentUser.getIdToken();
+  const res = await fetch(url, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token, ...(opts.headers || {}) },
+  });
+  const data = await res.json().catch(() => ({ success: false, error: 'Phản hồi không hợp lệ' }));
+  if (!res.ok || data.success === false) throw new Error(data.error || ('HTTP ' + res.status));
+  return data;
+}
+
+window.wbSignInGoogle = async () => {
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch (e) { $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+};
+window.wbSignInEmail = async () => {
+  try { await signInWithEmailAndPassword(auth, $('loginEmail').value.trim(), $('loginPass').value); }
+  catch (e) { $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+};
+window.wbSignOut = () => signOut(auth);
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { $('loginView').hidden = false; $('appView').hidden = true; return; }
+  try {
+    const token = await user.getIdToken();
+    const r = await fetch('/api/auth/sync', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
+    const d = await r.json();
+    if (!d.success) throw new Error(d.error || 'Lỗi đồng bộ');
+    currentUser = d.user;
+    $('loginView').hidden = true; $('appView').hidden = false;
+    $('whoLabel').textContent = currentUser.display_name || currentUser.email || '';
+    await loadProjects();
+  } catch (e) { $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+});
+
+async function loadProjects() {
+  const d = await api('/api/workbench/projects');
+  projects = d.projects || [];
+  $('projList').innerHTML = projects.length
+    ? projects.map((p) => `<div class="proj ${p.id === activeId ? 'on' : ''}" onclick="wbOpen(${p.id})">${esc(p.title)}<small>${p.search_run_count} lượt tìm</small></div>`).join('')
+    : '<p class="hint">Chưa có dự án nào.</p>';
+}
+
+window.wbNewProject = async () => {
+  const title = prompt('Tên dự án nghiên cứu:');
+  if (!title || !title.trim()) return;
+  const d = await api('/api/workbench/projects', { method: 'POST', body: JSON.stringify({ title: title.trim() }) });
+  activeId = d.id;
+  await loadProjects();
+  await wbOpen(d.id);
+};
+
+window.wbOpen = async (id) => {
+  activeId = id;
+  await loadProjects();
+  activeDetail = await api('/api/workbench/projects/' + id);
+  renderProject();
+};
+
+const PROFILES = [
+  ['general', 'Chủ đề chung / chưa phân loại'],
+  ['tcm-clinical', 'Can thiệp TCM / châm cứu / thảo dược (lâm sàng)'],
+  ['preclinical', 'In-vitro / animal (tiền lâm sàng)'],
+  ['vn-context', 'Câu hỏi bối cảnh / dân số Việt Nam'],
+  ['tcm-literature', 'Văn hiến / lý luận YHCT'],
+];
+
+function renderProject() {
+  const p = activeDetail.project;
+  const qs = activeDetail.questions || [];
+  const runs = activeDetail.searchRuns || [];
+  $('content').innerHTML = `
+    <div class="card">
+      <h3>${esc(p.title)}</h3>
+      <p class="muted">Dự án #${p.id} · ${qs.length} câu hỏi · ${runs.length} lượt tìm ·
+        <a href="#" onclick="wbDeleteProject();return false">xoá dự án</a></p>
+    </div>
+
+    <div class="card">
+      <h3>Câu hỏi nghiên cứu</h3>
+      ${qs.map((q) => `<div style="margin-bottom:6px"><span class="pill">${esc(q.question_profile)}</span> ${esc(q.question_text || '(chưa nhập nội dung)')}</div>`).join('') || '<p class="hint">Chưa có câu hỏi. Thêm để chọn Minimum Source Policy khi tìm.</p>'}
+      <label>Nội dung câu hỏi (PICO tóm tắt)</label>
+      <input id="qText" placeholder="vd: Điện châm có cải thiện phục hồi vận động sau đột quỵ ở bệnh nhân Việt Nam?" />
+      <label>Hồ sơ câu hỏi (quyết định nguồn tối thiểu)</label>
+      <select id="qProfile">${PROFILES.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
+      <button class="btn sm" style="margin-top:10px" onclick="wbAddQuestion()">Lưu câu hỏi</button>
+    </div>
+
+    <div class="card">
+      <h3>Tìm y văn</h3>
+      <label>Truy vấn (Việt / Trung / Anh — thuật ngữ YHCT sẽ được dịch)</label>
+      <input id="sQ" placeholder="vd: điện châm phục hồi chức năng sau đột quỵ" />
+      <div class="row" style="margin-top:8px">
+        <div><label>Chế độ</label><select id="sMode"><option value="discovery">Discovery (rộng, nhanh)</option><option value="evidence">Evidence (tái lập, cho verification)</option></select></div>
+        <div><label>Gắn câu hỏi</label><select id="sQuestion"><option value="">— không —</option>${qs.map((q) => `<option value="${q.id}">${esc((q.question_text || q.question_profile).slice(0, 40))}</option>`).join('')}</select></div>
+        <div><label>Từ năm</label><input id="sYearFrom" type="number" min="1900" max="2100" /></div>
+        <div><label>Đến năm</label><input id="sYearTo" type="number" min="1900" max="2100" /></div>
+      </div>
+      <button class="btn" style="margin-top:12px" id="sBtn" onclick="wbRunSearch()">Tìm & ghi nhật ký</button>
+      <div id="sResult"></div>
+    </div>
+
+    <div class="card">
+      <h3>Nhật ký tìm kiếm (${runs.length})</h3>
+      <p class="hint">Xuất: <a href="#" onclick="wbLog('md');return false">Markdown</a> ·
+        <a href="#" onclick="wbLog('csv');return false">CSV</a> ·
+        <a href="#" onclick="wbLog('docx');return false">Word</a></p>
+      ${renderRuns(runs)}
+    </div>`;
+}
+
+function renderRuns(runs) {
+  if (!runs.length) return '<p class="hint">Chưa có lượt tìm nào.</p>';
+  return `<table><thead><tr><th>#</th><th>Chế độ</th><th>Truy vấn</th><th>Kết quả</th><th>Độ phủ</th><th>Ngày</th></tr></thead><tbody>${
+    runs.map((r, i) => `<tr>
+      <td>${runs.length - i}</td>
+      <td>${r.mode}</td>
+      <td>${esc(r.query_original)}${r.query_translated ? `<br><span class="hint">→ ${esc(r.query_translated)}</span>` : ''}
+        <br>${(r.sources || []).map((s) => `<span class="pill exec-${s.execution_status}">${s.connector_id}:${s.execution_status}(${s.retrieved_count})</span>`).join('')}</td>
+      <td>${r.count_deduped}</td>
+      <td><span class="cov ${r.coverage_state}">${r.coverage_state}</span></td>
+      <td class="hint">${new Date(r.search_date).toLocaleString('vi-VN')}</td>
+    </tr>`).join('')
+  }</tbody></table>`;
+}
+
+window.wbAddQuestion = async () => {
+  await api('/api/workbench/projects/' + activeId + '/questions', {
+    method: 'POST',
+    body: JSON.stringify({ question_text: $('qText').value.trim(), question_profile: $('qProfile').value, framework: 'PICO' }),
+  });
+  await wbOpen(activeId);
+};
+
+window.wbDeleteProject = async () => {
+  if (!confirm('Xoá dự án này và toàn bộ nhật ký tìm kiếm của nó?')) return;
+  await api('/api/workbench/projects/' + activeId, { method: 'DELETE' });
+  activeId = null; activeDetail = null;
+  $('content').innerHTML = '<p class="muted">Đã xoá. Chọn hoặc tạo dự án khác.</p>';
+  await loadProjects();
+};
+
+window.wbRunSearch = async () => {
+  const q = $('sQ').value.trim();
+  if (!q) return;
+  $('sBtn').disabled = true;
+  $('sResult').innerHTML = '<p class="hint">Đang tìm ở nhiều nguồn…</p>';
+  try {
+    const d = await api('/api/workbench/projects/' + activeId + '/search', {
+      method: 'POST',
+      body: JSON.stringify({
+        q, mode: $('sMode').value,
+        questionId: $('sQuestion').value || undefined,
+        yearFrom: $('sYearFrom').value || undefined,
+        yearTo: $('sYearTo').value || undefined,
+        perPage: 25,
+      }),
+    });
+    $('sResult').innerHTML = renderSearchResult(d);
+    activeDetail = await api('/api/workbench/projects/' + activeId);
+    // chỉ vẽ lại phần nhật ký + đếm, giữ nguyên ô tìm
+    const runsCard = document.querySelectorAll('.card')[3];
+    if (runsCard) runsCard.innerHTML = `<h3>Nhật ký tìm kiếm (${activeDetail.searchRuns.length})</h3>
+      <p class="hint">Xuất: <a href="#" onclick="wbLog('md');return false">Markdown</a> · <a href="#" onclick="wbLog('csv');return false">CSV</a> · <a href="#" onclick="wbLog('docx');return false">Word</a></p>
+      ${renderRuns(activeDetail.searchRuns)}`;
+    loadProjects();
+  } catch (e) {
+    $('sResult').innerHTML = `<div class="msg err">${esc(e.message)}</div>`;
+  } finally {
+    $('sBtn').disabled = false;
+  }
+};
+
+function renderSearchResult(d) {
+  const cov = d.coverage || {};
+  const unmet = (cov.unmet_groups || []).map((g) => `<span class="pill">${g.join(' / ')}</span>`).join('') || '<span class="hint">—</span>';
+  const man = (d.manifest || []).map((m) => `<tr><td>${m.connector_id}</td><td class="exec-${m.execution_status}">${m.execution_status}</td><td>${m.retrieved_count}</td><td>${m.duration_ms}</td><td class="hint">${esc(m.error_detail || '')}</td></tr>`).join('');
+  const recs = (d.records || []).map((r) => `<tr>
+      <td>${esc(r.title)}${r.abstract ? `<br><span class="hint">${esc(r.abstract.slice(0, 160))}…</span>` : ''}</td>
+      <td>${r.year || '—'}</td>
+      <td>${(r.merged_from || [r.source]).join(', ')}</td>
+      <td>${r.study_type}</td>
+      <td class="hint">${Object.entries(r.identifiers || {}).map(([k, v]) => `${k}:${v}`).join('<br>')}</td>
+    </tr>`).join('');
+  return `
+    <div style="margin-top:14px">
+      <p><span class="cov ${cov.coverage_state}">Độ phủ: ${cov.coverage_state}</span>
+        <span class="muted"> · hồ sơ: ${esc(d.questionProfile)} · policy ${esc(cov.policy_version || '')}</span></p>
+      <p class="muted">Nhóm nguồn chưa đạt: ${unmet}</p>
+      ${d.queryExpanded && d.queryExpanded.effective !== d.queryExpanded.original ? `<p class="hint">Truy vấn gửi đi: <code>${esc(d.queryExpanded.effective)}</code></p>` : ''}
+      ${d.queryExpanded && (d.queryExpanded.untranslated || []).length ? `<p class="hint">Chưa dịch (cần LLM ở M4): ${d.queryExpanded.untranslated.map(esc).join(', ')}</p>` : ''}
+      <details style="margin:8px 0"><summary class="muted">Evidence Coverage Manifest</summary>
+        <table><thead><tr><th>Nguồn</th><th>Trạng thái</th><th>Số bản</th><th>ms</th><th>Ghi chú</th></tr></thead><tbody>${man}</tbody></table>
+      </details>
+      <p class="muted">${d.count} kết quả sau khử trùng (identity-graph). Fingerprint <code>${esc((d.requestFingerprint || '').slice(0, 16))}…</code>${d.persisted ? '' : ' · <b>chưa lưu (DB chưa cấu hình)</b>'}</p>
+      <table><thead><tr><th>Tiêu đề</th><th>Năm</th><th>Nguồn</th><th>Loại</th><th>ID</th></tr></thead><tbody>${recs}</tbody></table>
+    </div>`;
+}
+
+window.wbLog = async (fmt) => {
+  const token = await auth.currentUser.getIdToken();
+  const res = await fetch(`/api/workbench/projects/${activeId}/search-log?fmt=${fmt}`, { headers: { Authorization: 'Bearer ' + token } });
+  if (!res.ok) { alert('Lỗi xuất: HTTP ' + res.status); return; }
+  const blob = await res.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `search-log.${fmt === 'docx' ? 'docx' : fmt}`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
+</script>
+</body>
+</html>
