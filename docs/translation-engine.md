@@ -87,10 +87,13 @@ Mỗi **khái niệm** (concept) là một bản ghi, không phải một cặp 
 {
   "id": "sham-acupuncture",
   "domain": "method",                 // method | disease | pattern | formula | herb | acupoint | anatomy | physiology | general
-  "clinical": true,                   // true ⇒ P5: không auto-promote
-  "en": "sham acupuncture",
+  "clinical": true,                   // true ⇒ P5: không auto-promote; §3 collision lâm sàng → luôn ambiguous
+  "en": "sham acupuncture",           // CHỈ để hiển thị — KHÔNG phải identity (xem §6)
   "en_synonyms": ["placebo acupuncture", "sham needling"],
-  "mesh": "Acupuncture, Ear",         // tuỳ chọn — subject heading
+  "mesh_id": null,                    // review#6: CHỈ nạp từ nguồn MeSH đã xác minh. Không hand-map theo suy đoán.
+  "mesh_term": null,                  //           null cho tới khi có descriptor đúng đã kiểm.
+  "same_as": [],                      // review#4: các concept_id được KHAI BÁO tương đương (equivalence group).
+                                      //           Dùng khi tính COLLISION_SET — 2 id trong cùng same_as KHÔNG phải đụng độ.
   "surface_forms": [
     { "lang": "vi", "text": "giả châm",     "tone_exact": true,  "confidence": "high" },
     { "lang": "vi", "text": "châm giả",     "tone_exact": true,  "confidence": "high" },
@@ -112,9 +115,19 @@ Mỗi **khái niệm** (concept) là một bản ghi, không phải một cặp 
 - `EXACT_PY` : map pinyin đúng thanh → `[concept…]`
 - `FOLDED_VI`: map `text bỏ dấu` → `[concept…]`  ← chỉ dùng ở Tầng 2, và là nguồn tính `COLLISION_SET`
 - `FOLDED_PY`: map pinyin bỏ thanh → `[concept…]`
-- `COLLISION_SET`: tập các khoá bỏ dấu mà `FOLDED_*` trỏ tới ≥2 concept **khác `en`** (xem §6)
+- `COLLISION_SET`: tập các khoá bỏ dấu mà `FOLDED_*` trỏ tới **≥2 `concept_id` KHÁC NHAU, KHÔNG cùng nhóm `same_as`** (xem §6). `en` chỉ là hiển thị, KHÔNG dùng để xác định đụng độ.
 
-Nguồn dữ liệu: từ điển tay (`data/tcm-concepts/*.jsonc`, `trust: verified`) + CoreDB `dict.chimedis.vn/api/terms` (`trust: auto`) + `dict_candidates` đã `approved` (`trust: verified`) / `auto_active` (`trust: auto`).
+**`concept_trust_ceiling`** (review#5) — trần tin cậy theo `trust` của concept, áp SAU khi có `match_confidence`:
+
+| `trust` | trần |
+|---|---|
+| `verified` (đã có người chuyên môn rà) | `high` |
+| `auto` (CoreDB import / `auto_active`) | `medium` |
+| `candidate` (LLM / `dict_candidates.new`) | `medium` |
+
+`effective_confidence = min(match_confidence, concept_trust_ceiling)`. Một surface form khớp CHÍNH XÁC nhưng concept `trust:auto` → **tối đa `medium`**, không được `high`.
+
+Nguồn dữ liệu: từ điển tay (`data/tcm-concepts/*.jsonc`, `trust: verified`) + CoreDB `dict.chimedis.vn/api/terms` (`trust: auto`) + `dict_candidates` đã `approved` (`trust: verified`) / `auto_active` (`trust: auto`) / `new` (`trust: candidate`).
 
 ---
 
@@ -133,11 +146,12 @@ for size = min(6, n) downto 1:
   for mỗi cửa sổ n-gram độ dài size (trái→phải, không chồng lấn với đoạn đã khớp):
     phrase = tokens[i..i+size] join ' '
     hits = EXACT_VI[phrase] ∪ EXACT_ZH[phrase-Hán] ∪ EXACT_PY[phrase]
-    nếu hits.length == 1 → GẮN { span, concept, stage: 1, confidence: high }
-    nếu hits.length >= 2 và khác `en` → GẮN { span, AMBIGUOUS, candidates: hits, stage: 1 }
+    nếu hits.length == 1 → GẮN { span, concept, stage: 1, match_confidence: high }   // effective = min(high, trust_ceiling)
+    nếu hits.length >= 2 và ≥2 concept_id KHÁC NHAU không cùng same_as → GẮN { span, AMBIGUOUS, candidates: hits, stage: 1 }
 ```
 - Cụm nhiều từ **luôn thắng** cụm ít từ (nhờ `size` giảm dần).
 - Đoạn đã gắn (kể cả AMBIGUOUS) không xét lại ở size nhỏ hơn.
+- **Review#3 — collision lâm sàng:** nếu bất kỳ candidate nào có `clinical: true` và nhóm có ≥2 concept_id khác nghĩa → **luôn `AMBIGUOUS`**, kể cả khi câu chứa thuật ngữ YHCT khác. Điểm ngữ cảnh chỉ dùng để **sắp thứ tự** option trong hộp hỏi, **không** biến `ambiguous → translated`. Chỉ thoát `ambiguous` khi: (a) có surface form khớp CHÍNH XÁC verified, hoặc (b) `pinned_terms` / `user_term_prefs` của người dùng đã chọn rõ.
 
 ### Tầng 2 — Khớp mờ CÓ KIỂM SOÁT (chỉ cho span Tầng 1 bỏ trống)
 Với mỗi span chưa gắn, sinh ứng viên bằng các transform, mỗi transform có mức phạt:
@@ -153,20 +167,29 @@ Với mỗi span chưa gắn, sinh ứng viên bằng các transform, mỗi tran
 Mỗi ứng viên: `{ concept, transform, confidence, en }`.
 
 ### Tầng 3 — Quyết định
+`effective_confidence = min(match_confidence, concept_trust_ceiling)` (§4).
 ```
 với mỗi span:
-  nếu có gắn Tầng 1 confidence=high      → DỊCH (chip thường)
-  nếu span AMBIGUOUS (bất kỳ tầng)       → KHÔNG DỊCH span này; đẩy vào disambiguation[]
-  nếu best ứng viên Tầng 2 = high        → DỊCH (chip thường)
-  nếu best = medium và cách biệt rõ (>Δ) → DỊCH + nhãn "tự động — kiểm lại" + nút "Sai?"
-  nếu ≥2 ứng viên trong biên Δ           → KHÔNG DỊCH; disambiguation[]
-  nếu không ứng viên                     → untranslated[]; cảnh báo "chưa dịch được cụm này"
+  span AMBIGUOUS (bất kỳ tầng)                 → KHÔNG DỊCH span; đẩy vào disambiguation[]
+  effective_confidence = high                  → DỊCH (chip thường)
+  effective_confidence = medium, cách biệt >Δ  → DỊCH + nhãn "tự động — kiểm lại" + nút "Sai?"
+  ≥2 ứng viên trong biên Δ                      → KHÔNG DỊCH; disambiguation[]
+  không ứng viên                                → unresolved[]; cảnh báo "chưa dịch được cụm này"
 ```
-- Truy vấn cuối = ghép các span đã dịch (giữ toán tử/thứ tự) + span tiếng Anh người dùng tự gõ. Span AMBIGUOUS / untranslated **không** đưa vào chuỗi gửi API (tránh gửi tiếng Việt thô).
-- Nếu có `disambiguation[]` → API trả về kèm danh sách; UI hỏi; người dùng chọn → chạy lại với lựa chọn ghim vào `pinned_terms` của `search_run`.
+
+**Review#2 — span mơ hồ/chưa giải quyết KHÔNG được âm thầm biến mất khỏi truy vấn.** Hành vi theo mode:
+
+| | **Discovery** | **Evidence** |
+|---|---|---|
+| Span đã dịch (high / medium) | ghép vào `effective_query` bình thường | như Discovery |
+| Span tiếng Anh người dùng tự gõ | giữ nguyên | giữ nguyên |
+| Span `AMBIGUOUS` / `unresolved` | **GIỮ NGUYÊN VĂN BẢN GỐC** trong `effective_query` + thêm vào `unresolved[]` + `warning`. KHÔNG thay bằng một nghĩa đoán, KHÔNG xoá span. | **KHÔNG thực thi Evidence Search.** Trả `status: "needs_resolution"` (HTTP 409 + payload typed) kèm `disambiguation[]`. Caller phải cho người dùng chọn trước. |
+
+- Sau khi người dùng chọn: ghi lựa chọn vào `search_run.pinned_terms` (bất biến) + tuỳ chọn `user_term_prefs`, **rồi mới** chạy search. Discovery cũng dùng lại lựa chọn đã ghim ở lần chạy kế.
+- Nhờ đó **D1–D3 đi trước D4 (UI hỏi-lại) vẫn fail-safe**: Discovery không mất ý (giữ nguyên văn + cảnh báo), Evidence không chạy sai (bị chặn).
 
 ### Tầng 4 — Ghi vết
-Toàn bộ vào `query_expanded` v2 (§8).
+Toàn bộ decision/transform/version vào `query_expanded` v2 (§8), gồm `unresolved[]`, `disambiguation[]`, `pinned_terms`, `engine_version`.
 
 ---
 
@@ -176,15 +199,18 @@ Trong `scripts/build-tcm-dictionary.mjs`, sau khi nạp mọi concept:
 
 ```
 COLLISION_SET = {}
-nhóm concept theo folded(surface_form.vi)   // và riêng theo folded(pinyin)
-với mỗi nhóm có ≥2 concept:
-  nếu tồn tại 2 concept trong nhóm có `en` khác nhau (chuẩn hoá lowercase/trim):
+nhóm concept theo folded(surface_form.vi) + cùng token-length   // và riêng theo folded(pinyin)
+với mỗi nhóm:
+  distinct_ids = { concept.id }  loại bỏ các id nằm chung một nhóm same_as/equivalence
+  nếu |distinct_ids| >= 2:                                  // review#4: dựa trên CONCEPT IDENTITY, không phải `en`
      thêm khoá folded đó vào COLLISION_SET
-     ghi cảnh báo build: "ĐỤNG ĐỘ: 'cham' ← giả châm(sham acupuncture) | chàm(eczema)"
+     ghi cảnh báo build: "ĐỤNG ĐỘ: 'cham' ← giả châm [sham-acupuncture] | chàm [eczema]"
 xuất COLLISION_SET vào lib/tcm-dictionary.json
 ```
 
-- Thêm `chàm → eczema` **và** `giả châm → sham acupuncture` ⇒ `cham` tự vào `COLLISION_SET`. Không ai phải khai.
+- **Review#4:** đụng độ = folded key trỏ tới **≥2 `concept_id` khác nhau chưa khai báo tương đương** (`same_as`). Hai concept vô tình cùng label `en` nhưng khác `id`/ontology vẫn là đụng độ. `en` chỉ để hiển thị.
+- Giới hạn "cùng token-length" giữ lại để giảm dương tính giả, nhưng điều kiện chốt là concept identity.
+- Thêm `chàm [eczema]` **và** `giả châm [sham-acupuncture]` ⇒ `cham` tự vào `COLLISION_SET`. Không ai phải khai.
 - Build in ra bảng đụng độ mỗi lần chạy → người rà thấy ngay danh sách cần thêm `surface_form` đúng dấu phân biệt.
 - CI fail nếu số đụng độ tăng mà không có dòng tương ứng trong `tcm-queries.json` (buộc thêm test).
 
@@ -309,7 +335,7 @@ Runner: gọi engine, so `expect_terms` (mọi cụm phải xuất hiện trong 
 
 1. **Trích dữ liệu, không mất:** chuyển `RAW` (~200 mục tay) + `GENERAL` + `ZH_EXTRA` + `EN_SYNONYMS` thành `data/tcm-concepts/*.jsonc` theo schema §4. Mỗi mục gán `domain` + `clinical` + `trust: verified` (vì đã rà tay). Script chuyển 1 lần, người soát lại `domain`.
 2. **CoreDB:** `build-tcm-dictionary.mjs` giữ bước tải `dict.chimedis.vn/api/terms` nhưng **gán `trust: auto`** + tách `surface_form` theo `vi/hz/hz_traditional/py/en`, **giữ dấu**. Bỏ toàn bộ logic "cắt khoá 1 âm tiết ≤3/≤4" — không còn cần vì không bỏ dấu nữa (đụng độ lo bằng `COLLISION_SET`).
-3. **API không đổi chữ ký:** `buildSearchQuery(rawQuery, opts)` giữ tên + trả `{ text, expandedFrom, note, untranslated }` **cộng thêm** `{ spans, disambiguation, unresolved }`. `routes/research.js` + `routes/workbench.js` đọc thêm phần mới; phần cũ vẫn chạy.
+3. **API không đổi chữ ký:** `buildSearchQuery(rawQuery, opts)` giữ tên + trả `{ text, expandedFrom, note, untranslated }` **cộng thêm** `{ spans, disambiguation, unresolved, engine_version }`. `routes/research.js` + `routes/workbench.js` đọc thêm phần mới; phần cũ vẫn chạy. Chọn engine bằng env `TRANSLATE_ENGINE` (`legacy` mặc định → `v2` sau khi qua GATE §12). Trước GATE, `v2` chạy **shadow** (log, không đổi `text` thực gửi).
 4. **`dict-learn.js`:** overlay `dict_candidates` nạp vào engine như concept `trust: auto`/`verified`; thêm guard G6 (không auto-promote domain lâm sàng).
 5. **Xoá dần:** sau khi engine chạy ổn 2 tuần production + `tcm-queries.json` xanh, xoá `stripDiacritics`-as-key và các bảng vá (`VI_STOP` giữ lại vì vẫn hữu ích lọc hư từ, nhưng áp trên bản đúng dấu).
 
@@ -328,6 +354,28 @@ Runner: gọi engine, so `expect_terms` (mọi cụm phải xuất hiện trong 
 
 **D1 + D2 + D3 là lõi "trọn vẹn"** người dùng yêu cầu. D4–D6 là hoàn thiện.
 
+### Cổng kích hoạt chung (review#1 — sửa §12)
+
+D1/D2/D3 **commit riêng được**, nhưng **bật engine mới cho traffic production là MỘT cổng chung**, không bật lẻ:
+
+1. D1 engine code xong (behind flag `TRANSLATE_ENGINE=legacy|v2`, mặc định `legacy`).
+2. D2 `tcm-queries.json` ≥150 ca + negative controls, CI xanh.
+3. D3 rebuild CoreDB giữ dấu + đối chiếu số lượng concept/surface-form trước–sau, **không mất / không ghi đè** term.
+4. **Sau đó** mới đặt `TRANSLATE_ENGINE=v2` trên production.
+
+**Không bật D1 strict mode trước khi D2 + D3 xong.** Trước cổng, engine v2 chỉ chạy ở chế độ "shadow" (tính toán + log, không đổi `effective_query` thực gửi đi).
+
+### Tiêu chí GATE D1–D3 (review#8 — bắt buộc đạt trước khi chuyển H1a)
+
+- [ ] ≥150 regression cases + **negative controls** trong `tcm-queries.json`.
+- [ ] Mọi đụng độ mới trong `COLLISION_SET` có ca test tương ứng.
+- [ ] Đối chiếu số lượng concept + surface_form **trước ↔ sau** di trú — không mất dữ liệu.
+- [ ] Các ca tối thiểu đều đúng: `giả châm / chàm`, `châm cứu`, `trị / trĩ`, `trúng / Trung`, ≥1 dược liệu, ≥1 huyệt, ≥1 cụm Hán văn, input **không dấu**.
+- [ ] `buildSearchQuery()` tương thích ngược với caller M1 / H1 / H2 (trường cũ còn nguyên).
+- [ ] Discovery: span `unresolved` **không bị xoá** khỏi `effective_query`.
+- [ ] Evidence: span `ambiguous`/`unresolved` **bị chặn** đúng (`needs_resolution`, không chạy search).
+- [ ] `query_expanded` ghi đầy đủ `decision` / `transform` / `engine_version` cho mọi span.
+
 ---
 
 ## 13. Rủi ro & giảm thiểu
@@ -335,7 +383,7 @@ Runner: gọi engine, so `expect_terms` (mọi cụm phải xuất hiện trong 
 | # | Rủi ro | Mức | Giảm thiểu |
 |---|---|---|---|
 | T-R1 | Giữ dấu ⇒ giảm recall khi người dùng gõ không dấu | TB | `surface_form` không-dấu `confidence: low` (Tầng 2a); hộp hỏi-lại biến "trượt" thành "chọn 1 cú bấm"; đo tỉ lệ gõ-không-dấu thật trên log |
-| T-R2 | Người dùng bị hỏi quá nhiều (mệt) | TB | Chỉ hỏi khi thực sự mơ hồ (COLLISION_SET nhỏ, phần lớn cụm khớp thẳng Tầng 1); "nhớ lựa chọn" (`user_term_prefs`); mặc định chọn nghĩa YHCT khi ngữ cảnh có từ khác thuộc YHCT |
+| T-R2 | Người dùng bị hỏi quá nhiều (mệt) | TB | Chỉ hỏi khi thực sự mơ hồ (COLLISION_SET nhỏ, phần lớn cụm khớp thẳng Tầng 1); "nhớ lựa chọn" (`user_term_prefs`) áp cho lần sau; ngữ cảnh **chỉ sắp thứ tự** option (review#3), KHÔNG auto-resolve collision lâm sàng |
 | T-R3 | Di trú `RAW` sai `domain` → G6 chặn nhầm / thả nhầm | TB | Người soát lại toàn bộ `domain` khi chuyển; `tcm-queries.json` bắt lỗi |
 | T-R4 | `COLLISION_SET` phình to, chặn cả cụm đáng ra rõ | Thấp | Chỉ tính trên `surface_form.vi` **cùng độ dài token**; cụm nhiều từ hiếm khi đụng; log bảng đụng độ mỗi build để soát |
 | T-R5 | Refactor lõi làm hỏng tìm kiếm đang chạy | Cao | `buildSearchQuery` giữ chữ ký + trường cũ; nhánh riêng; `tcm-queries.json` + hồi quy §9.2 của Milestone H trước khi merge |
@@ -343,15 +391,19 @@ Runner: gọi engine, so `expect_terms` (mọi cụm phải xuất hiện trong 
 
 ---
 
-## 14. Câu hỏi cần chốt
+## 14. Câu hỏi cần chốt — **ĐÃ CHỐT (review PR #4, 2026-09-08)**
 
-1. **Thứ tự:** làm D1–D3 **trước H2** (đề xuất) hay song song?
-2. **Ngưỡng hỏi-lại:** mặc định khi mơ hồ mà ngữ cảnh có ≥1 cụm YHCT khác đã khớp → tự chọn nghĩa YHCT (không hỏi), chỉ hỏi khi hoàn toàn không rõ? Hay luôn hỏi?
-3. **Người chủ trì G4:** ai là biên tập viên YHCT rà hàng đợi hàng tuần?
-4. **D6 LLM:** có bật tầng LLM cuối không, và quota trần bao nhiêu (đụng 30 USD/tháng đã chốt cho M4)?
-5. **`data/tcm-concepts/`:** lưu nhiều file `.jsonc` theo domain, hay 1 file lớn? (đề xuất: theo domain, dễ review PR)
-6. Có cần **song ngữ ngược** (dịch kết quả tiếng Anh → thuật ngữ YHCT tiếng Việt đúng) trong phạm vi này, hay để milestone tóm tắt sau?
+| # | Câu hỏi | Chốt |
+|---|---|---|
+| 1 | D1–D3 trước H2? | ✅ **Có** — thứ tự khóa: D1–D3 → H1a → H2 → H3/H4. D4–D6 sau H2 theo nhu cầu. |
+| 2 | Ngưỡng hỏi-lại | ✅ **Luôn hỏi / require resolution** cho collision lâm sàng. Ngữ cảnh **chỉ rank** option, không auto-resolve. |
+| 3 | Người chủ trì G4 | ✅ Giai đoạn đầu: **chủ dự án / biên tập viên YHCT chịu trách nhiệm danh nghĩa**, có audit `reviewed_by`/`reviewed_at`. Không để hàng đợi "không owner". Có thể delegate sau. |
+| 4 | D6 LLM | ✅ **OFF trong v1.** Không cấp quota riêng. Chỉ bật sau khi D1–D5 có số liệu miss/ambiguity; LLM chỉ **sinh candidate**, không tự đổi Evidence query. |
+| 5 | `data/tcm-concepts/` | ✅ **Nhiều `.jsonc` theo domain** + schema validation ở build để chặn trùng `id` xuyên file. |
+| 6 | Song ngữ ngược | ✅ **Để milestone sau.** Không mở phạm vi D1–D3. |
+
+**Kết luận review: APPROVED WITH REQUIRED EDITS.** Đã áp 8 điểm (review#1–#8) trực tiếp vào spec này. Không cần vòng thiết kế lớn nữa → triển khai D1–D3, hậu kiểm GATE (§12), rồi chuyển H1a → H2.
 
 ---
 
-*Hết. Góp ý ghi vào PR của nhánh `plan/translation-engine`.*
+*Hết v2 (đã áp review PR #4). Nhánh code: `impl/translation-engine`.*
