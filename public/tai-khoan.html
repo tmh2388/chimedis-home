@@ -101,8 +101,9 @@ async function api(url, opts = {}) {
 onAuthStateChanged(auth, async (user) => {
   if (!user) { $('anon').hidden = false; $('view').hidden = true; return; }
   try {
-    // đảm bảo có hàng users
-    const t = await user.getIdToken();
+    await user.reload().catch(() => {});
+    // ép token mới để claim email_verified cập nhật sau khi bấm link xác thực
+    const t = await user.getIdToken(user.emailVerified ? true : false);
     await fetch('/api/auth/sync', { method:'POST', headers:{ Authorization:'Bearer '+t } });
     const d = await api('/api/auth/me');
     $('anon').hidden = true; $('view').hidden = false;

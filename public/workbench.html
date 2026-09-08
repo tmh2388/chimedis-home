@@ -157,15 +157,26 @@ window.wbResetPw = async () => {
   catch (e) { authErr(e.message); }
 };
 window.wbResendVerify = async () => {
-  try { await sendEmailVerification(auth.currentUser); alert('Đã gửi lại email xác thực. Kiểm tra hộp thư rồi tải lại trang.'); }
+  try { await sendEmailVerification(auth.currentUser); alert('Đã gửi lại email xác thực. Kiểm tra hộp thư rồi bấm "Đã xác thực".'); }
   catch (e) { alert('Lỗi: ' + e.message); }
+};
+// Token Firebase trong trình duyệt bị cache tới ~1h — sau khi bấm link xác thực trong email,
+// PHẢI ép làm mới token thì cờ email_verified mới cập nhật. reload() thường KHÔNG đủ.
+window.wbRecheckVerify = async () => {
+  try {
+    await auth.currentUser.reload();
+    await auth.currentUser.getIdToken(true); // ép phát hành token mới với claim mới
+    location.reload();
+  } catch (e) { alert('Lỗi kiểm tra lại: ' + e.message); }
 };
 window.wbSignOut = () => signOut(auth);
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) { $('loginView').hidden = false; $('appView').hidden = true; return; }
   try {
-    const token = await user.getIdToken();
+    await user.reload().catch(() => {});
+    // ép token mới nếu Firebase đã xác nhận email nhưng token đang cache còn nói "chưa"
+    const token = await user.getIdToken(user.emailVerified ? true : false);
     const r = await fetch('/api/auth/sync', { method: 'POST', headers: { Authorization: 'Bearer ' + token } });
     const d = await r.json();
     if (!d.success) throw new Error(d.error || 'Lỗi đồng bộ');
@@ -177,8 +188,8 @@ onAuthStateChanged(auth, async (user) => {
       banner.hidden = !!d.user.verified;
       if (!d.user.verified) banner.innerHTML =
         `⚠️ Email <b>${esc(currentUser.email || '')}</b> chưa xác thực — bạn xem/tìm được nhưng chưa tạo được dự án. ` +
-        `<a href="#" onclick="wbResendVerify();return false">Gửi lại email xác thực</a> · ` +
-        `<a href="#" onclick="location.reload()">Đã xác thực, tải lại</a>`;
+        `<a href="#" onclick="wbRecheckVerify();return false"><b>Tôi đã xác thực → kiểm tra lại</b></a> · ` +
+        `<a href="#" onclick="wbResendVerify();return false">Gửi lại email</a>`;
     }
     await loadProjects();
   } catch (e) { $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }

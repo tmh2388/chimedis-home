@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getPool, isDbConfigured } from '../lib/db.js';
 import { verifyFirebaseToken, getFirebaseAuth, isFirebaseConfigured } from '../lib/firebase-admin.js';
-import { requireUser, isVerifiedIdentity } from '../lib/auth.js';
+import { requireUser, isVerifiedIdentity, isVerifiedIdentityAsync } from '../lib/auth.js';
 import { rateLimit } from '../lib/rate-limit.js';
 
 const router = Router();
@@ -47,7 +47,7 @@ router.post('/sync', rateLimit({ max: 20, windowMs: 60_000 }), verifyFirebaseTok
     await upsertIdentity(pool, user.id, fb).catch((e) => console.warn('upsertIdentity:', e.message));
     res.json({
       success: true,
-      user: { ...user, email_verified: fb.email_verified, provider: fb.provider, verified: isVerifiedIdentity(fb) },
+      user: { ...user, email_verified: fb.email_verified, provider: fb.provider, verified: await isVerifiedIdentityAsync(fb) },
     });
   } catch (err) {
     console.error('POST /api/auth/sync error:', err.message);
@@ -67,7 +67,7 @@ router.get('/me', requireDb, requireUser, async (req, res) => {
       user: req.user,
       email_verified: req.firebaseUser.email_verified,
       provider: req.firebaseUser.provider,
-      verified: isVerifiedIdentity(req.firebaseUser),
+      verified: await isVerifiedIdentityAsync(req.firebaseUser),
       identities: ids,
     });
   } catch (err) {
