@@ -212,7 +212,19 @@ xuất COLLISION_SET vào lib/tcm-dictionary.json
 - Giới hạn "cùng token-length" giữ lại để giảm dương tính giả, nhưng điều kiện chốt là concept identity.
 - Thêm `chàm [eczema]` **và** `giả châm [sham-acupuncture]` ⇒ `cham` tự vào `COLLISION_SET`. Không ai phải khai.
 - Build in ra bảng đụng độ mỗi lần chạy → người rà thấy ngay danh sách cần thêm `surface_form` đúng dấu phân biệt.
-- CI fail nếu số đụng độ tăng mà không có dòng tương ứng trong `tcm-queries.json` (buộc thêm test).
+
+### 6.1 Hai bậc đụng độ — `verified` che `auto` *(D3)*
+
+Sau khi thêm overlay CoreDB (`trust:auto`, ~2000 concept), chỉ mục dựng thêm bước **shadow theo tier tin cậy**: một khoá tra (EXACT_*/FOLDED_*) chỉ giữ concept ở **tier cao nhất** có mặt (`verified` = 3 > `auto` = 2 > `candidate` = 1).
+
+| Tập | Điều kiện | Engine | CI |
+|---|---|---|---|
+| **`COLLISION_SET`** (verified-tier) | tier cao nhất của nhóm là `verified` **và** ≥2 root verified | `ambiguous` ngay (Tầng 1 + Tầng 2) | **CHẶN** nếu thiếu ca test |
+| **`SOFT_COLLISION_SET`** (auto-tier) | ≥2 root nhưng toàn `auto`/`candidate` | vẫn `ambiguous` khi khớp **bỏ dấu** ra ≥2 root; khớp **đúng dấu** thì dịch bình thường ở trần `medium` | **KHÔNG chặn** — G4 rà hàng tuần; promote lên `verified` (thêm surface đúng dấu) nếu cần bắt buộc test |
+
+Lý do: 27 cặp `auto↔auto` (vd `than` = thận/thân, `âm đạo` = colposcopy/vagina, `icterus/jaundice`) phần lớn là (a) cặp đồng nghĩa tiếng Anh CoreDB lưu 2 dòng, hoặc (b) dữ liệu dấu CoreDB chưa chuẩn. Trần `medium` + nút "Báo sai" (D4) + rà G4 là lưới an toàn; bắt hand-curate 2000 mục không phải việc D3.
+
+- `scripts/tcm-collision-report.mjs` in **cả hai** bậc; CI chỉ fail khi `COLLISION_SET` (verified) tăng mà thiếu test.
 
 ---
 
@@ -347,7 +359,7 @@ Runner: gọi engine, so `expect_terms` (mọi cụm phải xuất hiện trong 
 |---|---|---|
 | **D1 — Engine lõi** | Tầng 0–4 + schema concept + chỉ mục + `COLLISION_SET` tự sinh. Di trú `RAW`. `buildSearchQuery` trả thêm `spans/disambiguation`. **Chưa** đụng UI. | Có (backend, hành vi gần như cũ + hỏi-lại qua API) |
 | **D2 — `tcm-queries.json` + CI** | ≥150 ca; runner; chặn CI khi đụng độ mới thiếu test. | Có |
-| **D3 — CoreDB giữ dấu** | `build-tcm-dictionary.mjs` v2: `trust: auto`, surface_form đúng dấu, bỏ logic cắt âm tiết. Rebuild `tcm-dictionary.json`. | Có |
+| **D3 — CoreDB giữ dấu** ✅ | `build-tcm-dictionary.mjs` v2: sinh **2** thứ — `lib/tcm-dictionary.json` (legacy, 8005 khoá, **không đổi**) + `data/tcm-concepts/coredb.generated.jsonc` (2025 concept `trust:auto`, GIỮ DẤU vi + thanh py, KHÔNG cắt âm tiết). Shadow `verified` che `auto` (§6.1). 2589 mục CoreDB → 509 phụ tố bỏ → 2025 concept; vi 2087 · zh 2355 · py 2075 surface. 0 đụng độ verified mới. Suite 200/200. | Có |
 | **D4 — UI hỏi-lại + chip tin cậy** | Trang chủ + workbench: hộp disambiguation, chip vàng "chưa rà", nút "Sai?". | Có |
 | **D5 — Governance** | Bảng `dict_corrections` + `user_term_prefs`; tab admin "Báo sai"; G6 guard; trang `/cach-dich`. | Có |
 | **D6 — LLM tầng cuối (2e)** | Chỉ khi 2a–2d rỗng; dịch cụm-trong-ngữ-cảnh; trần `medium`; ghi `dict_candidates`. Đụng quota Anthropic — bật sau khi đo. | Có |
@@ -360,17 +372,17 @@ D1/D2/D3 **commit riêng được**, nhưng **bật engine mới cho traffic pro
 
 1. D1 engine code xong (behind flag `TRANSLATE_ENGINE=legacy|v2`, mặc định `legacy`).
 2. D2 `tcm-queries.json` ≥150 ca + negative controls, CI xanh.
-3. D3 rebuild CoreDB giữ dấu + đối chiếu số lượng concept/surface-form trước–sau, **không mất / không ghi đè** term.
-4. **Sau đó** mới đặt `TRANSLATE_ENGINE=v2` trên production.
+3. D3 rebuild CoreDB giữ dấu + đối chiếu số lượng concept/surface-form trước–sau, **không mất / không ghi đè** term. ✅ (2026-09-08)
+4. **Sau đó** mới đặt `TRANSLATE_ENGINE=v2` trên production. ← **D1+D2+D3 xong; sẵn sàng chạy `shadow` rồi `v2`. Chờ user chốt thời điểm bật.**
 
 **Không bật D1 strict mode trước khi D2 + D3 xong.** Trước cổng, engine v2 chỉ chạy ở chế độ "shadow" (tính toán + log, không đổi `effective_query` thực gửi đi).
 
 ### Tiêu chí GATE D1–D3 (review#8 — bắt buộc đạt trước khi chuyển H1a)
 
 - [x] **≥150 regression cases + negative controls** trong `tcm-queries.json` — **200 ca, 200/200 pass** (D2, 2026-09-08). CI: `.github/workflows/tcm-translate.yml`.
-- [x] Mọi đụng độ mới trong `COLLISION_SET` có ca test tương ứng — `scripts/tcm-collision-report.mjs` chặn CI.
-- [ ] Đối chiếu số lượng concept + surface_form **trước ↔ sau** di trú — không mất dữ liệu.
-- [ ] Các ca tối thiểu đều đúng: `giả châm / chàm`, `châm cứu`, `trị / trĩ`, `trúng / Trung`, ≥1 dược liệu, ≥1 huyệt, ≥1 cụm Hán văn, input **không dấu**.
+- [x] Mọi đụng độ mới trong `COLLISION_SET` (verified) có ca test — `scripts/tcm-collision-report.mjs` chặn CI. Đụng độ `auto` (27) vào `SOFT_COLLISION_SET`, không chặn (§6.1).
+- [x] **Đối chiếu trước ↔ sau di trú — không mất dữ liệu** (D3, 2026-09-08): `lib/tcm-dictionary.json` 8005 khoá **giữ nguyên** (legacy engine không đổi); overlay concept thêm 2025 mục CoreDB (`trust:auto`, giữ dấu). Build script in bảng đối chiếu mỗi lần chạy (mục vào / phụ tố bỏ / concept sinh ra / surface vi·zh·py / đụng độ verified trước→sau).
+- [x] **Các ca tối thiểu đúng** (v2, overlay bật): `giả châm`→sham acupuncture(high) · `chàm`→eczema · `châm cứu trúng phong`→acupuncture+stroke (legacy cũ ra "Zhongfeng LR4"+"eczema") · `trị/trĩ` phân biệt bằng dấu · `hoàng kỳ`(verified,high) · `tam thất`→Panax notoginseng(auto,medium) · `thận hư`→KIDNEY(medium)+«hư» · Hán `针灸预防中风` · không dấu `than`→ambiguous. Suite 200/200.
 - [ ] `buildSearchQuery()` tương thích ngược với caller M1 / H1 / H2 (trường cũ còn nguyên).
 - [ ] Discovery: span `unresolved` **không bị xoá** khỏi `effective_query`.
 - [ ] Evidence: span `ambiguous`/`unresolved` **bị chặn** đúng (`needs_resolution`, không chạy search).

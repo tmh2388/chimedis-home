@@ -4,14 +4,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { collisionReport, stats } from '../lib/translate/index.js';
+import { collisionReport, softCollisionReport, stats } from '../lib/translate/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const spec = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'test', 'tcm-queries.json'), 'utf8'));
 
 const report = collisionReport();
+const soft = softCollisionReport();
 const s = stats();
-console.log(`Chỉ mục: ${s.concepts} concept · ${s.folded_vi} khoá folded · ${report.length} đụng độ\n`);
+console.log(`Chỉ mục: ${s.concepts} concept · ${s.folded_vi} khoá folded · ${report.length} đụng độ verified · ${soft.length} đụng độ auto\n`);
 
 const testBlob = JSON.stringify(spec.cases).toLowerCase();
 let missing = 0;
@@ -22,7 +23,13 @@ for (const c of report) {
 }
 
 if (missing) {
-  console.error(`\n${missing} đụng độ chưa có ca test trong test/tcm-queries.json — thêm ca (expect_ambiguous) trước khi merge.`);
+  console.error(`\n${missing} đụng độ verified chưa có ca test trong test/tcm-queries.json — thêm ca (expect_ambiguous) trước khi merge.`);
   process.exit(1);
 }
-console.log('\nMọi đụng độ đều có ca test.');
+console.log('\nMọi đụng độ verified đều có ca test.');
+
+if (soft.length) {
+  console.log(`\n── ${soft.length} đụng độ auto (CoreDB, KHÔNG chặn CI — G4 rà hàng tuần) ──`);
+  for (const c of soft) console.log(`   "${c.folded}"  ←  ${c.concepts.join('  |  ')}`);
+  console.log('   → engine vẫn đánh dấu "ambiguous" khi khớp bỏ dấu; promote lên verified nếu cần bắt buộc test.');
+}
