@@ -207,3 +207,33 @@ CREATE TABLE IF NOT EXISTS wb_record_identifiers (
   INDEX idx_record (record_id),
   FOREIGN KEY (record_id) REFERENCES wb_research_records(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- =====================================================================================
+-- ===== Milestone H1a — Auth Foundation ===============================================
+-- docs/milestone-H-homepage-integration.md §3.3. Idempotent. FK tới users(id) đã có.
+-- =====================================================================================
+
+-- Danh tính provider của một user. `users.id` là chủ thể chính (canonical).
+-- KHÔNG merge 2 user vì email trùng (Apple privaterelay, ORCID email không tin được).
+-- Link provider CHỈ do user đã đăng nhập chủ động (trang Hồ sơ).
+CREATE TABLE IF NOT EXISTS user_identities (
+  id               BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id          INT NOT NULL,
+  provider         VARCHAR(32) NOT NULL COMMENT 'password | google.com | apple.com | oidc.orcid | microsoft.com',
+  provider_subject VARCHAR(255) NOT NULL COMMENT 'sub/uid bền vững của provider — KHÔNG phải email',
+  provider_email   VARCHAR(255) NULL,
+  verified_at      TIMESTAMP NULL COMMENT 'thời điểm xác nhận verified (email_verified hoặc provider ngoài)',
+  created_at       TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_provider_subject (provider, provider_subject),
+  INDEX idx_user (user_id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Log xoá tài khoản (không chứa PII) — đối soát yêu cầu App Store Guideline 5.1.1(v).
+CREATE TABLE IF NOT EXISTS account_deletions (
+  id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id      INT NOT NULL COMMENT 'id cũ (hàng users đã bị xoá)',
+  provider     VARCHAR(32) NULL,
+  wb_projects_deleted INT NOT NULL DEFAULT 0,
+  deleted_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

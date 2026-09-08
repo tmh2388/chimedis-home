@@ -57,8 +57,13 @@
     <button class="btn" style="width:100%" onclick="wbSignInGoogle()">Đăng nhập với Google</button>
     <div style="text-align:center;margin:10px 0;color:var(--muted);font-size:12px">hoặc</div>
     <label>Email</label><input id="loginEmail" type="email" />
-    <label>Mật khẩu</label><input id="loginPass" type="password" />
-    <button class="btn sec" style="width:100%;margin-top:10px" onclick="wbSignInEmail()">Đăng nhập</button>
+    <label>Mật khẩu <span id="pwHint" class="hint" hidden>(tối thiểu 6 ký tự)</span></label>
+    <input id="loginPass" type="password" />
+    <button class="btn" style="width:100%;margin-top:10px" id="authSubmit" onclick="wbAuthSubmit()">Đăng nhập</button>
+    <p class="hint" style="text-align:center;margin-top:10px">
+      <a href="#" id="toggleAuth" onclick="wbToggleAuth();return false">Chưa có tài khoản? Đăng ký</a>
+      · <a href="#" onclick="wbResetPw();return false">Quên mật khẩu?</a>
+    </p>
     <div id="loginMsg"></div>
   </div>
   <p class="hint"><a href="/">← Về trang chủ Chimedis</a></p>
@@ -68,8 +73,9 @@
   <header>
     <h1>Bàn làm việc nghiên cứu</h1>
     <span class="muted" style="font-size:12px">M1 · Tìm kiếm + Nhật ký tìm kiếm</span>
-    <span class="who"><span id="whoLabel"></span> · <a href="#" onclick="wbSignOut();return false">Thoát</a></span>
+    <span class="who"><span id="whoLabel"></span> · <a href="/tai-khoan.html">Tài khoản</a> · <a href="#" onclick="wbSignOut();return false">Thoát</a></span>
   </header>
+  <div id="verifyBanner" class="msg" style="margin:0;border-radius:0;background:#f6ecd6;color:var(--warn)" hidden></div>
   <main>
     <div class="side">
       <h2>Dự án của tôi</h2>
@@ -89,6 +95,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
   getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword,
+  createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail,
   onAuthStateChanged, signOut,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
@@ -115,13 +122,43 @@ async function api(url, opts = {}) {
   return data;
 }
 
+let registerMode = false;
+const authErr = (m) => { $('loginMsg').innerHTML = `<div class="msg err">${esc(m)}</div>`; };
+const authOk = (m) => { $('loginMsg').innerHTML = `<div class="msg ok">${esc(m)}</div>`; };
+
+window.wbToggleAuth = () => {
+  registerMode = !registerMode;
+  $('authSubmit').textContent = registerMode ? 'Đăng ký' : 'Đăng nhập';
+  $('toggleAuth').textContent = registerMode ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký';
+  $('pwHint').hidden = !registerMode;
+  $('loginMsg').innerHTML = '';
+};
 window.wbSignInGoogle = async () => {
   try { await signInWithPopup(auth, new GoogleAuthProvider()); }
-  catch (e) { $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+  catch (e) { authErr(e.message); }
 };
-window.wbSignInEmail = async () => {
-  try { await signInWithEmailAndPassword(auth, $('loginEmail').value.trim(), $('loginPass').value); }
-  catch (e) { $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
+window.wbAuthSubmit = async () => {
+  const email = $('loginEmail').value.trim(), pass = $('loginPass').value;
+  if (!email || !pass) return authErr('Nhập email và mật khẩu.');
+  try {
+    if (registerMode) {
+      const cred = await createUserWithEmailAndPassword(auth, email, pass);
+      await sendEmailVerification(cred.user);
+      authOk('Đã tạo tài khoản. Đã gửi email xác thực tới ' + email + ' — bấm link trong email để bắt đầu tạo dự án.');
+    } else {
+      await signInWithEmailAndPassword(auth, email, pass);
+    }
+  } catch (e) { authErr(e.message); }
+};
+window.wbResetPw = async () => {
+  const email = $('loginEmail').value.trim();
+  if (!email) return authErr('Nhập email vào ô trên rồi bấm "Quên mật khẩu?".');
+  try { await sendPasswordResetEmail(auth, email); authOk('Đã gửi email đặt lại mật khẩu tới ' + email + '.'); }
+  catch (e) { authErr(e.message); }
+};
+window.wbResendVerify = async () => {
+  try { await sendEmailVerification(auth.currentUser); alert('Đã gửi lại email xác thực. Kiểm tra hộp thư rồi tải lại trang.'); }
+  catch (e) { alert('Lỗi: ' + e.message); }
 };
 window.wbSignOut = () => signOut(auth);
 
@@ -135,6 +172,14 @@ onAuthStateChanged(auth, async (user) => {
     currentUser = d.user;
     $('loginView').hidden = true; $('appView').hidden = false;
     $('whoLabel').textContent = currentUser.display_name || currentUser.email || '';
+    const banner = $('verifyBanner');
+    if (banner) {
+      banner.hidden = !!d.user.verified;
+      if (!d.user.verified) banner.innerHTML =
+        `⚠️ Email <b>${esc(currentUser.email || '')}</b> chưa xác thực — bạn xem/tìm được nhưng chưa tạo được dự án. ` +
+        `<a href="#" onclick="wbResendVerify();return false">Gửi lại email xác thực</a> · ` +
+        `<a href="#" onclick="location.reload()">Đã xác thực, tải lại</a>`;
+    }
     await loadProjects();
   } catch (e) { $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
 });

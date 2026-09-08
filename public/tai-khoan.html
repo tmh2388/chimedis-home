@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tài khoản — Chimedis</title>
+<link rel="icon" href="/assets/logo.png" />
+<style>
+  :root { --bg:#f6f3ec; --card:#fff; --ink:#2b2b26; --muted:#6b6b60; --line:#e3ddcf; --accent:#3d6b4f; --warn:#8a5a00; --bad:#9a2f2f; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
+  .wrap { max-width:560px; margin:40px auto; padding:0 18px; }
+  h1 { font-size:20px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:16px; }
+  .card h2 { font-size:15px; margin:0 0 10px; }
+  .row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); font-size:14px; }
+  .row:last-child { border-bottom:0; }
+  .row span:first-child { color:var(--muted); }
+  .btn { border:1px solid var(--accent); background:var(--accent); color:#fff; border-radius:7px; padding:8px 14px; font-size:14px; cursor:pointer; }
+  .btn.sec { background:transparent; color:var(--accent); }
+  .btn.danger { border-color:var(--bad); background:var(--bad); }
+  .pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:12px; font-weight:600; }
+  .ok { background:#e2efe6; color:var(--accent); } .no { background:#f3dede; color:var(--bad); }
+  .muted { color:var(--muted); font-size:13px; }
+  .msg { padding:8px 10px; border-radius:6px; font-size:13px; margin-top:10px; }
+  .msg.err { background:#f3dede; color:var(--bad); } .msg.okm { background:#e2efe6; color:var(--accent); }
+  input { width:100%; padding:8px 9px; border:1px solid var(--line); border-radius:6px; font:inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <p class="muted"><a href="/workbench.html">← Bàn làm việc nghiên cứu</a></p>
+  <h1>Tài khoản</h1>
+
+  <div id="anon" hidden class="card">Bạn chưa đăng nhập. <a href="/workbench.html">Đăng nhập</a>.</div>
+
+  <div id="view" hidden>
+    <div class="card">
+      <h2>Hồ sơ</h2>
+      <div class="row"><span>Tên hiển thị</span><span id="fName">—</span></div>
+      <div class="row"><span>Email</span><span id="fEmail">—</span></div>
+      <div class="row"><span>Xác thực email</span><span id="fVerified">—</span></div>
+      <div class="row"><span>Vai trò</span><span id="fRole">—</span></div>
+      <div id="verifyRow" hidden style="margin-top:10px">
+        <button class="btn sec" onclick="resendVerify()">Gửi lại email xác thực</button>
+        <button class="btn sec" onclick="location.reload()">Đã xác thực — tải lại</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Phương thức đăng nhập đã liên kết</h2>
+      <div id="identities" class="muted">—</div>
+      <p class="muted" style="margin-top:8px">Liên kết thêm Google/Apple/ORCID sẽ có ở bản cập nhật sau. Không tự gộp tài khoản theo email trùng.</p>
+    </div>
+
+    <div class="card">
+      <h2>Đổi mật khẩu</h2>
+      <p class="muted">Chỉ áp dụng nếu bạn đăng nhập bằng email + mật khẩu.</p>
+      <button class="btn sec" onclick="resetPw()">Gửi email đặt lại mật khẩu</button>
+      <div id="pwMsg"></div>
+    </div>
+
+    <div class="card">
+      <h2 style="color:var(--bad)">Xoá tài khoản</h2>
+      <p class="muted">Xoá vĩnh viễn tài khoản + toàn bộ dự án nghiên cứu, câu hỏi, nhật ký tìm kiếm của bạn.
+        Không thể hoàn tác. (Kho bài báo dùng chung không chứa thông tin cá nhân, được giữ lại.)</p>
+      <p class="muted">Gõ <b>XOA TAI KHOAN</b> để xác nhận:</p>
+      <input id="delConfirm" placeholder="XOA TAI KHOAN" />
+      <button class="btn danger" style="margin-top:10px" onclick="deleteAccount()">Xoá tài khoản của tôi</button>
+      <div id="delMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import {
+  getAuth, onAuthStateChanged, signOut, sendEmailVerification, sendPasswordResetEmail,
+} from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyDwzEBH7JpKiPakwilNfv5Eu5cFvJ6CiyY',
+  authDomain: 'chimedis.firebaseapp.com', projectId: 'chimedis',
+  appId: '1:969178764176:web:1dc0f34903b052bb691915',
+};
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
+let auth = null;
+try { auth = getAuth(initializeApp(FIREBASE_CONFIG)); } catch (e) { console.error(e); }
+
+const PROVIDER_LABEL = { 'password':'Email + mật khẩu', 'google.com':'Google', 'apple.com':'Apple', 'oidc.orcid':'ORCID', 'microsoft.com':'Microsoft' };
+
+async function api(url, opts = {}) {
+  const token = await auth.currentUser.getIdToken();
+  const res = await fetch(url, { ...opts, headers: { 'Content-Type':'application/json', Authorization:'Bearer '+token, ...(opts.headers||{}) } });
+  const d = await res.json().catch(() => ({ success:false, error:'Phản hồi không hợp lệ' }));
+  if (!res.ok || d.success === false) throw new Error(d.error || ('HTTP '+res.status));
+  return d;
+}
+
+onAuthStateChanged(auth, async (user) => {
+  if (!user) { $('anon').hidden = false; $('view').hidden = true; return; }
+  try {
+    // đảm bảo có hàng users
+    const t = await user.getIdToken();
+    await fetch('/api/auth/sync', { method:'POST', headers:{ Authorization:'Bearer '+t } });
+    const d = await api('/api/auth/me');
+    $('anon').hidden = true; $('view').hidden = false;
+    $('fName').textContent = d.user.display_name || '—';
+    $('fEmail').textContent = d.user.email || '—';
+    $('fRole').textContent = d.user.role || 'reader';
+    $('fVerified').innerHTML = d.verified
+      ? '<span class="pill ok">đã xác thực</span>'
+      : '<span class="pill no">chưa xác thực</span>';
+    $('verifyRow').hidden = d.verified;
+    $('identities').innerHTML = (d.identities || []).map((i) =>
+      `<div class="row"><span>${esc(PROVIDER_LABEL[i.provider] || i.provider)}</span><span>${esc(i.provider_email || '')} ${i.verified_at ? '✓' : ''}</span></div>`
+    ).join('') || '<span class="muted">Chưa có</span>';
+  } catch (e) { $('anon').hidden = false; $('anon').textContent = 'Lỗi tải hồ sơ: ' + e.message; }
+});
+
+window.resendVerify = async () => {
+  try { await sendEmailVerification(auth.currentUser); alert('Đã gửi lại email xác thực.'); }
+  catch (e) { alert('Lỗi: ' + e.message); }
+};
+window.resetPw = async () => {
+  try { await sendPasswordResetEmail(auth, auth.currentUser.email); $('pwMsg').innerHTML = '<div class="msg okm">Đã gửi email đặt lại mật khẩu tới ' + esc(auth.currentUser.email) + '.</div>'; }
+  catch (e) { $('pwMsg').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; }
+};
+window.deleteAccount = async () => {
+  if ($('delConfirm').value.trim() !== 'XOA TAI KHOAN') { $('delMsg').innerHTML = '<div class="msg err">Gõ đúng "XOA TAI KHOAN" để xác nhận.</div>'; return; }
+  if (!confirm('Xoá vĩnh viễn tài khoản và toàn bộ dữ liệu nghiên cứu? Không thể hoàn tác.')) return;
+  try {
+    await api('/api/auth/account', { method: 'DELETE' });
+    await signOut(auth).catch(() => {});
+    alert('Đã xoá tài khoản.');
+    location.href = '/';
+  } catch (e) { $('delMsg').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; }
+};
+</script>
+</body>
+</html>

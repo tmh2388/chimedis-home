@@ -5,7 +5,8 @@
 
 import { Router } from 'express';
 import { getPool, isDbConfigured } from '../lib/db.js';
-import { requireUser } from '../lib/auth.js';
+import { requireUser, requireVerified } from '../lib/auth.js';
+import { rateLimit } from '../lib/rate-limit.js';
 import { runSearch, listConnectors, MODE_SOURCES } from '../lib/connectors/index.js';
 import { buildSearchQuery } from '../lib/tcm-vocab.js';
 import { enrichUntranslated } from '../lib/dict-learn.js';
@@ -16,6 +17,9 @@ import {
 
 const router = Router();
 const QUERY_VERSION = 'wb-m1-1';
+const uidKey = (r) => 'u' + (r.user?.id || r.firebaseUser?.uid || 'anon');
+const rlWrite = rateLimit({ max: 40, windowMs: 60_000, keyFn: uidKey });
+const rlSearch = rateLimit({ max: 20, windowMs: 60_000, keyFn: uidKey });
 
 function requireDb(req, res, next) {
   if (!isDbConfigured()) {
@@ -70,7 +74,7 @@ router.get('/projects', requireDb, requireUser, async (req, res) => {
   }
 });
 
-router.post('/projects', requireDb, requireUser, async (req, res) => {
+router.post('/projects', requireDb, requireUser, requireVerified, rlWrite, async (req, res) => {
   const { title, work_type, note } = req.body || {};
   if (!title || !String(title).trim()) {
     return res.status(400).json({ success: false, error: 'Thiếu tên dự án' });
@@ -103,7 +107,7 @@ router.get('/projects/:id', requireDb, requireUser, async (req, res) => {
   }
 });
 
-router.patch('/projects/:id', requireDb, requireUser, async (req, res) => {
+router.patch('/projects/:id', requireDb, requireUser, requireVerified, async (req, res) => {
   try {
     const project = await ownedProject(req, res);
     if (!project) return;
@@ -130,7 +134,7 @@ router.patch('/projects/:id', requireDb, requireUser, async (req, res) => {
   }
 });
 
-router.delete('/projects/:id', requireDb, requireUser, async (req, res) => {
+router.delete('/projects/:id', requireDb, requireUser, requireVerified, async (req, res) => {
   try {
     const project = await ownedProject(req, res);
     if (!project) return;
@@ -153,7 +157,7 @@ router.delete('/projects/:id', requireDb, requireUser, async (req, res) => {
 
 // ===== Câu hỏi nghiên cứu =====
 
-router.post('/projects/:id/questions', requireDb, requireUser, async (req, res) => {
+router.post('/projects/:id/questions', requireDb, requireUser, requireVerified, async (req, res) => {
   try {
     const project = await ownedProject(req, res);
     if (!project) return;
@@ -194,7 +198,7 @@ async function ownedQuestion(req, res) {
 }
 
 // PATCH /api/workbench/questions/:qid — sửa nội dung / hồ sơ / framework
-router.patch('/questions/:qid', requireDb, requireUser, async (req, res) => {
+router.patch('/questions/:qid', requireDb, requireUser, requireVerified, async (req, res) => {
   try {
     const q = await ownedQuestion(req, res);
     if (!q) return;
@@ -220,7 +224,7 @@ router.patch('/questions/:qid', requireDb, requireUser, async (req, res) => {
 });
 
 // DELETE /api/workbench/questions/:qid — gỡ liên kết khỏi search_runs rồi xoá
-router.delete('/questions/:qid', requireDb, requireUser, async (req, res) => {
+router.delete('/questions/:qid', requireDb, requireUser, requireVerified, async (req, res) => {
   try {
     const q = await ownedQuestion(req, res);
     if (!q) return;
@@ -239,7 +243,7 @@ router.delete('/questions/:qid', requireDb, requireUser, async (req, res) => {
 // POST /api/workbench/projects/:id/search
 // body: { q, mode?: 'discovery'|'evidence', questionId?, sources?: string[],
 //         yearFrom?, yearTo?, perPage?, docType?, sort? }
-router.post('/projects/:id/search', requireDb, requireUser, async (req, res) => {
+router.post('/projects/:id/search', requireDb, requireUser, requireVerified, rlSearch, async (req, res) => {
   try {
     const project = await ownedProject(req, res);
     if (!project) return;
