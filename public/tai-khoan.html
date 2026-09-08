@@ -78,7 +78,8 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
   getAuth, onAuthStateChanged, signOut, sendEmailVerification, sendPasswordResetEmail,
-  GoogleAuthProvider, OAuthProvider, FacebookAuthProvider, linkWithPopup, unlink,
+  GoogleAuthProvider, OAuthProvider, FacebookAuthProvider,
+  linkWithPopup, linkWithRedirect, getRedirectResult, unlink,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
 const FIREBASE_CONFIG = {
@@ -139,23 +140,35 @@ function provObj(pid) {
   if (pid === 'facebook.com') { const p = new FacebookAuthProvider(); p.addScope('email'); return p; }
   if (pid === 'apple.com') { const p = new OAuthProvider('apple.com'); p.addScope('email'); p.addScope('name'); return p; }
 }
+async function afterLink() {
+  const t = await auth.currentUser.getIdToken(true);
+  await fetch('/api/auth/sync', { method:'POST', headers:{ Authorization:'Bearer '+t } });
+}
+function linkErr(e) {
+  const c = e.code || '';
+  if (c === 'auth/credential-already-in-use' || c === 'auth/email-already-in-use')
+    return 'Phương thức này đã gắn với một tài khoản khác. Không thể liên kết.';
+  if (c === 'auth/operation-not-allowed') return 'Phương thức chưa được bật trên máy chủ.';
+  if (c === 'auth/popup-closed-by-user') return '';
+  return e.message;
+}
 window.linkProv = async (pid) => {
   $('linkMsg').innerHTML = '';
   try {
     await linkWithPopup(auth.currentUser, provObj(pid));
-    const t = await auth.currentUser.getIdToken(true);
-    await fetch('/api/auth/sync', { method:'POST', headers:{ Authorization:'Bearer '+t } });
+    await afterLink();
     $('linkMsg').innerHTML = '<div class="msg okm">Đã liên kết.</div>';
     setTimeout(() => location.reload(), 700);
   } catch (e) {
-    const c = e.code || '';
-    const m = c === 'auth/credential-already-in-use'
-      ? 'Phương thức này đã gắn với một tài khoản khác. Không thể liên kết.'
-      : c === 'auth/operation-not-allowed' ? 'Phương thức chưa được bật trên máy chủ.'
-      : (c === 'auth/popup-closed-by-user' ? '' : e.message);
-    if (m) $('linkMsg').innerHTML = '<div class="msg err">' + esc(m) + '</div>';
+    if (['auth/popup-blocked','auth/operation-not-supported-in-this-environment','auth/cancelled-popup-request'].includes(e.code)) {
+      try { await linkWithRedirect(auth.currentUser, provObj(pid)); return; }
+      catch (e2) { const m = linkErr(e2); if (m) $('linkMsg').innerHTML = '<div class="msg err">' + esc(m) + '</div>'; return; }
+    }
+    const m = linkErr(e); if (m) $('linkMsg').innerHTML = '<div class="msg err">' + esc(m) + '</div>';
   }
 };
+// hoàn tất luồng link-redirect nếu có
+getRedirectResult(auth).then((r) => { if (r) afterLink().then(() => location.reload()); }).catch(() => {});
 window.unlinkProv = async (pid) => {
   if (!confirm('Gỡ liên kết ' + (PROVIDER_LABEL[pid] || pid) + '?')) return;
   try {

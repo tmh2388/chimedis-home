@@ -97,7 +97,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
   getAuth, GoogleAuthProvider, OAuthProvider, FacebookAuthProvider,
-  signInWithPopup, signInWithEmailAndPassword,
+  signInWithPopup, signInWithRedirect, getRedirectResult, signInWithEmailAndPassword,
   createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail,
   onAuthStateChanged, signOut,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -142,19 +142,35 @@ function socialProvider(kind) {
   if (kind === 'apple') { const p = new OAuthProvider('apple.com'); p.addScope('email'); p.addScope('name'); return p; }
   return new GoogleAuthProvider();
 }
+// Lỗi cần CHUYỂN sang signInWithRedirect (popup bị chặn / WebView không hỗ trợ popup —
+// gồm cả app iOS WKWebView).
+const NEEDS_REDIRECT = new Set([
+  'auth/popup-blocked', 'auth/operation-not-supported-in-this-environment',
+  'auth/cancelled-popup-request', 'auth/web-storage-unsupported',
+]);
 function socialErr(e) {
   const c = e.code || '';
   if (c === 'auth/operation-not-allowed') return 'Phương thức này chưa được bật trên máy chủ. Thử cách khác.';
   if (c === 'auth/account-exists-with-different-credential')
     return 'Email này đã đăng ký bằng phương thức khác. Đăng nhập bằng phương thức cũ, rồi liên kết thêm trong trang Tài khoản.';
-  if (c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return '';
+  if (c === 'auth/unauthorized-domain') return 'Tên miền chưa được cho phép trong Firebase (Authorized domains).';
+  if (c === 'auth/popup-closed-by-user') return '';
   return e.message;
 }
 window.wbSocial = async (kind) => {
-  try { await signInWithPopup(auth, socialProvider(kind)); }
-  catch (e) { const m = socialErr(e); if (m) authErr(m); }
+  try {
+    await signInWithPopup(auth, socialProvider(kind));
+  } catch (e) {
+    if (NEEDS_REDIRECT.has(e.code)) {
+      try { await signInWithRedirect(auth, socialProvider(kind)); return; }
+      catch (e2) { const m = socialErr(e2); if (m) authErr(m); return; }
+    }
+    const m = socialErr(e); if (m) authErr(m);
+  }
 };
 window.wbSignInGoogle = () => wbSocial('google'); // tương thích chỗ gọi cũ
+// hoàn tất luồng redirect (nếu có) — onAuthStateChanged sẽ tự chạy tiếp
+getRedirectResult(auth).catch((e) => { const m = socialErr(e); if (m) authErr(m); });
 window.wbAuthSubmit = async () => {
   const email = $('loginEmail').value.trim(), pass = $('loginPass').value;
   if (!email || !pass) return authErr('Nhập email và mật khẩu.');
