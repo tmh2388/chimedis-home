@@ -362,7 +362,7 @@ Runner: gọi engine, so `expect_terms` (mọi cụm phải xuất hiện trong 
 | **D3 — CoreDB giữ dấu** ✅ | `build-tcm-dictionary.mjs` v2: sinh **2** thứ — `lib/tcm-dictionary.json` (legacy, 8005 khoá, **không đổi**) + `data/tcm-concepts/coredb.generated.jsonc` (2025 concept `trust:auto`, GIỮ DẤU vi + thanh py, KHÔNG cắt âm tiết). Shadow `verified` che `auto` (§6.1). 2589 mục CoreDB → 509 phụ tố bỏ → 2025 concept; vi 2087 · zh 2355 · py 2075 surface. 0 đụng độ verified mới. Suite 200/200. | Có |
 | **D4 — UI hỏi-lại + chip tin cậy** | Trang chủ + workbench: hộp disambiguation, chip vàng "chưa rà", nút "Sai?". | Có |
 | **D5 — Governance** | Bảng `dict_corrections` + `user_term_prefs`; tab admin "Báo sai"; G6 guard; trang `/cach-dich`. | Có |
-| **D6 — LLM tầng cuối (2e)** | Chỉ khi 2a–2d rỗng; dịch cụm-trong-ngữ-cảnh; trần `medium`; ghi `dict_candidates`. Đụng quota Anthropic — bật sau khi đo. | Có |
+| **D6 — LLM tầng cuối (2e)** ✅ code | Cụm `unresolved` còn sót (~5% noise sau D8) → `enrichUntranslated()` (tái dùng `lib/llm-translate.js` + `dict_candidates` của GĐ2). **CHỈ Discovery** — Evidence giữ `needs_resolution` (reviewer). Trần `medium` + `viaLLM` → chip vàng + hàng đợi G4. Quota: `LLM_TRANSLATE_RPM` (30/phút) + `LLM_TRANSLATE_DAILY_MAX` (400/ngày). No-op an toàn khi thiếu `ANTHROPIC_API_KEY`/MySQL. Wired: `routes/research.js` (sẵn có) + `routes/workbench.js` (D6). **Kích hoạt: set `ANTHROPIC_API_KEY` trên Hostinger.** | Có |
 
 **D1 + D2 + D3 là lõi "trọn vẹn"** người dùng yêu cầu. D4–D6 là hoàn thiện.
 
@@ -438,7 +438,7 @@ H2 ◄── CHẶN CỨNG cho tới khi v2 đã bật production + regression g
 | 1 | D1–D3 trước H2? | ✅ **Có** — thứ tự khóa: D1–D3 → H1a → H2 → H3/H4. D4–D6 sau H2 theo nhu cầu. |
 | 2 | Ngưỡng hỏi-lại | ✅ **Luôn hỏi / require resolution** cho collision lâm sàng. Ngữ cảnh **chỉ rank** option, không auto-resolve. |
 | 3 | Người chủ trì G4 | ✅ **Hạ Vân Minh (chủ dự án) nhận chủ trì** (2026-09-08). Audit `reviewed_by`/`reviewed_at`. Có thể delegate sau. |
-| 4 | D6 LLM | ✅ **OFF trong v1.** Không cấp quota riêng. Chỉ bật sau khi D1–D5 có số liệu miss/ambiguity; LLM chỉ **sinh candidate**, không tự đổi Evidence query. |
+| 4 | D6 LLM | Reviewer: OFF cho v1. **Chủ dự án override (2026-09-08):** bật D6 TRƯỚC khi đổi v2 — build + đo cụ thể rồi mới flip. Giữ ràng buộc reviewer: LLM CHỈ sinh candidate (`medium` + hàng đợi G4), **KHÔNG** tự đổi Evidence query (Evidence vẫn `needs_resolution`); có quota trần (`LLM_TRANSLATE_DAILY_MAX=400`). |
 | 5 | `data/tcm-concepts/` | ✅ **Nhiều `.jsonc` theo domain** + schema validation ở build để chặn trùng `id` xuyên file. |
 | 6 | Song ngữ ngược | ✅ **Để milestone sau.** Không mở phạm vi D1–D3. |
 

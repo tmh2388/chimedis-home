@@ -8,6 +8,7 @@ import { getPool, isDbConfigured } from '../lib/db.js';
 import { requireUser } from '../lib/auth.js';
 import { runSearch, listConnectors, MODE_SOURCES } from '../lib/connectors/index.js';
 import { buildSearchQuery } from '../lib/tcm-vocab.js';
+import { enrichUntranslated } from '../lib/dict-learn.js';
 import { QUESTION_PROFILES, isValidProfile, evaluateCoverage } from '../lib/source-policy.js';
 import {
   writeSearchRun, listSearchRuns, renderSearchLogMarkdown, renderSearchLogCsv,
@@ -259,9 +260,14 @@ router.post('/projects/:id/search', requireDb, requireUser, async (req, res) => 
       else questionId = null;
     }
 
-    // dịch thuật ngữ YHCT (tái dùng logic hiện có; KHÔNG LLM ở M1)
+    // dịch thuật ngữ YHCT
     const bqOpts = { orSynonyms: mode === 'discovery', mode };
-    const built = buildSearchQuery(q, bqOpts);
+    let built = buildSearchQuery(q, bqOpts);
+    // D6: cụm còn sót → LLM dịch dự phòng. CHỈ Discovery (Evidence giữ needs_resolution).
+    // No-op an toàn khi thiếu ANTHROPIC_API_KEY / MySQL.
+    if (mode === 'discovery' && built.untranslated?.length) {
+      built = await enrichUntranslated(q, built, { mode });
+    }
     const effective = built.text || q;
     const queryExpanded = {
       original: q,

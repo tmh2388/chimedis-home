@@ -1,6 +1,6 @@
 # Đối chiếu engine dịch: legacy vs v2
 
-_116 truy vấn · 2026-09-08 10:25_
+_116 truy vấn · 2026-09-08 12:26_
 
 | Nhóm | Số |
 |---|---|
@@ -38,8 +38,8 @@ _116 truy vấn · 2026-09-08 10:25_
 
 **`so sánh châm cứu thật và giả châm trong điều trị đau`**
 - legacy: `("acupuncture" OR "electroacupuncture" OR "manual acupuncture" OR "needling") ("eczema" OR "dermatitis") ("treatment" OR "therapy" OR "therapeutic" OR "management")`
-- v2·····: `("acupuncture" OR "needle acupuncture" OR "manual acupuncture" OR "body acupuncture") thật ("sham acupuncture" OR "placebo acupuncture" OR "sham needling" OR "minimal acupuncture") đau`
-- v2 chưa dịch: «thật», «đau»
+- v2·····: `("acupuncture" OR "needle acupuncture" OR "manual acupuncture" OR "body acupuncture") ("sham acupuncture" OR "placebo acupuncture" OR "sham needling" OR "minimal acupuncture") đau`
+- v2 chưa dịch: «đau»
 
 **`hiệu quả giả châm ở nhóm chứng`**
 - legacy: `("eczema" OR "dermatitis")`
@@ -203,8 +203,8 @@ _116 truy vấn · 2026-09-08 10:25_
 
 **`thử nghiệm lâm sàng ngẫu nhiên có đối chứng về điện châm sau đột quỵ`**
 - legacy: `("electroacupuncture" OR "electro-acupuncture") ("stroke" OR "cerebrovascular accident" OR "brain infarction")`
-- v2·····: `thử nghiệm lâm sàng ngẫu nhiên đối chứng ("electroacupuncture" OR "electro-acupuncture" OR "electrical acupuncture") ("stroke" OR "cerebrovascular accident" OR "brain infarction" OR "cerebral apoplexy")`
-- v2 chưa dịch: «thử nghiệm lâm sàng ngẫu nhiên đối chứng»
+- v2·····: `thử lâm sàng đối chứng ("electroacupuncture" OR "electro-acupuncture" OR "electrical acupuncture") ("stroke" OR "cerebrovascular accident" OR "brain infarction" OR "cerebral apoplexy")`
+- v2 chưa dịch: «thử lâm sàng đối chứng»
 
 **`nghiên cứu thuần tập về sử dụng thảo dược ở bệnh nhân đái tháo đường`**
 - legacy: `("diabetes mellitus" OR "diabetes" OR "diabetic")`
