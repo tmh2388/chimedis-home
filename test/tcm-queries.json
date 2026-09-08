@@ -1,221 +1,1607 @@
 {
   "_comment": "Milestone D — bộ hồi quy engine dịch. docs/translation-engine.md §10. GATE §12 yêu cầu ≥150 ca + negative controls. Mỗi ca: q, mode?, expect_terms[] (mọi cụm phải có trong effective_query), expect_ambiguous[] (phải nằm trong disambiguation/unresolved), must_not_contain[] (tuyệt đối không có trong effective_query), expect_needs_resolution?, expect_no_translation? (translated rỗng — negative control), min_translated? (số span dịch tối thiểu).",
   "cases": [
-
-    { "id": "A-herb-hoangky", "q": "hoàng kỳ", "expect_terms": ["Astragalus membranaceus"] },
-    { "id": "A-herb-duongquy", "q": "đương quy điều trị thiếu máu", "expect_terms": ["Angelica sinensis", "treatment"] },
-    { "id": "A-herb-nhansam", "q": "nhân sâm", "expect_terms": ["Panax ginseng"] },
-    { "id": "A-herb-camthao", "q": "cam thảo", "expect_terms": ["Glycyrrhiza uralensis"] },
-    { "id": "A-herb-bachtruat", "q": "bạch truật tỳ hư", "expect_terms": ["Atractylodes macrocephala", "spleen qi deficiency"] },
-    { "id": "A-herb-phuclinh", "q": "phục linh", "expect_terms": ["Poria cocos"] },
-    { "id": "A-herb-xuyenkhung", "q": "xuyên khung đau đầu", "expect_terms": ["Ligusticum chuanxiong", "headache"] },
-    { "id": "A-herb-bachthuoc", "q": "bạch thược", "expect_terms": ["Paeonia lactiflora"] },
-    { "id": "A-herb-thucdia", "q": "thục địa thận âm hư", "expect_terms": ["Rehmannia glutinosa", "kidney yin deficiency"] },
-    { "id": "A-herb-hoanglien", "q": "hoàng liên đái tháo đường", "expect_terms": ["Coptis chinensis", "diabetes mellitus"] },
-    { "id": "A-herb-berberin", "q": "berberin gan nhiễm mỡ", "expect_terms": ["berberine", "non-alcoholic fatty liver disease"] },
-    { "id": "A-herb-hoangcam", "q": "hoàng cầm", "expect_terms": ["Scutellaria baicalensis"] },
-    { "id": "A-herb-saiho", "q": "sài hồ can khí uất kết", "expect_terms": ["Bupleurum chinense", "liver qi stagnation"] },
-    { "id": "A-herb-catcan", "q": "cát căn tăng huyết áp", "expect_terms": ["Pueraria lobata", "hypertension"] },
-    { "id": "A-herb-mahoang", "q": "ma hoàng hen phế quản", "expect_terms": ["Ephedra sinica", "asthma"] },
-    { "id": "A-herb-quechi", "q": "quế chi", "expect_terms": ["Cinnamomum cassia twig"] },
-    { "id": "A-herb-phutu", "q": "phụ tử thận dương hư", "expect_terms": ["Aconitum carmichaelii", "kidney yang deficiency"] },
-    { "id": "A-herb-cankhuong", "q": "can khương", "expect_terms": ["dried ginger"] },
-    { "id": "A-herb-dansam", "q": "đan sâm huyết ứ", "expect_terms": ["Salvia miltiorrhiza", "blood stasis"] },
-    { "id": "A-herb-kimnganhoa", "q": "kim ngân hoa phong nhiệt", "expect_terms": ["Lonicera japonica", "wind-heat"] },
-    { "id": "A-herb-lienkieu", "q": "liên kiều", "expect_terms": ["Forsythia suspensa"] },
-    { "id": "A-herb-cuchoa", "q": "cúc hoa đau nửa đầu", "expect_terms": ["Chrysanthemum morifolium", "migraine"] },
-    { "id": "A-herb-nguutat", "q": "ngưu tất thoái hóa khớp gối", "expect_terms": ["Achyranthes bidentata", "knee osteoarthritis"] },
-    { "id": "A-herb-dotrong", "q": "đỗ trọng đau thắt lưng", "expect_terms": ["Eucommia ulmoides", "low back pain"] },
-    { "id": "A-herb-caukyty", "q": "câu kỷ tử", "expect_terms": ["Lycium barbarum"] },
-    { "id": "A-herb-daitao", "q": "đại táo", "expect_terms": ["Ziziphus jujuba"] },
-    { "id": "A-herb-thienma", "q": "thiên ma chóng mặt", "expect_terms": ["Gastrodia elata", "vertigo"] },
-    { "id": "A-herb-caudang", "q": "câu đằng can dương thượng cang", "expect_terms": ["Uncaria rhynchophylla", "liver yang hyperactivity"] },
-    { "id": "A-herb-nghe", "q": "nghệ viêm khớp dạng thấp", "expect_terms": ["Curcuma longa", "rheumatoid arthritis"] },
-
-    { "id": "A-method-chamcuu", "q": "châm cứu đau vai gáy", "expect_terms": ["acupuncture", "neck pain"] },
-    { "id": "A-method-giacham", "q": "giả châm điều trị đột quỵ", "expect_terms": ["sham acupuncture", "stroke"], "must_not_contain": ["eczema"] },
-    { "id": "A-method-diencham", "q": "điện châm liệt nửa người", "expect_terms": ["electroacupuncture", "hemiplegia"] },
-    { "id": "A-method-cuu", "q": "cứu ngải đau bụng kinh", "expect_terms": ["moxibustion", "dysmenorrhea"] },
-    { "id": "A-method-oncham", "q": "ôn châm thoái hóa khớp gối", "expect_terms": ["warm needle acupuncture", "knee osteoarthritis"] },
-    { "id": "A-method-nhicham", "q": "nhĩ châm mất ngủ", "expect_terms": ["auricular acupuncture", "insomnia"] },
-    { "id": "A-method-daucham", "q": "đầu châm phục hồi chức năng sau đột quỵ", "expect_terms": ["scalp acupuncture", "rehabilitation", "stroke"] },
-    { "id": "A-method-caychi", "q": "cấy chỉ béo phì", "expect_terms": ["acupoint catgut embedding", "obesity"] },
-    { "id": "A-method-thuycham", "q": "thủy châm đau thắt lưng", "expect_terms": ["acupoint injection", "low back pain"] },
-    { "id": "A-method-giachoi", "q": "giác hơi đau lưng", "expect_terms": ["cupping therapy", "low back pain"] },
-    { "id": "A-method-caogio", "q": "cạo gió", "expect_terms": ["gua sha"] },
-    { "id": "A-method-xoabop", "q": "xoa bóp bấm huyệt đau cổ", "expect_terms": ["tuina massage", "neck pain"] },
-    { "id": "A-method-thuocbac", "q": "thuốc bắc điều trị mất ngủ", "expect_terms": ["Chinese herbal medicine", "treatment", "insomnia"] },
-    { "id": "A-method-khicong", "q": "khí công tăng huyết áp", "expect_terms": ["qigong", "hypertension"] },
-    { "id": "A-method-thaicucquyen", "q": "thái cực quyền bệnh parkinson", "expect_terms": ["tai chi", "Parkinson's disease"] },
-
-    { "id": "A-disease-eczema", "q": "chàm mạn tính", "expect_terms": ["eczema"], "must_not_contain": ["acupuncture", "sham acupuncture"] },
-    { "id": "A-disease-vaynen", "q": "châm cứu điều trị vảy nến", "expect_terms": ["acupuncture", "treatment", "psoriasis"] },
-    { "id": "A-disease-caohuyetap", "q": "cao huyết áp", "expect_terms": ["hypertension"] },
-    { "id": "A-disease-tieuduong", "q": "tiểu đường", "expect_terms": ["diabetes mellitus"] },
-    { "id": "A-disease-matngu", "q": "châm cứu mất ngủ", "expect_terms": ["acupuncture", "insomnia"] },
-    { "id": "A-disease-lietmat", "q": "điện châm liệt mặt", "expect_terms": ["electroacupuncture", "Bell's palsy"] },
-    { "id": "A-disease-utai", "q": "châm cứu ù tai", "expect_terms": ["acupuncture", "tinnitus"] },
-    { "id": "A-disease-tramcam", "q": "châm cứu trầm cảm", "expect_terms": ["acupuncture", "depression"] },
-    { "id": "A-disease-loau", "q": "nhĩ châm lo âu", "expect_terms": ["auricular acupuncture", "anxiety"] },
-    { "id": "A-disease-taobon", "q": "châm cứu táo bón chức năng", "expect_terms": ["acupuncture", "constipation"] },
-    { "id": "A-disease-ibs", "q": "châm cứu hội chứng ruột kích thích", "expect_terms": ["acupuncture", "irritable bowel syndrome"] },
-    { "id": "A-disease-viemgan", "q": "trào ngược dạ dày thực quản", "expect_terms": ["gastroesophageal reflux disease"] },
-    { "id": "A-disease-loetdaday", "q": "loét dạ dày", "expect_terms": ["peptic ulcer"] },
-    { "id": "A-disease-satsuttrituе", "q": "châm cứu sa sút trí tuệ", "expect_terms": ["acupuncture", "dementia"] },
-    { "id": "A-disease-dongkinh", "q": "châm cứu động kinh", "expect_terms": ["acupuncture", "epilepsy"] },
-    { "id": "A-disease-ungthu", "q": "châm cứu buồn nôn do hóa trị", "expect_terms": ["acupuncture", "chemotherapy-induced nausea and vomiting"] },
-    { "id": "A-disease-thongkinh", "q": "cứu ngải thống kinh", "expect_terms": ["moxibustion", "dysmenorrhea"] },
-    { "id": "A-disease-mankinh", "q": "châm cứu hội chứng tiền mãn kinh", "expect_terms": ["acupuncture", "menopausal syndrome"] },
-
-    { "id": "A-pattern-tyhu", "q": "tỳ hư", "expect_terms": ["spleen qi deficiency"] },
-    { "id": "A-pattern-huyetu", "q": "huyết ứ", "expect_terms": ["blood stasis"] },
-    { "id": "A-pattern-canuat", "q": "can khí uất kết", "expect_terms": ["liver qi stagnation"] },
-    { "id": "A-pattern-thanduonghu", "q": "thận dương hư", "expect_terms": ["kidney yang deficiency"] },
-    { "id": "A-pattern-amhuhoavuong", "q": "âm hư hỏa vượng mất ngủ", "expect_terms": ["yin deficiency with effulgent fire", "insomnia"] },
-    { "id": "A-pattern-damthap", "q": "đàm thấp béo phì", "expect_terms": ["phlegm-dampness", "obesity"] },
-    { "id": "A-pattern-thapnhiet", "q": "thấp nhiệt", "expect_terms": ["damp-heat"] },
-    { "id": "A-pattern-phonghan", "q": "phong hàn", "expect_terms": ["wind-cold"] },
-    { "id": "A-pattern-khihuyethu", "q": "khí huyết lưỡng hư", "expect_terms": ["qi and blood deficiency"] },
-    { "id": "A-pattern-tamtyhu", "q": "tâm tỳ lưỡng hư", "expect_terms": ["heart and spleen deficiency"] },
-
-    { "id": "A-formula-buotrung", "q": "bổ trung ích khí thang tỳ hư", "expect_terms": ["Buzhong Yiqi Tang", "spleen qi deficiency"] },
-    { "id": "A-formula-lucvi", "q": "lục vị địa hoàng hoàn thận âm hư", "expect_terms": ["Liuwei Dihuang Wan", "kidney yin deficiency"] },
-    { "id": "A-formula-tuquan", "q": "tứ quân tử thang", "expect_terms": ["Sijunzi Tang"] },
-    { "id": "A-formula-tuvat", "q": "tứ vật thang", "expect_terms": ["Siwu Tang"] },
-    { "id": "A-formula-boduong", "q": "bổ dương hoàn ngũ thang di chứng đột quỵ", "expect_terms": ["Buyang Huanwu Tang", "stroke"] },
-    { "id": "A-formula-huyetphu", "q": "huyết phủ trục ứ thang huyết ứ", "expect_terms": ["Xuefu Zhuyu Tang", "blood stasis"] },
-    { "id": "A-formula-tieudao", "q": "tiêu dao tán trầm cảm", "expect_terms": ["Xiaoyao San", "depression"] },
-    { "id": "A-formula-quechithang", "q": "quế chi thang", "expect_terms": ["Guizhi Tang"] },
-    { "id": "A-formula-tieusaiho", "q": "tiểu sài hồ thang", "expect_terms": ["Xiao Chaihu Tang"] },
-    { "id": "A-formula-doclhoat", "q": "độc hoạt tang ký sinh thang đau thắt lưng", "expect_terms": ["Duhuo Jisheng Tang", "low back pain"] },
-    { "id": "A-formula-thienmacaudang", "q": "thiên ma câu đằng ẩm tăng huyết áp", "expect_terms": ["Tianma Gouteng Yin", "hypertension"] },
-
-    { "id": "A-point-hopcoc", "q": "châm hợp cốc đau đầu", "expect_terms": ["acupuncture", "Hegu", "headache"] },
-    { "id": "A-point-noiquan", "q": "châm nội quan buồn nôn do hóa trị", "expect_terms": ["acupuncture", "Neiguan", "chemotherapy-induced nausea and vomiting"] },
-    { "id": "A-point-tamamgiao", "q": "châm tam âm giao thống kinh", "expect_terms": ["acupuncture", "Sanyinjiao", "dysmenorrhea"] },
-    { "id": "A-point-thaixung", "q": "châm thái xung can dương thượng cang", "expect_terms": ["acupuncture", "Taichong", "liver yang hyperactivity"] },
-    { "id": "A-point-bachhoi", "q": "châm bách hội sa sút trí tuệ", "expect_terms": ["acupuncture", "Baihui", "dementia"] },
-    { "id": "A-point-phongtri", "q": "châm phong trì đau nửa đầu", "expect_terms": ["acupuncture", "Fengchi", "migraine"] },
-    { "id": "A-point-tuctamly", "q": "cứu ngải túc tam lý tỳ hư", "expect_terms": ["moxibustion", "Zusanli", "spleen qi deficiency"] },
-    { "id": "A-point-thanmon", "q": "châm thần môn mất ngủ", "expect_terms": ["acupuncture", "Shenmen", "insomnia"] },
-    { "id": "A-point-quchi", "q": "châm khúc trì tăng huyết áp", "expect_terms": ["acupuncture", "Quchi", "hypertension"] },
-
-    { "id": "B-zh-zhenjiu-zhongfeng", "q": "针灸预防中风", "expect_terms": ["acupuncture", "prevention", "stroke"] },
-    { "id": "B-zh-dianzhen-piantan", "q": "电针 偏瘫", "expect_terms": ["electroacupuncture", "hemiplegia"] },
-    { "id": "B-zh-aijiu-tongjing", "q": "艾灸 痛经", "expect_terms": ["moxibustion", "dysmenorrhea"] },
-    { "id": "B-zh-huangqi-tangniaobing", "q": "黄芪 糖尿病", "expect_terms": ["Astragalus membranaceus", "diabetes mellitus"] },
-    { "id": "B-zh-danggui-xueyu", "q": "当归 血瘀", "expect_terms": ["Angelica sinensis", "blood stasis"] },
-    { "id": "B-zh-pixu-shixian", "q": "脾虚 失眠", "expect_terms": ["spleen qi deficiency", "insomnia"] },
-    { "id": "B-zh-zhenci-miantan", "q": "针刺 面瘫", "expect_terms": ["acupuncture", "Bell's palsy"] },
-    { "id": "B-zh-erzhen-yiyu", "q": "耳针 抑郁症", "expect_terms": ["auricular acupuncture", "depression"] },
-    { "id": "B-zh-gaoxueya-zhiliao", "q": "高血压 治疗", "expect_terms": ["hypertension", "treatment"] },
-    { "id": "B-zh-taijiquan-pajinsen", "q": "太极拳 帕金森病", "expect_terms": ["tai chi", "Parkinson's disease"] },
-    { "id": "B-zh-buzhong", "q": "补中益气汤 脾虚", "expect_terms": ["Buzhong Yiqi Tang", "spleen qi deficiency"] },
-    { "id": "B-zh-liuwei", "q": "六味地黄丸", "expect_terms": ["Liuwei Dihuang Wan"] },
-    { "id": "B-zh-xuefu", "q": "血府逐瘀汤", "expect_terms": ["Xuefu Zhuyu Tang"] },
-    { "id": "B-zh-zusanli", "q": "针灸 足三里 脾虚", "expect_terms": ["acupuncture", "Zusanli", "spleen qi deficiency"] },
-    { "id": "B-zh-neiguan-huatuxiang", "q": "内关", "expect_terms": ["Neiguan"] },
-    { "id": "B-zh-tuina-yaotong", "q": "推拿 腰痛", "expect_terms": ["tuina massage", "low back pain"] },
-    { "id": "B-zh-baguan-yaotong", "q": "拔罐 腰痛", "expect_terms": ["cupping therapy", "low back pain"] },
-    { "id": "B-zh-qigong-gaoxueya", "q": "气功 高血压", "expect_terms": ["qigong", "hypertension"] },
-    { "id": "B-zh-zhongyao-shimian", "q": "中药 失眠", "expect_terms": ["Chinese herbal medicine", "insomnia"] },
-    { "id": "B-zh-shizhen", "q": "湿疹", "expect_terms": ["eczema"], "must_not_contain": ["acupuncture"] },
-    { "id": "B-zh-xiaoke", "q": "消渴", "expect_terms": ["diabetes mellitus"] },
-    { "id": "B-zh-xuanyun", "q": "眩晕", "expect_terms": ["vertigo"] },
-    { "id": "B-zh-erming", "q": "耳鸣", "expect_terms": ["tinnitus"] },
-    { "id": "B-zh-pianiu-nao", "q": "脑出血", "expect_terms": ["hemorrhagic stroke"] },
-    { "id": "B-zh-naogengsi", "q": "脑梗死", "expect_terms": ["ischemic stroke"] },
-
-    { "id": "C-py-zhenjiu", "q": "zhēn jiǔ", "expect_terms": ["acupuncture"] },
-    { "id": "C-py-huangqi", "q": "huáng qí", "expect_terms": ["Astragalus membranaceus"] },
-    { "id": "C-py-zusanli", "q": "zú sān lǐ", "expect_terms": ["Zusanli"] },
-    { "id": "C-py-danggui", "q": "dāng guī", "expect_terms": ["Angelica sinensis"] },
-
-    { "id": "D-fold-hoangky", "q": "hoang ky dieu tri dai thao duong", "expect_terms": ["Astragalus membranaceus", "treatment", "diabetes mellitus"] },
-    { "id": "D-fold-dotquy", "q": "cham cuu du phong dot quy", "expect_terms": ["acupuncture", "prevention", "stroke"] },
-    { "id": "D-fold-diencham", "q": "dien cham liet nua nguoi", "expect_terms": ["electroacupuncture", "hemiplegia"] },
-    { "id": "D-fold-duongquy", "q": "duong quy huyet u", "expect_terms": ["Angelica sinensis", "blood stasis"] },
-    { "id": "D-fold-tyhu", "q": " bach truat ty hu ", "expect_terms": ["Atractylodes macrocephala", "spleen qi deficiency"] },
-    { "id": "D-fold-caohuyetap", "q": "cat can cao huyet ap", "expect_terms": ["Pueraria lobata", "hypertension"] },
-    { "id": "D-fold-matngu", "q": "nhi cham mat ngu", "expect_terms": ["auricular acupuncture", "insomnia"] },
-    { "id": "D-fold-phuchoi", "q": "dau cham phuc hoi chuc nang", "expect_terms": ["scalp acupuncture", "rehabilitation"] },
-    { "id": "D-fold-thongkinh", "q": "cuu ngai thong kinh", "expect_terms": ["moxibustion", "dysmenorrhea"] },
-    { "id": "D-fold-tramcam", "q": "tieu dao tan tram cam", "expect_terms": ["Xiaoyao San", "depression"] },
-    { "id": "D-fold-hopcoc", "q": "cham hop coc dau dau", "expect_terms": ["Hegu", "headache"] },
-    { "id": "D-fold-thienma", "q": "thien ma chong mat", "expect_terms": ["Gastrodia elata", "vertigo"] },
-    { "id": "D-fold-nghe-ra", "q": "nghe viem khop dang thap", "expect_terms": ["Curcuma longa", "rheumatoid arthritis"] },
-    { "id": "D-fold-luoc", "q": "luc vi dia hoang hoan than am hu", "expect_terms": ["Liuwei Dihuang Wan", "kidney yin deficiency"] },
-    { "id": "D-fold-tuctamly", "q": "cuu ngai tuc tam ly ty hu", "expect_terms": ["moxibustion", "Zusanli", "spleen qi deficiency"] },
-    { "id": "D-fold-henthac", "q": "ma hoang hen phe quan", "expect_terms": ["Ephedra sinica", "asthma"] },
-    { "id": "D-fold-taobon", "q": "cham cuu tao bon", "expect_terms": ["acupuncture", "constipation"] },
-    { "id": "D-fold-thaixung", "q": "cham thai xung can duong thuong cang", "expect_terms": ["Taichong", "liver yang hyperactivity"] },
-
-    { "id": "E-collide-cham-alone", "q": "cham dieu tri dot quy", "expect_ambiguous": ["cham"], "must_not_contain": ["eczema", "acupuncture"] },
-    { "id": "E-collide-tri-alone", "q": "cham cuu tri benh", "expect_ambiguous": ["tri"] },
-    { "id": "E-collide-trungphong", "q": "cham cuu trung phong", "expect_ambiguous": ["trung phong"] },
-    { "id": "E-exact-giacham-not-ambiguous", "q": "giả châm", "expect_terms": ["sham acupuncture"], "must_not_contain": ["eczema"] },
-    { "id": "E-exact-cham-with-tone", "q": "châm cứu", "expect_terms": ["acupuncture"], "must_not_contain": ["eczema"] },
-    { "id": "E-exact-cham-eczema-tone", "q": "chàm", "expect_terms": ["eczema"], "must_not_contain": ["acupuncture"] },
-    { "id": "E-exact-tri-treatment-tone", "q": "điều trị đột quỵ", "expect_terms": ["treatment", "stroke"], "must_not_contain": ["hemorrhoids"] },
-    { "id": "E-exact-tri-hem-tone", "q": "bệnh trĩ", "expect_terms": ["hemorrhoids"], "must_not_contain": ["treatment", "stroke"] },
-    { "id": "E-exact-trungphong-stroke", "q": "trúng phong", "expect_terms": ["stroke"], "must_not_contain": ["LR4", "Zhongfeng"] },
-    { "id": "E-exact-trungphong-point", "q": "huyệt trung phong", "expect_terms": ["Zhongfeng"], "must_not_contain": ["stroke"] },
-
-    { "id": "F-precedence-chamcuu-gia", "q": "châm cứu giả có hiệu quả hơn không", "expect_terms": ["sham acupuncture", "efficacy"], "must_not_contain": ["\"acupuncture\" ("] },
-    { "id": "F-precedence-giacham-long", "q": "so sánh châm cứu và giả châm", "expect_terms": ["acupuncture", "sham acupuncture"] },
-    { "id": "F-precedence-taibien-mmn", "q": "phục hồi chức năng sau tai biến mạch máu não", "expect_terms": ["rehabilitation", "stroke"] },
-    { "id": "F-precedence-tiendman", "q": "hội chứng tiền mãn kinh", "expect_terms": ["menopausal syndrome"], "must_not_contain": ["menopause OR"] },
-    { "id": "F-precedence-vdcd", "q": "viêm da cơ địa ở trẻ em", "expect_terms": ["eczema"] },
-    { "id": "F-precedence-tha", "q": "tăng huyết áp nguyên phát", "expect_terms": ["hypertension"] },
-    { "id": "F-precedence-thoahoakhop", "q": "thoái hóa khớp gối người cao tuổi", "expect_terms": ["knee osteoarthritis"] },
-    { "id": "F-precedence-khiuat", "q": "can khí uất kết gây mất ngủ", "expect_terms": ["liver qi stagnation", "insomnia"] },
-
-    { "id": "G-evi-block-cham", "q": "cham cuu trung phong", "mode": "evidence", "expect_needs_resolution": true },
-    { "id": "G-evi-block-tri", "q": "cham cuu tri benh tri", "mode": "evidence", "expect_needs_resolution": true },
-    { "id": "G-evi-ok-clear", "q": "châm cứu dự phòng đột quỵ", "mode": "evidence", "expect_needs_resolution": false, "expect_terms": ["acupuncture", "prevention", "stroke"] },
-    { "id": "G-evi-ok-zh", "q": "针灸预防中风", "mode": "evidence", "expect_needs_resolution": false, "expect_terms": ["acupuncture", "prevention", "stroke"] },
-    { "id": "G-evi-block-unresolved", "q": "châm cứu điều trị bệnh zzzhkxx", "mode": "evidence", "expect_needs_resolution": true },
-    { "id": "G-evi-ok-herb", "q": "hoàng kỳ điều trị đái tháo đường", "mode": "evidence", "expect_needs_resolution": false, "expect_terms": ["Astragalus membranaceus"] },
-
-    { "id": "H-discovery-keep-unresolved", "q": "châm cứu điều trị bệnh zzzhkxx", "expect_terms": ["acupuncture", "treatment", "zzzhkxx"] },
-    { "id": "H-discovery-keep-unknown-herb", "q": "cây abcxyzkhonghe điều trị đột quỵ", "expect_terms": ["treatment", "stroke", "abcxyzkhonghe"] },
-    { "id": "H-discovery-keep-collision-verbatim", "q": "cham cuu trung phong", "expect_terms": ["trung phong"], "expect_ambiguous": ["trung phong"] },
-    { "id": "H-discovery-mixed-unknown", "q": "针灸 w偏xx 中风", "expect_terms": ["acupuncture", "stroke"] },
-    { "id": "H-discovery-english-fragment", "q": "châm cứu neuroplasticity đột quỵ", "expect_terms": ["acupuncture", "stroke", "neuroplasticity"] },
-
-    { "id": "I-neg-plain-english", "q": "acupuncture for chronic low back pain systematic review", "expect_terms": ["acupuncture for chronic low back pain systematic review"], "expect_no_translation": true },
-    { "id": "I-neg-no-tcm-terms", "q": "randomized double blind placebo controlled", "expect_no_translation": true, "must_not_contain": ["\""] },
-    { "id": "I-neg-brand-name", "q": "aspirin clopidogrel", "expect_no_translation": true },
-    { "id": "I-neg-gibberish", "q": "qwerty zxcvb", "expect_no_translation": true },
-    { "id": "I-neg-cham-not-forced", "q": "cham", "must_not_contain": ["\"acupuncture\"", "\"eczema\""] },
-    { "id": "I-neg-tri-not-forced", "q": "tri", "must_not_contain": ["\"treatment\"", "\"hemorrhoids\""] },
-    { "id": "I-neg-english-stroke-only", "q": "stroke rehabilitation trial", "expect_no_translation": true },
-    { "id": "I-neg-partial-vi-stopwords", "q": "và của trong sau khi", "expect_no_translation": true },
-    { "id": "I-neg-number-year", "q": "2020 2024", "expect_no_translation": true },
-    { "id": "I-neg-doi-like", "q": "10.1001 jama", "expect_no_translation": true },
-    { "id": "I-neg-author-name", "q": "nguyen van a", "must_not_contain": ["\"treatment\""] },
-    { "id": "I-neg-eczema-english", "q": "eczema atopic dermatitis children", "expect_no_translation": true },
-    { "id": "I-neg-mixed-english-only-terms", "q": "hypertension diabetes obesity", "expect_no_translation": true },
-    { "id": "I-neg-cham-cuu-english-word", "q": "acupuncture stroke", "expect_no_translation": true },
-    { "id": "I-neg-single-tone-word", "q": "bệnh", "expect_no_translation": true },
-
-    { "id": "J-real-1", "q": "hiệu quả điện châm kết hợp phục hồi chức năng ở bệnh nhân liệt nửa người sau đột quỵ", "expect_terms": ["electroacupuncture", "rehabilitation", "hemiplegia", "stroke"] },
-    { "id": "J-real-2", "q": "châm cứu dự phòng đột quỵ tái phát ở người tăng huyết áp", "expect_terms": ["acupuncture", "prevention", "stroke", "hypertension"] },
-    { "id": "J-real-3", "q": "hoàng kỳ và đương quy điều trị thiếu máu do khí huyết lưỡng hư", "expect_terms": ["Astragalus membranaceus", "Angelica sinensis", "treatment", "qi and blood deficiency"] },
-    { "id": "J-real-4", "q": "tổng quan hệ thống châm cứu điều trị mất ngủ", "expect_terms": ["systematic review", "acupuncture", "treatment", "insomnia"] },
-    { "id": "J-real-5", "q": "thử nghiệm ngẫu nhiên có đối chứng điện châm cho đau thắt lưng mạn tính", "expect_terms": ["randomized controlled trial", "electroacupuncture", "low back pain"] },
-    { "id": "J-real-6", "q": "cơ chế tác dụng của berberin trên gan nhiễm mỡ", "expect_terms": ["mechanism", "berberine", "non-alcoholic fatty liver disease"] },
-    { "id": "J-real-7", "q": "an toàn và hiệu quả của cấy chỉ trong điều trị béo phì", "expect_terms": ["safety", "efficacy", "acupoint catgut embedding", "treatment", "obesity"] },
-    { "id": "J-real-8", "q": "bổ dương hoàn ngũ thang cải thiện chất lượng cuộc sống sau đột quỵ", "expect_terms": ["Buyang Huanwu Tang", "quality of life", "stroke"] },
-    { "id": "J-real-9", "q": "针灸联合康复训练治疗中风后偏瘫", "expect_terms": ["acupuncture", "stroke", "hemiplegia"] },
-    { "id": "J-real-10", "q": "电针预防糖尿病周围神经病变", "expect_terms": ["electroacupuncture", "prevention", "diabetes mellitus"] },
-    { "id": "J-real-11", "q": "châm cứu nội quan giảm buồn nôn do hóa trị ở bệnh nhân ung thư", "expect_terms": ["acupuncture", "Neiguan", "chemotherapy-induced nausea and vomiting", "cancer"] },
-    { "id": "J-real-12", "q": "tiêu dao tán điều trị trầm cảm do can khí uất kết", "expect_terms": ["Xiaoyao San", "treatment", "depression", "liver qi stagnation"] },
-    { "id": "J-real-13", "q": "thái cực quyền phòng ngừa té ngã ở người bệnh parkinson", "expect_terms": ["tai chi", "Parkinson's disease"] },
-    { "id": "J-real-14", "q": "hiệu quả nhĩ châm so với giả châm trên lo âu", "expect_terms": ["auricular acupuncture", "sham acupuncture", "anxiety"] },
-    { "id": "J-real-15", "q": "châm cứu túc tam lý và tam âm giao điều trị thống kinh nguyên phát", "expect_terms": ["acupuncture", "Zusanli", "Sanyinjiao", "treatment", "dysmenorrhea"] },
-
-    { "id": "K-shape-translated-list", "q": "châm cứu đột quỵ", "min_translated": 2, "expect_terms": ["acupuncture", "stroke"] },
-    { "id": "K-shape-empty-on-english", "q": "cohort study protocol", "expect_no_translation": true }
+    {
+      "id": "A-herb-hoangky",
+      "q": "hoàng kỳ",
+      "expect_terms": [
+        "Astragalus membranaceus"
+      ]
+    },
+    {
+      "id": "A-herb-duongquy",
+      "q": "đương quy điều trị thiếu máu",
+      "expect_terms": [
+        "Angelica sinensis",
+        "treatment"
+      ]
+    },
+    {
+      "id": "A-herb-nhansam",
+      "q": "nhân sâm",
+      "expect_terms": [
+        "Panax ginseng"
+      ]
+    },
+    {
+      "id": "A-herb-camthao",
+      "q": "cam thảo",
+      "expect_terms": [
+        "Glycyrrhiza uralensis"
+      ]
+    },
+    {
+      "id": "A-herb-bachtruat",
+      "q": "bạch truật tỳ hư",
+      "expect_terms": [
+        "Atractylodes macrocephala",
+        "spleen qi deficiency"
+      ]
+    },
+    {
+      "id": "A-herb-phuclinh",
+      "q": "phục linh",
+      "expect_terms": [
+        "Poria cocos"
+      ]
+    },
+    {
+      "id": "A-herb-xuyenkhung",
+      "q": "xuyên khung đau đầu",
+      "expect_terms": [
+        "Ligusticum chuanxiong",
+        "headache"
+      ]
+    },
+    {
+      "id": "A-herb-bachthuoc",
+      "q": "bạch thược",
+      "expect_terms": [
+        "Paeonia lactiflora"
+      ]
+    },
+    {
+      "id": "A-herb-thucdia",
+      "q": "thục địa thận âm hư",
+      "expect_terms": [
+        "Rehmannia glutinosa",
+        "kidney yin deficiency"
+      ]
+    },
+    {
+      "id": "A-herb-hoanglien",
+      "q": "hoàng liên đái tháo đường",
+      "expect_terms": [
+        "Coptis chinensis",
+        "diabetes mellitus"
+      ]
+    },
+    {
+      "id": "A-herb-berberin",
+      "q": "berberin gan nhiễm mỡ",
+      "expect_terms": [
+        "berberine",
+        "non-alcoholic fatty liver disease"
+      ]
+    },
+    {
+      "id": "A-herb-hoangcam",
+      "q": "hoàng cầm",
+      "expect_terms": [
+        "Scutellaria baicalensis"
+      ]
+    },
+    {
+      "id": "A-herb-saiho",
+      "q": "sài hồ can khí uất kết",
+      "expect_terms": [
+        "Bupleurum chinense",
+        "liver qi stagnation"
+      ]
+    },
+    {
+      "id": "A-herb-catcan",
+      "q": "cát căn tăng huyết áp",
+      "expect_terms": [
+        "Pueraria lobata",
+        "hypertension"
+      ]
+    },
+    {
+      "id": "A-herb-mahoang",
+      "q": "ma hoàng hen phế quản",
+      "expect_terms": [
+        "Ephedra sinica",
+        "asthma"
+      ]
+    },
+    {
+      "id": "A-herb-quechi",
+      "q": "quế chi",
+      "expect_terms": [
+        "Cinnamomum cassia twig"
+      ]
+    },
+    {
+      "id": "A-herb-phutu",
+      "q": "phụ tử thận dương hư",
+      "expect_terms": [
+        "Aconitum carmichaelii",
+        "kidney yang deficiency"
+      ]
+    },
+    {
+      "id": "A-herb-cankhuong",
+      "q": "can khương",
+      "expect_terms": [
+        "dried ginger"
+      ]
+    },
+    {
+      "id": "A-herb-dansam",
+      "q": "đan sâm huyết ứ",
+      "expect_terms": [
+        "Salvia miltiorrhiza",
+        "blood stasis"
+      ]
+    },
+    {
+      "id": "A-herb-kimnganhoa",
+      "q": "kim ngân hoa phong nhiệt",
+      "expect_terms": [
+        "Lonicera japonica",
+        "wind-heat"
+      ]
+    },
+    {
+      "id": "A-herb-lienkieu",
+      "q": "liên kiều",
+      "expect_terms": [
+        "Forsythia suspensa"
+      ]
+    },
+    {
+      "id": "A-herb-cuchoa",
+      "q": "cúc hoa đau nửa đầu",
+      "expect_terms": [
+        "Chrysanthemum morifolium",
+        "migraine"
+      ]
+    },
+    {
+      "id": "A-herb-nguutat",
+      "q": "ngưu tất thoái hóa khớp gối",
+      "expect_terms": [
+        "Achyranthes bidentata",
+        "knee osteoarthritis"
+      ]
+    },
+    {
+      "id": "A-herb-dotrong",
+      "q": "đỗ trọng đau thắt lưng",
+      "expect_terms": [
+        "Eucommia ulmoides",
+        "low back pain"
+      ]
+    },
+    {
+      "id": "A-herb-caukyty",
+      "q": "câu kỷ tử",
+      "expect_terms": [
+        "Lycium barbarum"
+      ]
+    },
+    {
+      "id": "A-herb-daitao",
+      "q": "đại táo",
+      "expect_terms": [
+        "Ziziphus jujuba"
+      ]
+    },
+    {
+      "id": "A-herb-thienma",
+      "q": "thiên ma chóng mặt",
+      "expect_terms": [
+        "Gastrodia elata",
+        "vertigo"
+      ]
+    },
+    {
+      "id": "A-herb-caudang",
+      "q": "câu đằng can dương thượng cang",
+      "expect_terms": [
+        "Uncaria rhynchophylla",
+        "liver yang hyperactivity"
+      ]
+    },
+    {
+      "id": "A-herb-nghe",
+      "q": "nghệ viêm khớp dạng thấp",
+      "expect_terms": [
+        "Curcuma longa",
+        "rheumatoid arthritis"
+      ]
+    },
+    {
+      "id": "A-method-chamcuu",
+      "q": "châm cứu đau vai gáy",
+      "expect_terms": [
+        "acupuncture",
+        "neck pain"
+      ]
+    },
+    {
+      "id": "A-method-giacham",
+      "q": "giả châm điều trị đột quỵ",
+      "expect_terms": [
+        "sham acupuncture",
+        "stroke"
+      ],
+      "must_not_contain": [
+        "eczema"
+      ]
+    },
+    {
+      "id": "A-method-diencham",
+      "q": "điện châm liệt nửa người",
+      "expect_terms": [
+        "electroacupuncture",
+        "hemiplegia"
+      ]
+    },
+    {
+      "id": "A-method-cuu",
+      "q": "cứu ngải đau bụng kinh",
+      "expect_terms": [
+        "moxibustion",
+        "dysmenorrhea"
+      ]
+    },
+    {
+      "id": "A-method-oncham",
+      "q": "ôn châm thoái hóa khớp gối",
+      "expect_terms": [
+        "warm needle acupuncture",
+        "knee osteoarthritis"
+      ]
+    },
+    {
+      "id": "A-method-nhicham",
+      "q": "nhĩ châm mất ngủ",
+      "expect_terms": [
+        "auricular acupuncture",
+        "insomnia"
+      ]
+    },
+    {
+      "id": "A-method-daucham",
+      "q": "đầu châm phục hồi chức năng sau đột quỵ",
+      "expect_terms": [
+        "scalp acupuncture",
+        "rehabilitation",
+        "stroke"
+      ]
+    },
+    {
+      "id": "A-method-caychi",
+      "q": "cấy chỉ béo phì",
+      "expect_terms": [
+        "acupoint catgut embedding",
+        "obesity"
+      ]
+    },
+    {
+      "id": "A-method-thuycham",
+      "q": "thủy châm đau thắt lưng",
+      "expect_terms": [
+        "acupoint injection",
+        "low back pain"
+      ]
+    },
+    {
+      "id": "A-method-giachoi",
+      "q": "giác hơi đau lưng",
+      "expect_terms": [
+        "cupping therapy",
+        "low back pain"
+      ]
+    },
+    {
+      "id": "A-method-caogio",
+      "q": "cạo gió",
+      "expect_terms": [
+        "gua sha"
+      ]
+    },
+    {
+      "id": "A-method-xoabop",
+      "q": "xoa bóp bấm huyệt đau cổ",
+      "expect_terms": [
+        "tuina massage",
+        "neck pain"
+      ]
+    },
+    {
+      "id": "A-method-thuocbac",
+      "q": "thuốc bắc điều trị mất ngủ",
+      "expect_terms": [
+        "Chinese herbal medicine",
+        "treatment",
+        "insomnia"
+      ]
+    },
+    {
+      "id": "A-method-khicong",
+      "q": "khí công tăng huyết áp",
+      "expect_terms": [
+        "qigong",
+        "hypertension"
+      ]
+    },
+    {
+      "id": "A-method-thaicucquyen",
+      "q": "thái cực quyền bệnh parkinson",
+      "expect_terms": [
+        "tai chi",
+        "Parkinson's disease"
+      ]
+    },
+    {
+      "id": "A-disease-eczema",
+      "q": "chàm mạn tính",
+      "expect_terms": [
+        "eczema"
+      ],
+      "must_not_contain": [
+        "acupuncture",
+        "sham acupuncture"
+      ]
+    },
+    {
+      "id": "A-disease-vaynen",
+      "q": "châm cứu điều trị vảy nến",
+      "expect_terms": [
+        "acupuncture",
+        "treatment",
+        "psoriasis"
+      ]
+    },
+    {
+      "id": "A-disease-caohuyetap",
+      "q": "cao huyết áp",
+      "expect_terms": [
+        "hypertension"
+      ]
+    },
+    {
+      "id": "A-disease-tieuduong",
+      "q": "tiểu đường",
+      "expect_terms": [
+        "diabetes mellitus"
+      ]
+    },
+    {
+      "id": "A-disease-matngu",
+      "q": "châm cứu mất ngủ",
+      "expect_terms": [
+        "acupuncture",
+        "insomnia"
+      ]
+    },
+    {
+      "id": "A-disease-lietmat",
+      "q": "điện châm liệt mặt",
+      "expect_terms": [
+        "electroacupuncture",
+        "Bell's palsy"
+      ]
+    },
+    {
+      "id": "A-disease-utai",
+      "q": "châm cứu ù tai",
+      "expect_terms": [
+        "acupuncture",
+        "tinnitus"
+      ]
+    },
+    {
+      "id": "A-disease-tramcam",
+      "q": "châm cứu trầm cảm",
+      "expect_terms": [
+        "acupuncture",
+        "depression"
+      ]
+    },
+    {
+      "id": "A-disease-loau",
+      "q": "nhĩ châm lo âu",
+      "expect_terms": [
+        "auricular acupuncture",
+        "anxiety"
+      ]
+    },
+    {
+      "id": "A-disease-taobon",
+      "q": "châm cứu táo bón chức năng",
+      "expect_terms": [
+        "acupuncture",
+        "constipation"
+      ]
+    },
+    {
+      "id": "A-disease-ibs",
+      "q": "châm cứu hội chứng ruột kích thích",
+      "expect_terms": [
+        "acupuncture",
+        "irritable bowel syndrome"
+      ]
+    },
+    {
+      "id": "A-disease-viemgan",
+      "q": "trào ngược dạ dày thực quản",
+      "expect_terms": [
+        "gastroesophageal reflux disease"
+      ]
+    },
+    {
+      "id": "A-disease-loetdaday",
+      "q": "loét dạ dày",
+      "expect_terms": [
+        "peptic ulcer"
+      ]
+    },
+    {
+      "id": "A-disease-satsuttrituе",
+      "q": "châm cứu sa sút trí tuệ",
+      "expect_terms": [
+        "acupuncture",
+        "dementia"
+      ]
+    },
+    {
+      "id": "A-disease-dongkinh",
+      "q": "châm cứu động kinh",
+      "expect_terms": [
+        "acupuncture",
+        "epilepsy"
+      ]
+    },
+    {
+      "id": "A-disease-ungthu",
+      "q": "châm cứu buồn nôn do hóa trị",
+      "expect_terms": [
+        "acupuncture",
+        "chemotherapy-induced nausea and vomiting"
+      ]
+    },
+    {
+      "id": "A-disease-thongkinh",
+      "q": "cứu ngải thống kinh",
+      "expect_terms": [
+        "moxibustion",
+        "dysmenorrhea"
+      ]
+    },
+    {
+      "id": "A-disease-mankinh",
+      "q": "châm cứu hội chứng tiền mãn kinh",
+      "expect_terms": [
+        "acupuncture",
+        "menopausal syndrome"
+      ]
+    },
+    {
+      "id": "A-pattern-tyhu",
+      "q": "tỳ hư",
+      "expect_terms": [
+        "spleen qi deficiency"
+      ]
+    },
+    {
+      "id": "A-pattern-huyetu",
+      "q": "huyết ứ",
+      "expect_terms": [
+        "blood stasis"
+      ]
+    },
+    {
+      "id": "A-pattern-canuat",
+      "q": "can khí uất kết",
+      "expect_terms": [
+        "liver qi stagnation"
+      ]
+    },
+    {
+      "id": "A-pattern-thanduonghu",
+      "q": "thận dương hư",
+      "expect_terms": [
+        "kidney yang deficiency"
+      ]
+    },
+    {
+      "id": "A-pattern-amhuhoavuong",
+      "q": "âm hư hỏa vượng mất ngủ",
+      "expect_terms": [
+        "yin deficiency with effulgent fire",
+        "insomnia"
+      ]
+    },
+    {
+      "id": "A-pattern-damthap",
+      "q": "đàm thấp béo phì",
+      "expect_terms": [
+        "phlegm-dampness",
+        "obesity"
+      ]
+    },
+    {
+      "id": "A-pattern-thapnhiet",
+      "q": "thấp nhiệt",
+      "expect_terms": [
+        "damp-heat"
+      ]
+    },
+    {
+      "id": "A-pattern-phonghan",
+      "q": "phong hàn",
+      "expect_terms": [
+        "wind-cold"
+      ]
+    },
+    {
+      "id": "A-pattern-khihuyethu",
+      "q": "khí huyết lưỡng hư",
+      "expect_terms": [
+        "qi and blood deficiency"
+      ]
+    },
+    {
+      "id": "A-pattern-tamtyhu",
+      "q": "tâm tỳ lưỡng hư",
+      "expect_terms": [
+        "heart and spleen deficiency"
+      ]
+    },
+    {
+      "id": "A-formula-buotrung",
+      "q": "bổ trung ích khí thang tỳ hư",
+      "expect_terms": [
+        "Buzhong Yiqi Tang",
+        "spleen qi deficiency"
+      ]
+    },
+    {
+      "id": "A-formula-lucvi",
+      "q": "lục vị địa hoàng hoàn thận âm hư",
+      "expect_terms": [
+        "Liuwei Dihuang Wan",
+        "kidney yin deficiency"
+      ]
+    },
+    {
+      "id": "A-formula-tuquan",
+      "q": "tứ quân tử thang",
+      "expect_terms": [
+        "Sijunzi Tang"
+      ]
+    },
+    {
+      "id": "A-formula-tuvat",
+      "q": "tứ vật thang",
+      "expect_terms": [
+        "Siwu Tang"
+      ]
+    },
+    {
+      "id": "A-formula-boduong",
+      "q": "bổ dương hoàn ngũ thang di chứng đột quỵ",
+      "expect_terms": [
+        "Buyang Huanwu Tang",
+        "stroke"
+      ]
+    },
+    {
+      "id": "A-formula-huyetphu",
+      "q": "huyết phủ trục ứ thang huyết ứ",
+      "expect_terms": [
+        "Xuefu Zhuyu Tang",
+        "blood stasis"
+      ]
+    },
+    {
+      "id": "A-formula-tieudao",
+      "q": "tiêu dao tán trầm cảm",
+      "expect_terms": [
+        "Xiaoyao San",
+        "depression"
+      ]
+    },
+    {
+      "id": "A-formula-quechithang",
+      "q": "quế chi thang",
+      "expect_terms": [
+        "Guizhi Tang"
+      ]
+    },
+    {
+      "id": "A-formula-tieusaiho",
+      "q": "tiểu sài hồ thang",
+      "expect_terms": [
+        "Xiao Chaihu Tang"
+      ]
+    },
+    {
+      "id": "A-formula-doclhoat",
+      "q": "độc hoạt tang ký sinh thang đau thắt lưng",
+      "expect_terms": [
+        "Duhuo Jisheng Tang",
+        "low back pain"
+      ]
+    },
+    {
+      "id": "A-formula-thienmacaudang",
+      "q": "thiên ma câu đằng ẩm tăng huyết áp",
+      "expect_terms": [
+        "Tianma Gouteng Yin",
+        "hypertension"
+      ]
+    },
+    {
+      "id": "A-point-hopcoc",
+      "q": "châm hợp cốc đau đầu",
+      "expect_terms": [
+        "acupuncture",
+        "Hegu",
+        "headache"
+      ]
+    },
+    {
+      "id": "A-point-noiquan",
+      "q": "châm nội quan buồn nôn do hóa trị",
+      "expect_terms": [
+        "acupuncture",
+        "Neiguan",
+        "chemotherapy-induced nausea and vomiting"
+      ]
+    },
+    {
+      "id": "A-point-tamamgiao",
+      "q": "châm tam âm giao thống kinh",
+      "expect_terms": [
+        "acupuncture",
+        "Sanyinjiao",
+        "dysmenorrhea"
+      ]
+    },
+    {
+      "id": "A-point-thaixung",
+      "q": "châm thái xung can dương thượng cang",
+      "expect_terms": [
+        "acupuncture",
+        "Taichong",
+        "liver yang hyperactivity"
+      ]
+    },
+    {
+      "id": "A-point-bachhoi",
+      "q": "châm bách hội sa sút trí tuệ",
+      "expect_terms": [
+        "acupuncture",
+        "Baihui",
+        "dementia"
+      ]
+    },
+    {
+      "id": "A-point-phongtri",
+      "q": "châm phong trì đau nửa đầu",
+      "expect_terms": [
+        "acupuncture",
+        "Fengchi",
+        "migraine"
+      ]
+    },
+    {
+      "id": "A-point-tuctamly",
+      "q": "cứu ngải túc tam lý tỳ hư",
+      "expect_terms": [
+        "moxibustion",
+        "Zusanli",
+        "spleen qi deficiency"
+      ]
+    },
+    {
+      "id": "A-point-thanmon",
+      "q": "châm thần môn mất ngủ",
+      "expect_terms": [
+        "acupuncture",
+        "Shenmen",
+        "insomnia"
+      ]
+    },
+    {
+      "id": "A-point-quchi",
+      "q": "châm khúc trì tăng huyết áp",
+      "expect_terms": [
+        "acupuncture",
+        "Quchi",
+        "hypertension"
+      ]
+    },
+    {
+      "id": "B-zh-zhenjiu-zhongfeng",
+      "q": "针灸预防中风",
+      "expect_terms": [
+        "acupuncture",
+        "prevention",
+        "stroke"
+      ]
+    },
+    {
+      "id": "B-zh-dianzhen-piantan",
+      "q": "电针 偏瘫",
+      "expect_terms": [
+        "electroacupuncture",
+        "hemiplegia"
+      ]
+    },
+    {
+      "id": "B-zh-aijiu-tongjing",
+      "q": "艾灸 痛经",
+      "expect_terms": [
+        "moxibustion",
+        "dysmenorrhea"
+      ]
+    },
+    {
+      "id": "B-zh-huangqi-tangniaobing",
+      "q": "黄芪 糖尿病",
+      "expect_terms": [
+        "Astragalus membranaceus",
+        "diabetes mellitus"
+      ]
+    },
+    {
+      "id": "B-zh-danggui-xueyu",
+      "q": "当归 血瘀",
+      "expect_terms": [
+        "Angelica sinensis",
+        "blood stasis"
+      ]
+    },
+    {
+      "id": "B-zh-pixu-shixian",
+      "q": "脾虚 失眠",
+      "expect_terms": [
+        "spleen qi deficiency",
+        "insomnia"
+      ]
+    },
+    {
+      "id": "B-zh-zhenci-miantan",
+      "q": "针刺 面瘫",
+      "expect_terms": [
+        "acupuncture",
+        "Bell's palsy"
+      ]
+    },
+    {
+      "id": "B-zh-erzhen-yiyu",
+      "q": "耳针 抑郁症",
+      "expect_terms": [
+        "auricular acupuncture",
+        "depression"
+      ]
+    },
+    {
+      "id": "B-zh-gaoxueya-zhiliao",
+      "q": "高血压 治疗",
+      "expect_terms": [
+        "hypertension",
+        "treatment"
+      ]
+    },
+    {
+      "id": "B-zh-taijiquan-pajinsen",
+      "q": "太极拳 帕金森病",
+      "expect_terms": [
+        "tai chi",
+        "Parkinson's disease"
+      ]
+    },
+    {
+      "id": "B-zh-buzhong",
+      "q": "补中益气汤 脾虚",
+      "expect_terms": [
+        "Buzhong Yiqi Tang",
+        "spleen qi deficiency"
+      ]
+    },
+    {
+      "id": "B-zh-liuwei",
+      "q": "六味地黄丸",
+      "expect_terms": [
+        "Liuwei Dihuang Wan"
+      ]
+    },
+    {
+      "id": "B-zh-xuefu",
+      "q": "血府逐瘀汤",
+      "expect_terms": [
+        "Xuefu Zhuyu Tang"
+      ]
+    },
+    {
+      "id": "B-zh-zusanli",
+      "q": "针灸 足三里 脾虚",
+      "expect_terms": [
+        "acupuncture",
+        "Zusanli",
+        "spleen qi deficiency"
+      ]
+    },
+    {
+      "id": "B-zh-neiguan-huatuxiang",
+      "q": "内关",
+      "expect_terms": [
+        "Neiguan"
+      ]
+    },
+    {
+      "id": "B-zh-tuina-yaotong",
+      "q": "推拿 腰痛",
+      "expect_terms": [
+        "tuina massage",
+        "low back pain"
+      ]
+    },
+    {
+      "id": "B-zh-baguan-yaotong",
+      "q": "拔罐 腰痛",
+      "expect_terms": [
+        "cupping therapy",
+        "low back pain"
+      ]
+    },
+    {
+      "id": "B-zh-qigong-gaoxueya",
+      "q": "气功 高血压",
+      "expect_terms": [
+        "qigong",
+        "hypertension"
+      ]
+    },
+    {
+      "id": "B-zh-zhongyao-shimian",
+      "q": "中药 失眠",
+      "expect_terms": [
+        "Chinese herbal medicine",
+        "insomnia"
+      ]
+    },
+    {
+      "id": "B-zh-shizhen",
+      "q": "湿疹",
+      "expect_terms": [
+        "eczema"
+      ],
+      "must_not_contain": [
+        "acupuncture"
+      ]
+    },
+    {
+      "id": "B-zh-xiaoke",
+      "q": "消渴",
+      "expect_terms": [
+        "diabetes mellitus"
+      ]
+    },
+    {
+      "id": "B-zh-xuanyun",
+      "q": "眩晕",
+      "expect_terms": [
+        "vertigo"
+      ]
+    },
+    {
+      "id": "B-zh-erming",
+      "q": "耳鸣",
+      "expect_terms": [
+        "tinnitus"
+      ]
+    },
+    {
+      "id": "B-zh-pianiu-nao",
+      "q": "脑出血",
+      "expect_terms": [
+        "hemorrhagic stroke"
+      ]
+    },
+    {
+      "id": "B-zh-naogengsi",
+      "q": "脑梗死",
+      "expect_terms": [
+        "ischemic stroke"
+      ]
+    },
+    {
+      "id": "C-py-zhenjiu",
+      "q": "zhēn jiǔ",
+      "expect_terms": [
+        "acupuncture"
+      ]
+    },
+    {
+      "id": "C-py-huangqi",
+      "q": "huáng qí",
+      "expect_terms": [
+        "Astragalus membranaceus"
+      ]
+    },
+    {
+      "id": "C-py-zusanli",
+      "q": "zú sān lǐ",
+      "expect_terms": [
+        "Zusanli"
+      ]
+    },
+    {
+      "id": "C-py-danggui",
+      "q": "dāng guī",
+      "expect_terms": [
+        "Angelica sinensis"
+      ]
+    },
+    {
+      "id": "D-fold-hoangky",
+      "q": "hoang ky dieu tri dai thao duong",
+      "expect_terms": [
+        "Astragalus membranaceus",
+        "treatment",
+        "diabetes mellitus"
+      ]
+    },
+    {
+      "id": "D-fold-dotquy",
+      "q": "cham cuu du phong dot quy",
+      "expect_terms": [
+        "acupuncture",
+        "prevention",
+        "stroke"
+      ]
+    },
+    {
+      "id": "D-fold-diencham",
+      "q": "dien cham liet nua nguoi",
+      "expect_terms": [
+        "electroacupuncture",
+        "hemiplegia"
+      ]
+    },
+    {
+      "id": "D-fold-duongquy",
+      "q": "duong quy huyet u",
+      "expect_terms": [
+        "Angelica sinensis",
+        "blood stasis"
+      ]
+    },
+    {
+      "id": "D-fold-tyhu",
+      "q": " bach truat ty hu ",
+      "expect_terms": [
+        "Atractylodes macrocephala",
+        "spleen qi deficiency"
+      ]
+    },
+    {
+      "id": "D-fold-caohuyetap",
+      "q": "cat can cao huyet ap",
+      "expect_terms": [
+        "Pueraria lobata",
+        "hypertension"
+      ]
+    },
+    {
+      "id": "D-fold-matngu",
+      "q": "nhi cham mat ngu",
+      "expect_terms": [
+        "auricular acupuncture",
+        "insomnia"
+      ]
+    },
+    {
+      "id": "D-fold-phuchoi",
+      "q": "dau cham phuc hoi chuc nang",
+      "expect_terms": [
+        "scalp acupuncture",
+        "rehabilitation"
+      ]
+    },
+    {
+      "id": "D-fold-thongkinh",
+      "q": "cuu ngai thong kinh",
+      "expect_terms": [
+        "moxibustion",
+        "dysmenorrhea"
+      ]
+    },
+    {
+      "id": "D-fold-tramcam",
+      "q": "tieu dao tan tram cam",
+      "expect_terms": [
+        "Xiaoyao San",
+        "depression"
+      ]
+    },
+    {
+      "id": "D-fold-hopcoc",
+      "q": "cham hop coc dau dau",
+      "expect_terms": [
+        "Hegu",
+        "headache"
+      ]
+    },
+    {
+      "id": "D-fold-thienma",
+      "q": "thien ma chong mat",
+      "expect_terms": [
+        "Gastrodia elata",
+        "vertigo"
+      ]
+    },
+    {
+      "id": "D-fold-nghe-ra",
+      "q": "nghe viem khop dang thap",
+      "expect_terms": [
+        "Curcuma longa",
+        "rheumatoid arthritis"
+      ]
+    },
+    {
+      "id": "D-fold-luoc",
+      "q": "luc vi dia hoang hoan than am hu",
+      "expect_terms": [
+        "Liuwei Dihuang Wan",
+        "kidney yin deficiency"
+      ]
+    },
+    {
+      "id": "D-fold-tuctamly",
+      "q": "cuu ngai tuc tam ly ty hu",
+      "expect_terms": [
+        "moxibustion",
+        "Zusanli",
+        "spleen qi deficiency"
+      ]
+    },
+    {
+      "id": "D-fold-henthac",
+      "q": "ma hoang hen phe quan",
+      "expect_terms": [
+        "Ephedra sinica",
+        "asthma"
+      ]
+    },
+    {
+      "id": "D-fold-taobon",
+      "q": "cham cuu tao bon",
+      "expect_terms": [
+        "acupuncture",
+        "constipation"
+      ]
+    },
+    {
+      "id": "D-fold-thaixung",
+      "q": "cham thai xung can duong thuong cang",
+      "expect_terms": [
+        "Taichong",
+        "liver yang hyperactivity"
+      ]
+    },
+    {
+      "id": "E-collide-cham-alone",
+      "q": "cham dieu tri dot quy",
+      "expect_ambiguous": [
+        "cham"
+      ],
+      "must_not_contain": [
+        "eczema",
+        "acupuncture"
+      ]
+    },
+    {
+      "id": "E-collide-tri-alone",
+      "q": "cham cuu tri benh",
+      "expect_ambiguous": [
+        "tri"
+      ]
+    },
+    {
+      "id": "E-collide-trungphong",
+      "q": "cham cuu trung phong",
+      "expect_ambiguous": [
+        "trung phong"
+      ]
+    },
+    {
+      "id": "E-exact-giacham-not-ambiguous",
+      "q": "giả châm",
+      "expect_terms": [
+        "sham acupuncture"
+      ],
+      "must_not_contain": [
+        "eczema"
+      ]
+    },
+    {
+      "id": "E-exact-cham-with-tone",
+      "q": "châm cứu",
+      "expect_terms": [
+        "acupuncture"
+      ],
+      "must_not_contain": [
+        "eczema"
+      ]
+    },
+    {
+      "id": "E-exact-cham-eczema-tone",
+      "q": "chàm",
+      "expect_terms": [
+        "eczema"
+      ],
+      "must_not_contain": [
+        "acupuncture"
+      ]
+    },
+    {
+      "id": "E-exact-tri-treatment-tone",
+      "q": "điều trị đột quỵ",
+      "expect_terms": [
+        "treatment",
+        "stroke"
+      ],
+      "must_not_contain": [
+        "hemorrhoids"
+      ]
+    },
+    {
+      "id": "E-exact-tri-hem-tone",
+      "q": "bệnh trĩ",
+      "expect_terms": [
+        "hemorrhoids"
+      ],
+      "must_not_contain": [
+        "treatment",
+        "stroke"
+      ]
+    },
+    {
+      "id": "E-exact-trungphong-stroke",
+      "q": "trúng phong",
+      "expect_terms": [
+        "stroke"
+      ],
+      "must_not_contain": [
+        "LR4",
+        "Zhongfeng"
+      ]
+    },
+    {
+      "id": "E-exact-trungphong-point",
+      "q": "huyệt trung phong",
+      "expect_terms": [
+        "Zhongfeng"
+      ],
+      "must_not_contain": [
+        "stroke"
+      ]
+    },
+    {
+      "id": "F-precedence-chamcuu-gia",
+      "q": "châm cứu giả có hiệu quả hơn không",
+      "expect_terms": [
+        "sham acupuncture",
+        "efficacy"
+      ],
+      "must_not_contain": [
+        "\"acupuncture\" ("
+      ]
+    },
+    {
+      "id": "F-precedence-giacham-long",
+      "q": "so sánh châm cứu và giả châm",
+      "expect_terms": [
+        "acupuncture",
+        "sham acupuncture"
+      ]
+    },
+    {
+      "id": "F-precedence-taibien-mmn",
+      "q": "phục hồi chức năng sau tai biến mạch máu não",
+      "expect_terms": [
+        "rehabilitation",
+        "stroke"
+      ]
+    },
+    {
+      "id": "F-precedence-tiendman",
+      "q": "hội chứng tiền mãn kinh",
+      "expect_terms": [
+        "menopausal syndrome"
+      ],
+      "must_not_contain": [
+        "menopause OR"
+      ]
+    },
+    {
+      "id": "F-precedence-vdcd",
+      "q": "viêm da cơ địa ở trẻ em",
+      "expect_terms": [
+        "eczema"
+      ]
+    },
+    {
+      "id": "F-precedence-tha",
+      "q": "tăng huyết áp nguyên phát",
+      "expect_terms": [
+        "hypertension"
+      ]
+    },
+    {
+      "id": "F-precedence-thoahoakhop",
+      "q": "thoái hóa khớp gối người cao tuổi",
+      "expect_terms": [
+        "knee osteoarthritis"
+      ]
+    },
+    {
+      "id": "F-precedence-khiuat",
+      "q": "can khí uất kết gây mất ngủ",
+      "expect_terms": [
+        "liver qi stagnation",
+        "insomnia"
+      ]
+    },
+    {
+      "id": "G-evi-block-cham",
+      "q": "cham cuu trung phong",
+      "mode": "evidence",
+      "expect_needs_resolution": true
+    },
+    {
+      "id": "G-evi-block-tri",
+      "q": "cham cuu tri benh tri",
+      "mode": "evidence",
+      "expect_needs_resolution": true
+    },
+    {
+      "id": "G-evi-ok-clear",
+      "q": "châm cứu dự phòng đột quỵ",
+      "mode": "evidence",
+      "expect_needs_resolution": false,
+      "expect_terms": [
+        "acupuncture",
+        "prevention",
+        "stroke"
+      ]
+    },
+    {
+      "id": "G-evi-ok-zh",
+      "q": "针灸预防中风",
+      "mode": "evidence",
+      "expect_needs_resolution": false,
+      "expect_terms": [
+        "acupuncture",
+        "prevention",
+        "stroke"
+      ]
+    },
+    {
+      "id": "G-evi-block-unresolved",
+      "q": "châm cứu điều trị bệnh zzzhkxx",
+      "mode": "evidence",
+      "expect_needs_resolution": true
+    },
+    {
+      "id": "G-evi-ok-herb",
+      "q": "hoàng kỳ điều trị đái tháo đường",
+      "mode": "evidence",
+      "expect_needs_resolution": false,
+      "expect_terms": [
+        "Astragalus membranaceus"
+      ]
+    },
+    {
+      "id": "H-discovery-keep-unresolved",
+      "q": "châm cứu điều trị bệnh zzzhkxx",
+      "expect_terms": [
+        "acupuncture",
+        "treatment",
+        "zzzhkxx"
+      ]
+    },
+    {
+      "id": "H-discovery-keep-unknown-herb",
+      "q": "cây abcxyzkhonghe điều trị đột quỵ",
+      "expect_terms": [
+        "treatment",
+        "stroke",
+        "abcxyzkhonghe"
+      ]
+    },
+    {
+      "id": "H-discovery-keep-collision-verbatim",
+      "q": "cham cuu trung phong",
+      "expect_terms": [
+        "trung phong"
+      ],
+      "expect_ambiguous": [
+        "trung phong"
+      ]
+    },
+    {
+      "id": "H-discovery-mixed-unknown",
+      "q": "针灸 w偏xx 中风",
+      "expect_terms": [
+        "acupuncture",
+        "stroke"
+      ]
+    },
+    {
+      "id": "H-discovery-english-fragment",
+      "q": "châm cứu neuroplasticity đột quỵ",
+      "expect_terms": [
+        "acupuncture",
+        "stroke",
+        "neuroplasticity"
+      ]
+    },
+    {
+      "id": "I-neg-plain-english",
+      "q": "acupuncture for chronic low back pain systematic review",
+      "expect_terms": [
+        "acupuncture for chronic low back pain systematic review"
+      ],
+      "expect_no_translation": true
+    },
+    {
+      "id": "I-neg-no-tcm-terms",
+      "q": "randomized double blind placebo controlled",
+      "expect_no_translation": true,
+      "must_not_contain": [
+        "\""
+      ]
+    },
+    {
+      "id": "I-neg-brand-name",
+      "q": "aspirin clopidogrel",
+      "expect_no_translation": true
+    },
+    {
+      "id": "I-neg-gibberish",
+      "q": "qwerty zxcvb",
+      "expect_no_translation": true
+    },
+    {
+      "id": "I-neg-cham-not-forced",
+      "q": "cham",
+      "must_not_contain": [
+        "\"acupuncture\"",
+        "\"eczema\""
+      ]
+    },
+    {
+      "id": "I-neg-tri-not-forced",
+      "q": "tri",
+      "must_not_contain": [
+        "\"treatment\"",
+        "\"hemorrhoids\""
+      ]
+    },
+    {
+      "id": "I-neg-english-stroke-only",
+      "q": "stroke rehabilitation trial",
+      "expect_no_translation": true
+    },
+    {
+      "id": "I-neg-partial-vi-stopwords",
+      "q": "và của trong sau khi",
+      "expect_no_translation": true
+    },
+    {
+      "id": "I-neg-number-year",
+      "q": "2020 2024",
+      "expect_no_translation": true
+    },
+    {
+      "id": "I-neg-doi-like",
+      "q": "10.1001 jama",
+      "expect_no_translation": true
+    },
+    {
+      "id": "I-neg-author-name",
+      "q": "nguyen van a",
+      "must_not_contain": [
+        "\"treatment\""
+      ]
+    },
+    {
+      "id": "I-neg-eczema-english",
+      "q": "eczema atopic dermatitis children",
+      "expect_no_translation": true
+    },
+    {
+      "id": "I-neg-mixed-english-only-terms",
+      "q": "hypertension diabetes obesity",
+      "expect_no_translation": true
+    },
+    {
+      "id": "I-neg-cham-cuu-english-word",
+      "q": "acupuncture stroke",
+      "expect_no_translation": true
+    },
+    {
+      "id": "I-neg-single-tone-word",
+      "q": "bệnh",
+      "expect_no_translation": true
+    },
+    {
+      "id": "J-real-1",
+      "q": "hiệu quả điện châm kết hợp phục hồi chức năng ở bệnh nhân liệt nửa người sau đột quỵ",
+      "expect_terms": [
+        "electroacupuncture",
+        "rehabilitation",
+        "hemiplegia",
+        "stroke"
+      ]
+    },
+    {
+      "id": "J-real-2",
+      "q": "châm cứu dự phòng đột quỵ tái phát ở người tăng huyết áp",
+      "expect_terms": [
+        "acupuncture",
+        "prevention",
+        "stroke",
+        "hypertension"
+      ]
+    },
+    {
+      "id": "J-real-3",
+      "q": "hoàng kỳ và đương quy điều trị thiếu máu do khí huyết lưỡng hư",
+      "expect_terms": [
+        "Astragalus membranaceus",
+        "Angelica sinensis",
+        "qi and blood deficiency"
+      ],
+      "_note": "D8: cụm generic bị cắt khi ≥3 khái niệm cụ thể (đúng như legacy)"
+    },
+    {
+      "id": "J-real-4",
+      "q": "tổng quan hệ thống châm cứu điều trị mất ngủ",
+      "expect_terms": [
+        "systematic review",
+        "acupuncture",
+        "treatment",
+        "insomnia"
+      ]
+    },
+    {
+      "id": "J-real-5",
+      "q": "thử nghiệm ngẫu nhiên có đối chứng điện châm cho đau thắt lưng mạn tính",
+      "expect_terms": [
+        "electroacupuncture",
+        "low back pain"
+      ],
+      "_note": "D8: cụm generic bị cắt khi ≥3 khái niệm cụ thể (đúng như legacy)"
+    },
+    {
+      "id": "J-real-6",
+      "q": "cơ chế tác dụng của berberin trên gan nhiễm mỡ",
+      "expect_terms": [
+        "mechanism",
+        "berberine",
+        "non-alcoholic fatty liver disease"
+      ]
+    },
+    {
+      "id": "J-real-7",
+      "q": "an toàn và hiệu quả của cấy chỉ trong điều trị béo phì",
+      "expect_terms": [
+        "safety",
+        "efficacy",
+        "acupoint catgut embedding",
+        "treatment",
+        "obesity"
+      ]
+    },
+    {
+      "id": "J-real-8",
+      "q": "bổ dương hoàn ngũ thang cải thiện chất lượng cuộc sống sau đột quỵ",
+      "expect_terms": [
+        "Buyang Huanwu Tang",
+        "quality of life",
+        "stroke"
+      ]
+    },
+    {
+      "id": "J-real-9",
+      "q": "针灸联合康复训练治疗中风后偏瘫",
+      "expect_terms": [
+        "acupuncture",
+        "stroke",
+        "hemiplegia"
+      ]
+    },
+    {
+      "id": "J-real-10",
+      "q": "电针预防糖尿病周围神经病变",
+      "expect_terms": [
+        "electroacupuncture",
+        "prevention",
+        "diabetes mellitus"
+      ]
+    },
+    {
+      "id": "J-real-11",
+      "q": "châm cứu nội quan giảm buồn nôn do hóa trị ở bệnh nhân ung thư",
+      "expect_terms": [
+        "acupuncture",
+        "Neiguan",
+        "chemotherapy-induced nausea and vomiting",
+        "cancer"
+      ]
+    },
+    {
+      "id": "J-real-12",
+      "q": "tiêu dao tán điều trị trầm cảm do can khí uất kết",
+      "expect_terms": [
+        "Xiaoyao San",
+        "depression",
+        "liver qi stagnation"
+      ],
+      "_note": "D8: cụm generic bị cắt khi ≥3 khái niệm cụ thể (đúng như legacy)"
+    },
+    {
+      "id": "J-real-13",
+      "q": "thái cực quyền phòng ngừa té ngã ở người bệnh parkinson",
+      "expect_terms": [
+        "tai chi",
+        "Parkinson's disease"
+      ]
+    },
+    {
+      "id": "J-real-14",
+      "q": "hiệu quả nhĩ châm so với giả châm trên lo âu",
+      "expect_terms": [
+        "auricular acupuncture",
+        "sham acupuncture",
+        "anxiety"
+      ]
+    },
+    {
+      "id": "J-real-15",
+      "q": "châm cứu túc tam lý và tam âm giao điều trị thống kinh nguyên phát",
+      "expect_terms": [
+        "acupuncture",
+        "Zusanli",
+        "Sanyinjiao",
+        "dysmenorrhea"
+      ],
+      "_note": "D8: cụm generic bị cắt khi ≥3 khái niệm cụ thể (đúng như legacy)"
+    },
+    {
+      "id": "K-shape-translated-list",
+      "q": "châm cứu đột quỵ",
+      "min_translated": 2,
+      "expect_terms": [
+        "acupuncture",
+        "stroke"
+      ]
+    },
+    {
+      "id": "K-shape-empty-on-english",
+      "q": "cohort study protocol",
+      "expect_no_translation": true
+    }
   ]
 }
