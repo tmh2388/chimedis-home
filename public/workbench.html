@@ -54,7 +54,9 @@
   <h1 style="font-size:18px">Bàn làm việc nghiên cứu</h1>
   <p class="muted">Đăng nhập bằng tài khoản Chimedis để tạo dự án, tìm y văn và lưu nhật ký tìm kiếm.</p>
   <div class="card">
-    <button class="btn" style="width:100%" onclick="wbSignInGoogle()">Đăng nhập với Google</button>
+    <button class="btn" style="width:100%" onclick="wbSocial('google')">Đăng nhập với Google</button>
+    <button class="btn sec" style="width:100%;margin-top:8px" onclick="wbSocial('apple')">Đăng nhập với Apple</button>
+    <button class="btn sec" style="width:100%;margin-top:8px" onclick="wbSocial('facebook')">Đăng nhập với Facebook</button>
     <div style="text-align:center;margin:10px 0;color:var(--muted);font-size:12px">hoặc</div>
     <label>Email</label><input id="loginEmail" type="email" />
     <label>Mật khẩu <span id="pwHint" class="hint" hidden>(tối thiểu 6 ký tự)</span></label>
@@ -94,7 +96,8 @@
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
-  getAuth, GoogleAuthProvider, signInWithPopup, signInWithEmailAndPassword,
+  getAuth, GoogleAuthProvider, OAuthProvider, FacebookAuthProvider,
+  signInWithPopup, signInWithEmailAndPassword,
   createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail,
   onAuthStateChanged, signOut,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
@@ -133,10 +136,25 @@ window.wbToggleAuth = () => {
   $('pwHint').hidden = !registerMode;
   $('loginMsg').innerHTML = '';
 };
-window.wbSignInGoogle = async () => {
-  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
-  catch (e) { authErr(e.message); }
+function socialProvider(kind) {
+  if (kind === 'google') return new GoogleAuthProvider();
+  if (kind === 'facebook') { const p = new FacebookAuthProvider(); p.addScope('email'); return p; }
+  if (kind === 'apple') { const p = new OAuthProvider('apple.com'); p.addScope('email'); p.addScope('name'); return p; }
+  return new GoogleAuthProvider();
+}
+function socialErr(e) {
+  const c = e.code || '';
+  if (c === 'auth/operation-not-allowed') return 'Phương thức này chưa được bật trên máy chủ. Thử cách khác.';
+  if (c === 'auth/account-exists-with-different-credential')
+    return 'Email này đã đăng ký bằng phương thức khác. Đăng nhập bằng phương thức cũ, rồi liên kết thêm trong trang Tài khoản.';
+  if (c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return '';
+  return e.message;
+}
+window.wbSocial = async (kind) => {
+  try { await signInWithPopup(auth, socialProvider(kind)); }
+  catch (e) { const m = socialErr(e); if (m) authErr(m); }
 };
+window.wbSignInGoogle = () => wbSocial('google'); // tương thích chỗ gọi cũ
 window.wbAuthSubmit = async () => {
   const email = $('loginEmail').value.trim(), pass = $('loginPass').value;
   if (!email || !pass) return authErr('Nhập email và mật khẩu.');

@@ -48,9 +48,11 @@
     </div>
 
     <div class="card">
-      <h2>Phương thức đăng nhập đã liên kết</h2>
+      <h2>Phương thức đăng nhập</h2>
       <div id="identities" class="muted">—</div>
-      <p class="muted" style="margin-top:8px">Liên kết thêm Google/Apple/ORCID sẽ có ở bản cập nhật sau. Không tự gộp tài khoản theo email trùng.</p>
+      <div id="linkMsg"></div>
+      <p class="muted" style="margin-top:8px">Liên kết nhiều phương thức để đăng nhập bằng cách nào cũng vào đúng tài khoản này.
+        Không tự gộp tài khoản theo email trùng — bạn phải chủ động liên kết.</p>
     </div>
 
     <div class="card">
@@ -76,6 +78,7 @@
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import {
   getAuth, onAuthStateChanged, signOut, sendEmailVerification, sendPasswordResetEmail,
+  GoogleAuthProvider, OAuthProvider, FacebookAuthProvider, linkWithPopup, unlink,
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
 
 const FIREBASE_CONFIG = {
@@ -88,7 +91,7 @@ const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':
 let auth = null;
 try { auth = getAuth(initializeApp(FIREBASE_CONFIG)); } catch (e) { console.error(e); }
 
-const PROVIDER_LABEL = { 'password':'Email + mật khẩu', 'google.com':'Google', 'apple.com':'Apple', 'oidc.orcid':'ORCID', 'microsoft.com':'Microsoft' };
+const PROVIDER_LABEL = { 'password':'Email + mật khẩu', 'google.com':'Google', 'apple.com':'Apple', 'facebook.com':'Facebook', 'oidc.orcid':'ORCID', 'microsoft.com':'Microsoft' };
 
 async function api(url, opts = {}) {
   const token = await auth.currentUser.getIdToken();
@@ -114,11 +117,53 @@ onAuthStateChanged(auth, async (user) => {
       ? '<span class="pill ok">đã xác thực</span>'
       : '<span class="pill no">chưa xác thực</span>';
     $('verifyRow').hidden = d.verified;
-    $('identities').innerHTML = (d.identities || []).map((i) =>
-      `<div class="row"><span>${esc(PROVIDER_LABEL[i.provider] || i.provider)}</span><span>${esc(i.provider_email || '')} ${i.verified_at ? '✓' : ''}</span></div>`
-    ).join('') || '<span class="muted">Chưa có</span>';
+    renderIdentities(d.identities || []);
   } catch (e) { $('anon').hidden = false; $('anon').textContent = 'Lỗi tải hồ sơ: ' + e.message; }
 });
+
+const LINKABLE = [['google.com','Google'],['apple.com','Apple'],['facebook.com','Facebook']];
+function renderIdentities(list) {
+  const have = new Set(list.map((i) => i.provider));
+  const rows = list.map((i) => {
+    const canUnlink = list.length > 1 && i.provider !== (auth.currentUser?.providerData?.[0]?.providerId);
+    return `<div class="row"><span>${esc(PROVIDER_LABEL[i.provider] || i.provider)}</span><span>${esc(i.provider_email || '')} ${i.verified_at ? '✓' : ''}` +
+      (canUnlink ? ` · <a href="#" onclick="unlinkProv('${i.provider}');return false">gỡ</a>` : '') + `</span></div>`;
+  });
+  for (const [pid, label] of LINKABLE) {
+    if (!have.has(pid)) rows.push(`<div class="row"><span>${label}</span><span><a href="#" onclick="linkProv('${pid}');return false">liên kết</a></span></div>`);
+  }
+  $('identities').innerHTML = rows.join('');
+}
+function provObj(pid) {
+  if (pid === 'google.com') return new GoogleAuthProvider();
+  if (pid === 'facebook.com') { const p = new FacebookAuthProvider(); p.addScope('email'); return p; }
+  if (pid === 'apple.com') { const p = new OAuthProvider('apple.com'); p.addScope('email'); p.addScope('name'); return p; }
+}
+window.linkProv = async (pid) => {
+  $('linkMsg').innerHTML = '';
+  try {
+    await linkWithPopup(auth.currentUser, provObj(pid));
+    const t = await auth.currentUser.getIdToken(true);
+    await fetch('/api/auth/sync', { method:'POST', headers:{ Authorization:'Bearer '+t } });
+    $('linkMsg').innerHTML = '<div class="msg okm">Đã liên kết.</div>';
+    setTimeout(() => location.reload(), 700);
+  } catch (e) {
+    const c = e.code || '';
+    const m = c === 'auth/credential-already-in-use'
+      ? 'Phương thức này đã gắn với một tài khoản khác. Không thể liên kết.'
+      : c === 'auth/operation-not-allowed' ? 'Phương thức chưa được bật trên máy chủ.'
+      : (c === 'auth/popup-closed-by-user' ? '' : e.message);
+    if (m) $('linkMsg').innerHTML = '<div class="msg err">' + esc(m) + '</div>';
+  }
+};
+window.unlinkProv = async (pid) => {
+  if (!confirm('Gỡ liên kết ' + (PROVIDER_LABEL[pid] || pid) + '?')) return;
+  try {
+    await unlink(auth.currentUser, pid);
+    await api('/api/auth/identities/' + encodeURIComponent(pid), { method: 'DELETE' });
+    location.reload();
+  } catch (e) { $('linkMsg').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; }
+};
 
 window.resendVerify = async () => {
   try { await sendEmailVerification(auth.currentUser); alert('Đã gửi lại email xác thực.'); }

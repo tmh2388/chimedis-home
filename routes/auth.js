@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { getPool, isDbConfigured } from '../lib/db.js';
 import { verifyFirebaseToken, getFirebaseAuth, isFirebaseConfigured } from '../lib/firebase-admin.js';
-import { requireUser, isVerifiedIdentity, isVerifiedIdentityAsync } from '../lib/auth.js';
+import { requireUser, isVerifiedIdentityAsync } from '../lib/auth.js';
 import { rateLimit } from '../lib/rate-limit.js';
 
 const router = Router();
@@ -13,17 +13,25 @@ function requireDb(req, res, next) {
   next();
 }
 
-// upsert 1 hàng user_identities theo (provider, provider_subject) — KHÔNG merge theo email.
-async function upsertIdentity(pool, userId, fb) {
-  await pool.query(
-    `INSERT INTO user_identities (user_id, provider, provider_subject, provider_email, verified_at)
-       VALUES (?, ?, ?, ?, ?)
-     ON DUPLICATE KEY UPDATE
-       provider_email = VALUES(provider_email),
-       verified_at = COALESCE(user_identities.verified_at, VALUES(verified_at))`,
-    [userId, fb.provider, fb.provider_subject, fb.email || null,
-     isVerifiedIdentity(fb) ? new Date() : null]
-  );
+// upsert user_identities cho MỌI provider đã liên kết (KHÔNG merge user theo email).
+// H4: một user có thể liên kết Google + Apple + Facebook + password — ghi hết.
+async function syncIdentities(pool, userId, fb) {
+  const rows = (fb.linked && fb.linked.length) ? fb.linked
+    : [{ provider: fb.provider, provider_subject: fb.provider_subject }];
+  const now = new Date();
+  for (const it of rows) {
+    const verified = it.provider === 'password' ? (fb.email_verified ? now : null) : now;
+    await pool.query(
+      `INSERT INTO user_identities (user_id, provider, provider_subject, provider_email, verified_at)
+         VALUES (?, ?, ?, ?, ?)
+       ON DUPLICATE KEY UPDATE
+         user_id = VALUES(user_id),
+         provider_email = COALESCE(VALUES(provider_email), user_identities.provider_email),
+         verified_at = COALESCE(user_identities.verified_at, VALUES(verified_at))`,
+      [userId, it.provider, it.provider_subject,
+       it.provider === fb.provider ? (fb.email || null) : null, verified]
+    ).catch((e) => console.warn('syncIdentities:', e.message));
+  }
 }
 
 // POST /api/auth/sync — gọi ngay sau khi đăng nhập Firebase thành công ở frontend.
@@ -44,7 +52,7 @@ router.post('/sync', rateLimit({ max: 20, windowMs: 60_000 }), verifyFirebaseTok
       [fb.uid]
     );
     const user = rows[0];
-    await upsertIdentity(pool, user.id, fb).catch((e) => console.warn('upsertIdentity:', e.message));
+    await syncIdentities(pool, user.id, fb);
     res.json({
       success: true,
       user: { ...user, email_verified: fb.email_verified, provider: fb.provider, verified: await isVerifiedIdentityAsync(fb) },
@@ -73,6 +81,29 @@ router.get('/me', requireDb, requireUser, async (req, res) => {
   } catch (err) {
     console.error('GET /api/auth/me error:', err.message);
     res.status(500).json({ success: false, error: 'Lỗi truy vấn hồ sơ' });
+  }
+});
+
+// DELETE /api/auth/identities/:provider — bỏ liên kết 1 phương thức (H4).
+// Việc gỡ credential phía Firebase do client làm (unlink); ở đây chỉ xoá bản ghi.
+// Giữ TỐI THIỂU 1 identity — không cho gỡ hết (sẽ không đăng nhập lại được).
+router.delete('/identities/:provider', requireDb, requireUser, async (req, res) => {
+  const provider = String(req.params.provider);
+  try {
+    const pool = getPool();
+    const [[{ n }]] = await pool.query('SELECT COUNT(*) n FROM user_identities WHERE user_id = ?', [req.user.id]);
+    if (n <= 1) {
+      return res.status(400).json({ success: false, error: 'Phải giữ ít nhất 1 phương thức đăng nhập.' });
+    }
+    if (provider === req.firebaseUser.provider) {
+      return res.status(400).json({ success: false, error: 'Không gỡ được phương thức bạn đang dùng để đăng nhập. Đăng nhập bằng phương thức khác rồi thử lại.' });
+    }
+    const [r] = await pool.query('DELETE FROM user_identities WHERE user_id = ? AND provider = ?', [req.user.id, provider]);
+    if (!r.affectedRows) return res.status(404).json({ success: false, error: 'Không có phương thức này để gỡ.' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /api/auth/identities error:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi gỡ liên kết' });
   }
 });
 
