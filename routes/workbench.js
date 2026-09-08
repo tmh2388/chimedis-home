@@ -260,7 +260,8 @@ router.post('/projects/:id/search', requireDb, requireUser, async (req, res) => 
     }
 
     // dịch thuật ngữ YHCT (tái dùng logic hiện có; KHÔNG LLM ở M1)
-    const built = buildSearchQuery(q, { orSynonyms: mode === 'discovery' });
+    const bqOpts = { orSynonyms: mode === 'discovery', mode };
+    const built = buildSearchQuery(q, bqOpts);
     const effective = built.text || q;
     const queryExpanded = {
       original: q,
@@ -268,6 +269,20 @@ router.post('/projects/:id/search', requireDb, requireUser, async (req, res) => 
       translated_terms: built.expandedFrom || [],
       untranslated: built.untranslated || [],
       note: built.note || null,
+      // review PR#4: khi TRANSLATE_ENGINE=shadow, đính structured diff vào provenance
+      // sẵn có (KHÔNG tạo kho raw-query mới). effective_query THỰC GỬI vẫn là legacy.
+      ...(bqOpts.__shadow ? {
+        shadow: {
+          engine_version: bqOpts.__shadow.engine_version,
+          v2_outcome: bqOpts.__shadow.text,
+          agree: (bqOpts.__shadow.text || '').toLowerCase().replace(/\s+/g, ' ').trim()
+                 === effective.toLowerCase().replace(/\s+/g, ' ').trim(),
+          ambiguous_count: (bqOpts.__shadow.disambiguation || []).length,
+          unresolved_count: (bqOpts.__shadow.untranslated || []).length,
+          needs_resolution: !!bqOpts.__shadow.needs_resolution,
+          confidence: bqOpts.__shadow.confidenceCounts || {},
+        },
+      } : {}),
     };
 
     const filters = {

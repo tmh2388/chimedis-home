@@ -383,10 +383,38 @@ D1/D2/D3 **commit riêng được**, nhưng **bật engine mới cho traffic pro
 - [x] Mọi đụng độ mới trong `COLLISION_SET` (verified) có ca test — `scripts/tcm-collision-report.mjs` chặn CI. Đụng độ `auto` (27) vào `SOFT_COLLISION_SET`, không chặn (§6.1).
 - [x] **Đối chiếu trước ↔ sau di trú — không mất dữ liệu** (D3, 2026-09-08): `lib/tcm-dictionary.json` 8005 khoá **giữ nguyên** (legacy engine không đổi); overlay concept thêm 2025 mục CoreDB (`trust:auto`, giữ dấu). Build script in bảng đối chiếu mỗi lần chạy (mục vào / phụ tố bỏ / concept sinh ra / surface vi·zh·py / đụng độ verified trước→sau).
 - [x] **Các ca tối thiểu đúng** (v2, overlay bật): `giả châm`→sham acupuncture(high) · `chàm`→eczema · `châm cứu trúng phong`→acupuncture+stroke (legacy cũ ra "Zhongfeng LR4"+"eczema") · `trị/trĩ` phân biệt bằng dấu · `hoàng kỳ`(verified,high) · `tam thất`→Panax notoginseng(auto,medium) · `thận hư`→KIDNEY(medium)+«hư» · Hán `针灸预防中风` · không dấu `than`→ambiguous. Suite 200/200.
-- [ ] `buildSearchQuery()` tương thích ngược với caller M1 / H1 / H2 (trường cũ còn nguyên).
-- [ ] Discovery: span `unresolved` **không bị xoá** khỏi `effective_query`.
-- [ ] Evidence: span `ambiguous`/`unresolved` **bị chặn** đúng (`needs_resolution`, không chạy search).
-- [ ] `query_expanded` ghi đầy đủ `decision` / `transform` / `engine_version` cho mọi span.
+- [x] `buildSearchQuery()` **tương thích ngược** — chữ ký + trường cũ `{text, expandedFrom, note, untranslated}` nguyên vẹn ở mọi mode; caller `routes/research.js` (3 chỗ) + `routes/workbench.js` không đổi. `legacy` = mặc định, hành vi y hệt. Test category `shape` (2 ca) + boot server + `/api/research` 200.
+- [x] Discovery: span `unresolved` **giữ nguyên văn** trong `effective_query` — test category "Discovery giữ unresolved" (5 ca).
+- [x] Evidence: span `ambiguous`/`unresolved` → `needs_resolution: true`, engine không tự chạy search — test category "Evidence chặn" (6 ca).
+- [x] `query_expanded` ghi `decision`/`transform`/`stage`/`engine_version` cho mọi span (engine trả `spans[]`); shadow mode đính thêm `query_expanded.shadow` vào provenance.
+
+*(Reviewer PR #4 xác nhận GATE ĐẠT 2026-09-08 — 3 mục cuối trước đây là **stale checklist**, D2 đã có test category tương ứng, không thiếu implementation.)*
+
+### Kích hoạt production — `shadow` TRƯỚC, KHÔNG bật thẳng `v2` (review PR #4)
+
+1. **Hostinger: `TRANSLATE_ENGINE=shadow` + redeploy.**
+   - Shadow **KHÔNG đổi** `effective_query`/kết quả thực gửi — vẫn dùng legacy.
+   - Ghi **structured diff** `{engine_version, agree, legacy_outcome, v2_outcome, confidence, ambiguous_count, unresolved_count, needs_resolution}` (+ `search_run_id` khi có) — ra stdout (`translate_shadow_diff`) + `wb_search_runs.query_expanded.shadow` (trong provenance sẵn có). **KHÔNG** tạo kho raw-query mới, **KHÔNG** log user identity.
+2. **Chuyển `shadow → v2` KHI ĐỦ 6 điều kiện** (không dùng số ngày cố định):
+   1. server/search không có error/regression do engine shadow;
+   2. không có ca `unresolved` bị mất khỏi Discovery;
+   3. Evidence `ambiguous` vẫn `needs_resolution`, không phát search sai;
+   4. review các legacy↔v2 disagreement thực tế: **không có "v2 sai trong khi legacy đúng" ở thuật ngữ lâm sàng**;
+   5. soft collision nổi bật trong traffic được G4 rà; mapping đáng tin được promote/ghi test;
+   6. CI vẫn 200/200 và build CoreDB đối chiếu không đổi bất thường.
+3. Đủ 6 → **`TRANSLATE_ENGINE=v2` + redeploy**. Giữ `legacy` làm **rollback flag** trong giai đoạn chuyển đổi.
+
+### Thứ tự triển khai (review PR #4 — chạy song song, không chờ thừa)
+
+```
+D1–D3 DONE ──► deploy shadow
+                 ├─ Track A: quan sát/verify shadow → TRANSLATE_ENGINE=v2   (Translation Production Gate)
+                 └─ Track B: H1a Auth Foundation   (độc lập, bắt đầu ngay)
+H2 ◄── CHẶN CỨNG cho tới khi v2 đã bật production + regression gate xanh
+```
+
+- **H1a KHÔNG chờ** v2 ổn định — auth độc lập với translation.
+- **H2 bị chặn cứng** bởi Translation Production Gate: chỉ bắt đầu/merge sau khi `v2` production + gate xanh. Vẫn giữ nguyên tắc "D trước H2".
 
 ---
 
@@ -414,8 +442,10 @@ D1/D2/D3 **commit riêng được**, nhưng **bật engine mới cho traffic pro
 | 5 | `data/tcm-concepts/` | ✅ **Nhiều `.jsonc` theo domain** + schema validation ở build để chặn trùng `id` xuyên file. |
 | 6 | Song ngữ ngược | ✅ **Để milestone sau.** Không mở phạm vi D1–D3. |
 
-**Kết luận review: APPROVED WITH REQUIRED EDITS.** Đã áp 8 điểm (review#1–#8) trực tiếp vào spec này. Không cần vòng thiết kế lớn nữa → triển khai D1–D3, hậu kiểm GATE (§12), rồi chuyển H1a → H2.
+**6/6 câu §14 CLOSED (review PR #4, 2026-09-08).**
+
+**Reviewer decision (sau D3, 2026-09-08):** **GATE D1–D3 ĐẠT.** Cho phép: deploy `shadow` ngay + bắt đầu **H1a song song**; **H2 chờ Translation Production Gate** (`v2` production + regression xanh — 6 điều kiện §12). Không mở thêm thiết kế.
 
 ---
 
-*Hết v2 (đã áp review PR #4). Nhánh code: `impl/translation-engine`.*
+*Hết v3 (đã áp review PR #4 + chốt sau D3). Nhánh code: `impl/translation-engine`. Engine: legacy (mặc định) → shadow → v2.*
