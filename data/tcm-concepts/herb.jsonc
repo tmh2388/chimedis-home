@@ -1,0 +1,32 @@
+// Milestone D — concept: dược liệu. §4. (khởi đầu — CoreDB overlay ở D3 bổ sung hàng loạt)
+[
+  {
+    "id": "astragalus-membranaceus",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Astragalus membranaceus",
+    "en_synonyms": ["Huangqi", "Astragalus propinquus", "Radix Astragali", "Astragalus"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "hoàng kỳ", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "黄芪", "confidence": "high" },
+      { "lang": "zh", "text": "黃芪", "confidence": "high" },
+      { "lang": "py", "text": "huáng qí", "tone_exact": true, "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  },
+  {
+    "id": "angelica-sinensis",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Angelica sinensis",
+    "en_synonyms": ["Danggui", "Dong quai", "Radix Angelicae Sinensis"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đương quy", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "当归", "confidence": "high" },
+      { "lang": "py", "text": "dāng guī", "tone_exact": true, "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  }
+]

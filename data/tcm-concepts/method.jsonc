@@ -1,0 +1,67 @@
+// Milestone D — concept: phương pháp / can thiệp YHCT. docs/translation-engine.md §4.
+// trust: verified = đã có người chuyên môn rà (tone tiếng Việt đúng).
+[
+  {
+    "id": "acupuncture",
+    "domain": "method",
+    "clinical": true,
+    "en": "acupuncture",
+    "en_synonyms": ["needle acupuncture", "manual acupuncture", "body acupuncture"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "châm cứu", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "châm",     "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "thể châm", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "针灸", "confidence": "high" },
+      { "lang": "zh", "text": "针刺", "confidence": "high" },
+      { "lang": "py", "text": "zhēn jiǔ", "tone_exact": true, "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  },
+  {
+    "id": "sham-acupuncture",
+    "domain": "method",
+    "clinical": true,
+    "en": "sham acupuncture",
+    "en_synonyms": ["placebo acupuncture", "sham needling", "minimal acupuncture"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "giả châm", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "châm giả", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "châm cứu giả", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "假针灸", "confidence": "high" },
+      { "lang": "zh", "text": "假针", "confidence": "high" },
+      { "lang": "py", "text": "jiǎ zhēn jiǔ", "tone_exact": true, "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  },
+  {
+    "id": "electroacupuncture",
+    "domain": "method",
+    "clinical": true,
+    "en": "electroacupuncture",
+    "en_synonyms": ["electro-acupuncture", "electrical acupuncture"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "điện châm", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "电针", "confidence": "high" },
+      { "lang": "py", "text": "diàn zhēn", "tone_exact": true, "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  },
+  {
+    "id": "moxibustion",
+    "domain": "method",
+    "clinical": true,
+    "en": "moxibustion",
+    "en_synonyms": ["moxa"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "cứu ngải", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "ngải cứu", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "艾灸", "confidence": "high" },
+      { "lang": "zh", "text": "灸法", "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  }
+]

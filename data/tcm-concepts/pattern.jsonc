@@ -1,0 +1,31 @@
+// Milestone D — concept: chứng / thể bệnh biện chứng YHCT. §4.
+[
+  {
+    "id": "spleen-qi-deficiency",
+    "domain": "pattern",
+    "clinical": true,
+    "en": "spleen qi deficiency",
+    "en_synonyms": ["spleen deficiency", "spleen qi vacuity"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "tỳ khí hư", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "tỳ hư", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "脾气虚", "confidence": "high" },
+      { "lang": "zh", "text": "脾虚", "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  },
+  {
+    "id": "blood-stasis",
+    "domain": "pattern",
+    "clinical": true,
+    "en": "blood stasis",
+    "en_synonyms": ["blood stagnation", "static blood"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "huyết ứ", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "血瘀", "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  }
+]

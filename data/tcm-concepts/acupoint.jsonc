@@ -1,0 +1,33 @@
+// Milestone D — concept: huyệt vị. §4.
+// Lưu ý đụng độ tiếng Việt bỏ dấu: "trung phong" (huyệt LR4) ~ "trúng phong" (đột quỵ)
+// → khoá bỏ dấu "trung phong" vào COLLISION_SET; chỉ tra được khi gõ đúng dấu.
+[
+  {
+    "id": "st36-zusanli",
+    "domain": "acupoint",
+    "clinical": false,
+    "en": "Zusanli (ST36)",
+    "en_synonyms": ["ST36", "Stomach 36", "Zu San Li"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "túc tam lý", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "足三里", "confidence": "high" },
+      { "lang": "py", "text": "zú sān lǐ", "tone_exact": true, "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  },
+  {
+    "id": "lr4-zhongfeng",
+    "domain": "acupoint",
+    "clinical": false,
+    "en": "Zhongfeng (LR4)",
+    "en_synonyms": ["LR4", "Liver 4", "Zhong Feng"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "trung phong", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "huyệt trung phong", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "中封", "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  }
+]

@@ -1,0 +1,67 @@
+{
+  "_comment": "Milestone D — bộ hồi quy engine dịch. docs/translation-engine.md §10. D2 mở rộng ≥150 ca + negative controls. Mỗi ca: q, mode?, expect_terms[] (mọi cụm phải xuất hiện trong effective_query), expect_ambiguous[] (phải nằm trong disambiguation hoặc unresolved), must_not_contain[] (tuyệt đối không có trong effective_query), expect_needs_resolution?",
+  "cases": [
+    { "id": "sham-acupuncture-exact", "q": "giả châm điều trị đột quỵ",
+      "expect_terms": ["sham acupuncture", "stroke"], "must_not_contain": ["eczema"] },
+
+    { "id": "acupuncture-basic", "q": "châm cứu phục hồi chức năng sau đột quỵ",
+      "expect_terms": ["acupuncture", "rehabilitation", "stroke"], "must_not_contain": ["eczema"] },
+
+    { "id": "eczema-exact", "q": "chàm mạn tính",
+      "expect_terms": ["eczema"], "must_not_contain": ["acupuncture", "sham acupuncture"] },
+
+    { "id": "cham-alone-no-diacritics-ambiguous", "q": "cham dieu tri dot quy",
+      "expect_ambiguous": ["cham"], "must_not_contain": ["eczema", "acupuncture"] },
+
+    { "id": "gia-cham-2gram-folds-unique", "q": "gia cham dieu tri dot quy",
+      "expect_terms": ["sham acupuncture", "treatment", "stroke"], "must_not_contain": ["eczema"] },
+
+    { "id": "tri-vs-triHem-treatment", "q": "trị đột quỵ bằng điện châm",
+      "expect_terms": ["treatment", "stroke", "electroacupuncture"], "must_not_contain": ["hemorrhoids"] },
+
+    { "id": "triHem-exact", "q": "châm cứu điều trị bệnh trĩ",
+      "expect_terms": ["acupuncture", "treatment", "hemorrhoids"], "must_not_contain": ["stroke"] },
+
+    { "id": "tri-no-diacritics-ambiguous", "q": "cham cuu tri benh",
+      "expect_ambiguous": ["tri"] },
+
+    { "id": "trung-phong-stroke-exact", "q": "châm cứu dự phòng trúng phong",
+      "expect_terms": ["acupuncture", "prevention", "stroke"], "must_not_contain": ["LR4", "Zhongfeng"] },
+
+    { "id": "trung-phong-point-exact", "q": "châm huyệt trung phong",
+      "expect_terms": ["acupuncture", "Zhongfeng"], "must_not_contain": ["stroke"] },
+
+    { "id": "trung-phong-no-diacritics-ambiguous", "q": "cham cuu trung phong",
+      "expect_ambiguous": ["trung phong"] },
+
+    { "id": "herb-vi", "q": "hoàng kỳ điều trị đái tháo đường",
+      "expect_terms": ["Astragalus membranaceus", "treatment"] },
+
+    { "id": "herb-zh", "q": "黄芪 治疗 中风",
+      "expect_terms": ["Astragalus membranaceus", "treatment", "stroke"] },
+
+    { "id": "acupoint-vi", "q": "châm cứu túc tam lý",
+      "expect_terms": ["acupuncture", "Zusanli"] },
+
+    { "id": "han-phrase", "q": "针灸预防中风",
+      "expect_terms": ["acupuncture", "prevention", "stroke"] },
+
+    { "id": "han-pattern", "q": "脾虚 湿疹",
+      "expect_terms": ["spleen qi deficiency", "eczema"] },
+
+    { "id": "evidence-mode-blocks-on-ambiguous", "q": "cham cuu trung phong", "mode": "evidence",
+      "expect_needs_resolution": true },
+
+    { "id": "evidence-mode-ok-when-clear", "q": "châm cứu dự phòng đột quỵ", "mode": "evidence",
+      "expect_terms": ["acupuncture", "prevention", "stroke"], "expect_needs_resolution": false },
+
+    { "id": "discovery-keeps-unresolved-verbatim", "q": "châm cứu điều trị bệnh xyzkhonghe",
+      "expect_terms": ["acupuncture", "treatment", "xyzkhonghe"] },
+
+    { "id": "english-passthrough", "q": "acupuncture stroke prevention randomized trial",
+      "expect_terms": ["acupuncture stroke prevention randomized trial"] },
+
+    { "id": "electroacupuncture-vi", "q": "điện châm liệt nửa người",
+      "expect_terms": ["electroacupuncture"] }
+  ]
+}

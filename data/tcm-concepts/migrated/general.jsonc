@@ -1,0 +1,2710 @@
+// TỰ SINH từ lib/tcm-vocab.js — CHƯA có dạng đúng dấu tiếng Việt.
+// Backfill surface_form vi đúng dấu + phân loại domain, rồi chuyển lên ../  để engine nạp.
+[
+  {
+    "id": "mig-stroke",
+    "domain": "disease",
+    "clinical": true,
+    "en": "stroke",
+    "en_synonyms": [
+      "cerebrovascular accident",
+      "brain infarction"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dot quy",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "dot quy nao",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "tai bien",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "tai bien mach mau nao",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "trung phong",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "trung phong nao",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-cerebral-infarction",
+    "domain": "disease",
+    "clinical": true,
+    "en": "cerebral infarction",
+    "en_synonyms": [
+      "ischemic stroke"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "nhoi mau nao",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-cerebral-hemorrhage",
+    "domain": "disease",
+    "clinical": true,
+    "en": "cerebral hemorrhage",
+    "en_synonyms": [
+      "intracerebral hemorrhage",
+      "hemorrhagic stroke"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "xuat huyet nao",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-hemiplegia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "hemiplegia",
+    "en_synonyms": [
+      "hemiparesis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "liet nua nguoi",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-post-stroke",
+    "domain": "disease",
+    "clinical": true,
+    "en": "post-stroke",
+    "en_synonyms": [
+      "stroke sequelae",
+      "stroke rehabilitation"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "di chung dot quy",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-hypertension",
+    "domain": "disease",
+    "clinical": true,
+    "en": "hypertension",
+    "en_synonyms": [
+      "high blood pressure"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "tang huyet ap",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "cao huyet ap",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-hypotension",
+    "domain": "disease",
+    "clinical": true,
+    "en": "hypotension",
+    "en_synonyms": [
+      "low blood pressure"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "huyet ap thap",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-coronary-artery-disease",
+    "domain": "disease",
+    "clinical": true,
+    "en": "coronary artery disease",
+    "en_synonyms": [
+      "coronary heart disease"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "benh mach vanh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-myocardial-infarction",
+    "domain": "disease",
+    "clinical": true,
+    "en": "myocardial infarction",
+    "en_synonyms": [
+      "heart attack"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "nhoi mau co tim",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-heart-failure",
+    "domain": "disease",
+    "clinical": true,
+    "en": "heart failure",
+    "en_synonyms": [
+      "cardiac failure"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "suy tim",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-cardiac-arrhythmia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "cardiac arrhythmia",
+    "en_synonyms": [
+      "arrhythmia"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "roi loan nhip tim",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-atrial-fibrillation",
+    "domain": "disease",
+    "clinical": true,
+    "en": "atrial fibrillation",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "rung nhi",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-atherosclerosis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "atherosclerosis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "xo vua dong mach",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-dyslipidemia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "dyslipidemia",
+    "en_synonyms": [
+      "hyperlipidemia"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "roi loan lipid mau",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-hyperlipidemia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "hyperlipidemia",
+    "en_synonyms": [
+      "dyslipidemia"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "mo mau cao",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-diabetes-mellitus",
+    "domain": "disease",
+    "clinical": true,
+    "en": "diabetes mellitus",
+    "en_synonyms": [
+      "diabetes"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dai thao duong",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "tieu duong",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-type-2-diabetes-mellitus",
+    "domain": "disease",
+    "clinical": true,
+    "en": "type 2 diabetes mellitus",
+    "en_synonyms": [
+      "type 2 diabetes"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dai thao duong type 2",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-diabetic-nephropathy",
+    "domain": "disease",
+    "clinical": true,
+    "en": "diabetic nephropathy",
+    "en_synonyms": [
+      "diabetic kidney disease"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "benh than dai thao duong",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-diabetic-retinopathy",
+    "domain": "disease",
+    "clinical": true,
+    "en": "diabetic retinopathy",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "benh vong mac dai thao duong",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-obesity",
+    "domain": "disease",
+    "clinical": true,
+    "en": "obesity",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "beo phi",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-metabolic-syndrome",
+    "domain": "disease",
+    "clinical": true,
+    "en": "metabolic syndrome",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "hoi chung chuyen hoa",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-hypothyroidism",
+    "domain": "disease",
+    "clinical": true,
+    "en": "hypothyroidism",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "suy giap",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-hyperthyroidism",
+    "domain": "disease",
+    "clinical": true,
+    "en": "hyperthyroidism",
+    "en_synonyms": [
+      "thyrotoxicosis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "cuong giap",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-gout",
+    "domain": "disease",
+    "clinical": true,
+    "en": "gout",
+    "en_synonyms": [
+      "hyperuricemia"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "gut",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-osteoporosis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "osteoporosis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "loang xuong",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-arthritis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "arthritis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem khop",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-rheumatoid-arthritis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "rheumatoid arthritis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem khop dang thap",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-osteoarthritis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "osteoarthritis",
+    "en_synonyms": [
+      "degenerative joint disease"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "thoai hoa khop",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-spondylosis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "spondylosis",
+    "en_synonyms": [
+      "spinal degeneration"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "thoai hoa cot song",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-intervertebral-disc-herniation",
+    "domain": "disease",
+    "clinical": true,
+    "en": "intervertebral disc herniation",
+    "en_synonyms": [
+      "herniated disc",
+      "disc prolapse"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "thoat vi dia dem",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-low-back-pain",
+    "domain": "disease",
+    "clinical": true,
+    "en": "low back pain",
+    "en_synonyms": [
+      "lumbago"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dau that lung",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-back-pain",
+    "domain": "disease",
+    "clinical": true,
+    "en": "back pain",
+    "en_synonyms": [
+      "low back pain"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dau lung",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-neck-and-shoulder-pain",
+    "domain": "disease",
+    "clinical": true,
+    "en": "neck and shoulder pain",
+    "en_synonyms": [
+      "cervical pain"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dau vai gay",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-neck-pain",
+    "domain": "disease",
+    "clinical": true,
+    "en": "neck pain",
+    "en_synonyms": [
+      "cervical pain"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dau co",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-sciatica",
+    "domain": "disease",
+    "clinical": true,
+    "en": "sciatica",
+    "en_synonyms": [
+      "sciatic neuralgia"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dau than kinh toa",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-carpal-tunnel-syndrome",
+    "domain": "disease",
+    "clinical": true,
+    "en": "carpal tunnel syndrome",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "hoi chung ong co tay",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-periarthritis-of-shoulder",
+    "domain": "disease",
+    "clinical": true,
+    "en": "periarthritis of shoulder",
+    "en_synonyms": [
+      "frozen shoulder",
+      "adhesive capsulitis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem quanh khop vai",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-spinal-osteophyte",
+    "domain": "disease",
+    "clinical": true,
+    "en": "spinal osteophyte",
+    "en_synonyms": [
+      "bone spur",
+      "spondylosis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "gai cot song",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-tendinopathy",
+    "domain": "disease",
+    "clinical": true,
+    "en": "tendinopathy",
+    "en_synonyms": [
+      "tendinitis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "loang gan",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-insomnia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "insomnia",
+    "en_synonyms": [
+      "sleep disorder"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "mat ngu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-sleep-disorder",
+    "domain": "disease",
+    "clinical": true,
+    "en": "sleep disorder",
+    "en_synonyms": [
+      "insomnia"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "roi loan giac ngu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-depression",
+    "domain": "disease",
+    "clinical": true,
+    "en": "depression",
+    "en_synonyms": [
+      "depressive disorder"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "tram cam",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-anxiety-disorder",
+    "domain": "disease",
+    "clinical": true,
+    "en": "anxiety disorder",
+    "en_synonyms": [
+      "anxiety"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "roi loan lo au",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-anxiety",
+    "domain": "disease",
+    "clinical": true,
+    "en": "anxiety",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "lo au",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-headache",
+    "domain": "disease",
+    "clinical": true,
+    "en": "headache",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dau dau",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-migraine",
+    "domain": "disease",
+    "clinical": true,
+    "en": "migraine",
+    "en_synonyms": [
+      "migraine headache"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dau nua dau",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-vertigo",
+    "domain": "disease",
+    "clinical": true,
+    "en": "vertigo",
+    "en_synonyms": [
+      "dizziness"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "chong mat",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-vestibular-disorder",
+    "domain": "disease",
+    "clinical": true,
+    "en": "vestibular disorder",
+    "en_synonyms": [
+      "vertigo"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "roi loan tien dinh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-facial-paralysis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "facial paralysis",
+    "en_synonyms": [
+      "Bell's palsy",
+      "facial nerve palsy"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "liet day than kinh so 7",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "liet mat",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-epilepsy",
+    "domain": "disease",
+    "clinical": true,
+    "en": "epilepsy",
+    "en_synonyms": [
+      "seizure"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dong kinh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-dementia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "dementia",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "sa sut tri tue",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-peripheral-neuropathy",
+    "domain": "disease",
+    "clinical": true,
+    "en": "peripheral neuropathy",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "benh than kinh ngoai bien",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-neurasthenia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "neurasthenia",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "suy nhuoc than kinh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-psychological-stress",
+    "domain": "disease",
+    "clinical": true,
+    "en": "psychological stress",
+    "en_synonyms": [
+      "stress"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "stress",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-bronchial-asthma",
+    "domain": "disease",
+    "clinical": true,
+    "en": "bronchial asthma",
+    "en_synonyms": [
+      "asthma"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "hen phe quan",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-asthma",
+    "domain": "disease",
+    "clinical": true,
+    "en": "asthma",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "hen suyen",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-bronchitis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "bronchitis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem phe quan",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-chronic-obstructive-pulmonary-disease",
+    "domain": "disease",
+    "clinical": true,
+    "en": "chronic obstructive pulmonary disease",
+    "en_synonyms": [
+      "COPD"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "benh phoi tac nghen man tinh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-sinusitis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "sinusitis",
+    "en_synonyms": [
+      "rhinosinusitis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem xoang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-allergic-rhinitis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "allergic rhinitis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem mui di ung",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-cough",
+    "domain": "disease",
+    "clinical": true,
+    "en": "cough",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "ho",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-pharyngitis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "pharyngitis",
+    "en_synonyms": [
+      "sore throat"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem hong",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-gastritis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "gastritis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem da day",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-peptic-ulcer",
+    "domain": "disease",
+    "clinical": true,
+    "en": "peptic ulcer",
+    "en_synonyms": [
+      "gastric ulcer",
+      "duodenal ulcer"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "loet da day ta trang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-gastroesophageal-reflux-disease",
+    "domain": "disease",
+    "clinical": true,
+    "en": "gastroesophageal reflux disease",
+    "en_synonyms": [
+      "GERD"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "trao nguoc da day thuc quan",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-irritable-bowel-syndrome",
+    "domain": "disease",
+    "clinical": true,
+    "en": "irritable bowel syndrome",
+    "en_synonyms": [
+      "IBS"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "hoi chung ruot kich thich",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-constipation",
+    "domain": "disease",
+    "clinical": true,
+    "en": "constipation",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "tao bon",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-diarrhea",
+    "domain": "disease",
+    "clinical": true,
+    "en": "diarrhea",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "tieu chay",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-hepatitis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "hepatitis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem gan",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-liver-cirrhosis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "liver cirrhosis",
+    "en_synonyms": [
+      "hepatic cirrhosis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "xo gan",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-fatty-liver-disease",
+    "domain": "disease",
+    "clinical": true,
+    "en": "fatty liver disease",
+    "en_synonyms": [
+      "hepatic steatosis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "gan nhiem mo",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-hemorrhoids",
+    "domain": "disease",
+    "clinical": true,
+    "en": "hemorrhoids",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "benh tri",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-external-hemorrhoids",
+    "domain": "disease",
+    "clinical": true,
+    "en": "external hemorrhoids",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "tri ngoai",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-chronic-kidney-disease",
+    "domain": "disease",
+    "clinical": true,
+    "en": "chronic kidney disease",
+    "en_synonyms": [
+      "chronic renal failure"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "suy than man",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-kidney-stone",
+    "domain": "disease",
+    "clinical": true,
+    "en": "kidney stone",
+    "en_synonyms": [
+      "nephrolithiasis",
+      "renal calculi"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "soi than",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-urinary-tract-infection",
+    "domain": "disease",
+    "clinical": true,
+    "en": "urinary tract infection",
+    "en_synonyms": [
+      "UTI"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem duong tiet nieu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-benign-prostatic-hyperplasia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "benign prostatic hyperplasia",
+    "en_synonyms": [
+      "BPH",
+      "prostatic hypertrophy"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "phi dai tuyen tien liet",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-erectile-dysfunction",
+    "domain": "disease",
+    "clinical": true,
+    "en": "erectile dysfunction",
+    "en_synonyms": [
+      "impotence"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "roi loan cuong duong",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-infertility",
+    "domain": "disease",
+    "clinical": true,
+    "en": "infertility",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "vo sinh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "hiem muon",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-menstrual-disorder",
+    "domain": "disease",
+    "clinical": true,
+    "en": "menstrual disorder",
+    "en_synonyms": [
+      "irregular menstruation"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "roi loan kinh nguyet",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-dysmenorrhea",
+    "domain": "disease",
+    "clinical": true,
+    "en": "dysmenorrhea",
+    "en_synonyms": [
+      "menstrual pain"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "thong kinh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-perimenopause",
+    "domain": "disease",
+    "clinical": true,
+    "en": "perimenopause",
+    "en_synonyms": [
+      "menopausal transition"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "tien man kinh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-menopause",
+    "domain": "disease",
+    "clinical": true,
+    "en": "menopause",
+    "en_synonyms": [
+      "climacteric"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "man kinh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-polycystic-ovary-syndrome",
+    "domain": "disease",
+    "clinical": true,
+    "en": "polycystic ovary syndrome",
+    "en_synonyms": [
+      "PCOS"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "hoi chung buong trung da nang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-endometriosis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "endometriosis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "lac noi mac tu cung",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-atopic-dermatitis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "atopic dermatitis",
+    "en_synonyms": [
+      "eczema"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem da co dia",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-eczema",
+    "domain": "disease",
+    "clinical": true,
+    "en": "eczema",
+    "en_synonyms": [
+      "dermatitis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "cham",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-psoriasis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "psoriasis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "vay nen",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-urticaria",
+    "domain": "disease",
+    "clinical": true,
+    "en": "urticaria",
+    "en_synonyms": [
+      "hives"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "me day",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-acne",
+    "domain": "disease",
+    "clinical": true,
+    "en": "acne",
+    "en_synonyms": [
+      "acne vulgaris"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "mun trung ca",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-alopecia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "alopecia",
+    "en_synonyms": [
+      "hair loss"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "rung toc",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-herpes-zoster",
+    "domain": "disease",
+    "clinical": true,
+    "en": "herpes zoster",
+    "en_synonyms": [
+      "shingles"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "zona",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-cancer",
+    "domain": "disease",
+    "clinical": true,
+    "en": "cancer",
+    "en_synonyms": [
+      "neoplasm",
+      "carcinoma"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "ung thu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-tumor",
+    "domain": "disease",
+    "clinical": true,
+    "en": "tumor",
+    "en_synonyms": [
+      "neoplasm"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "khoi u",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-chemotherapy",
+    "domain": "disease",
+    "clinical": true,
+    "en": "chemotherapy",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "hoa tri",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-radiotherapy",
+    "domain": "disease",
+    "clinical": true,
+    "en": "radiotherapy",
+    "en_synonyms": [
+      "radiation therapy"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "xa tri",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-metastasis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "metastasis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "di can",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-anemia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "anemia",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "thieu mau",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-immunodeficiency",
+    "domain": "disease",
+    "clinical": true,
+    "en": "immunodeficiency",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "suy giam mien dich",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-covid-19",
+    "domain": "disease",
+    "clinical": true,
+    "en": "COVID-19",
+    "en_synonyms": [
+      "SARS-CoV-2"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "covid",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-post-covid-19-syndrome",
+    "domain": "disease",
+    "clinical": true,
+    "en": "post-COVID-19 syndrome",
+    "en_synonyms": [
+      "long COVID"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "hau covid",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-chronic-fatigue-syndrome",
+    "domain": "disease",
+    "clinical": true,
+    "en": "chronic fatigue syndrome",
+    "en_synonyms": [
+      "chronic fatigue"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "met moi man tinh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-chronic-pain",
+    "domain": "disease",
+    "clinical": true,
+    "en": "chronic pain",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dau man tinh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-inflammation",
+    "domain": "disease",
+    "clinical": true,
+    "en": "inflammation",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "viem",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-rehabilitation",
+    "domain": "disease",
+    "clinical": true,
+    "en": "rehabilitation",
+    "en_synonyms": [
+      "physical rehabilitation"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "phuc hoi chuc nang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-physical-therapy",
+    "domain": "disease",
+    "clinical": true,
+    "en": "physical therapy",
+    "en_synonyms": [
+      "physiotherapy"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "vat ly tri lieu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-therapy",
+    "domain": "disease",
+    "clinical": true,
+    "en": "therapy",
+    "en_synonyms": [
+      "treatment"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "tri lieu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "lieu phap",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-treatment",
+    "domain": "disease",
+    "clinical": true,
+    "en": "treatment",
+    "en_synonyms": [
+      "therapy"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dieu tri",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-prevention",
+    "domain": "disease",
+    "clinical": true,
+    "en": "prevention",
+    "en_synonyms": [
+      "prophylaxis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "du phong",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "phong ngua",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-anesthesia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "anesthesia",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "gay me",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-analgesia",
+    "domain": "disease",
+    "clinical": true,
+    "en": "analgesia",
+    "en_synonyms": [
+      "pain relief"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "giam dau",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-surgery",
+    "domain": "disease",
+    "clinical": true,
+    "en": "surgery",
+    "en_synonyms": [
+      "surgical operation"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "phau thuat",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  }
+]

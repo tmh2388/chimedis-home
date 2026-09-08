@@ -1,0 +1,1413 @@
+// TỰ SINH từ lib/tcm-vocab.js — CHƯA có dạng đúng dấu tiếng Việt.
+// Backfill surface_form vi đúng dấu + phân loại domain, rồi chuyển lên ../  để engine nạp.
+[
+  {
+    "id": "mig-astragalus-membranaceus",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Astragalus membranaceus",
+    "en_synonyms": [
+      "Huangqi",
+      "Astragalus propinquus",
+      "Radix Astragali"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "hoang ky",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-angelica-sinensis",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Angelica sinensis",
+    "en_synonyms": [
+      "Danggui",
+      "Dong quai",
+      "Radix Angelicae Sinensis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dang quy",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-panax-ginseng",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Panax ginseng",
+    "en_synonyms": [
+      "Renshen",
+      "Korean ginseng",
+      "Radix Ginseng"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "nhan sam",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-glycyrrhiza-uralensis",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Glycyrrhiza uralensis",
+    "en_synonyms": [
+      "Gancao",
+      "Licorice",
+      "Radix Glycyrrhizae"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "cam thao",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-atractylodes-macrocephala",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Atractylodes macrocephala",
+    "en_synonyms": [
+      "Baizhu",
+      "Rhizoma Atractylodis Macrocephalae"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "bach truat",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-poria-cocos",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Poria cocos",
+    "en_synonyms": [
+      "Fuling",
+      "Wolfiporia extensa",
+      "Poria"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "phuc linh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-ligusticum-chuanxiong",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Ligusticum chuanxiong",
+    "en_synonyms": [
+      "Chuanxiong",
+      "Rhizoma Chuanxiong"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "xuyen khung",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-paeonia-lactiflora",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Paeonia lactiflora",
+    "en_synonyms": [
+      "Baishao",
+      "white peony",
+      "Radix Paeoniae Alba"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "bach thuoc",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-rehmannia-glutinosa",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Rehmannia glutinosa",
+    "en_synonyms": [
+      "Dihuang",
+      "Shudihuang",
+      "Radix Rehmanniae Preparata"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "thuc dia",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-coptis-chinensis",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Coptis chinensis",
+    "en_synonyms": [
+      "Huanglian",
+      "berberine",
+      "Rhizoma Coptidis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "hoang lien",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-scutellaria-baicalensis",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Scutellaria baicalensis",
+    "en_synonyms": [
+      "Huangqin",
+      "baicalin",
+      "Radix Scutellariae"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "hoang cam",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-bupleurum-chinense",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Bupleurum chinense",
+    "en_synonyms": [
+      "Chaihu",
+      "saikosaponin",
+      "Radix Bupleuri"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "sai ho",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-cinnamomum-cassia-twig",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Cinnamomum cassia twig",
+    "en_synonyms": [
+      "Guizhi",
+      "cinnamon twig",
+      "Ramulus Cinnamomi"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "que chi",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-ephedra-sinica",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Ephedra sinica",
+    "en_synonyms": [
+      "Mahuang",
+      "ephedra",
+      "Herba Ephedrae"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "ma hoang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-lonicera-japonica",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Lonicera japonica",
+    "en_synonyms": [
+      "Jinyinhua",
+      "honeysuckle flower",
+      "Flos Lonicerae"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "kim ngan hoa",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-salvia-miltiorrhiza",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Salvia miltiorrhiza",
+    "en_synonyms": [
+      "Danshen",
+      "tanshinone",
+      "Radix Salviae Miltiorrhizae"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dan sam",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-pueraria-lobata",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Pueraria lobata",
+    "en_synonyms": [
+      "Gegen",
+      "puerarin",
+      "Radix Puerariae"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "cat can",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-schisandra-chinensis",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Schisandra chinensis",
+    "en_synonyms": [
+      "Wuweizi",
+      "schisandrin",
+      "Fructus Schisandrae"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "ngu vi tu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-pheretima",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Pheretima",
+    "en_synonyms": [
+      "Dilong",
+      "earthworm"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dia long",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-panax-notoginseng",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Panax notoginseng",
+    "en_synonyms": [
+      "Sanqi",
+      "notoginseng",
+      "Radix Notoginseng"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "tam that",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-polygonum-multiflorum",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Polygonum multiflorum",
+    "en_synonyms": [
+      "Heshouwu",
+      "Fallopia multiflora",
+      "Radix Polygoni Multiflori"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "ha thu o",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-buzhong-yiqi-tang",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Buzhong Yiqi Tang",
+    "en_synonyms": [
+      "Bu Zhong Yi Qi Wang",
+      "Hochu-ekki-to",
+      "TJ-41"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "bo trung ich khi thang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-liuwei-dihuang-wan",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Liuwei Dihuang Wan",
+    "en_synonyms": [
+      "Rehmannia Six Formula",
+      "Rokumi-gan"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "luc vi dia hoang hoan",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-sijunzi-tang",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Sijunzi Tang",
+    "en_synonyms": [
+      "Four Gentlemen Decoction"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "tu quan tu thang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-siwu-tang",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Siwu Tang",
+    "en_synonyms": [
+      "Four Substances Decoction"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "tu vat thang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-guizhi-tang",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Guizhi Tang",
+    "en_synonyms": [
+      "Cinnamon Twig Decoction"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "que chi thang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-xiao-chaihu-tang",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Xiao Chaihu Tang",
+    "en_synonyms": [
+      "Minor Bupleurum Decoction",
+      "Sho-saiko-to",
+      "TJ-9"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "tieu sai ho thang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-zhigancao-tang",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Zhigancao Tang",
+    "en_synonyms": [
+      "Honey-Fried Licorice Decoction"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "bo huyet phuc mach thang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-yupingfeng-san",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Yupingfeng San",
+    "en_synonyms": [
+      "Jade Windscreen Powder"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "ngoc binh phong tan",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-bazhen-tang",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Bazhen Tang",
+    "en_synonyms": [
+      "Eight Treasure Decoction"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "bat tran thang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-shengmai-san",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Shengmai San",
+    "en_synonyms": [
+      "Shengmai powder",
+      "Sheng Mai Yin"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "sinh mach tan",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-spleen-qi-deficiency",
+    "domain": "herb",
+    "clinical": false,
+    "en": "spleen qi deficiency",
+    "en_synonyms": [
+      "spleen deficiency",
+      "Pi qi xu"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "ty khi hu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-spleen-deficiency",
+    "domain": "herb",
+    "clinical": false,
+    "en": "spleen deficiency",
+    "en_synonyms": [
+      "spleen qi deficiency"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "ty hu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-kidney-yang-deficiency",
+    "domain": "herb",
+    "clinical": false,
+    "en": "kidney yang deficiency",
+    "en_synonyms": [
+      "Shen yang xu"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "than duong hu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-kidney-yin-deficiency",
+    "domain": "herb",
+    "clinical": false,
+    "en": "kidney yin deficiency",
+    "en_synonyms": [
+      "Shen yin xu"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "than am hu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-liver-qi-stagnation",
+    "domain": "herb",
+    "clinical": false,
+    "en": "liver qi stagnation",
+    "en_synonyms": [
+      "liver depression",
+      "Gan qi yu jie"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "can khi uat ket",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-qi-stagnation-and-blood-stasis",
+    "domain": "herb",
+    "clinical": false,
+    "en": "qi stagnation and blood stasis",
+    "en_synonyms": [
+      "blood stasis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "khi tri huyet u",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-blood-stasis",
+    "domain": "herb",
+    "clinical": false,
+    "en": "blood stasis",
+    "en_synonyms": [
+      "blood stasis syndrome",
+      "Xue yu"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "huyet u",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-yin-deficiency",
+    "domain": "herb",
+    "clinical": false,
+    "en": "yin deficiency",
+    "en_synonyms": [
+      "yin deficiency syndrome"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "am hu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-yang-deficiency",
+    "domain": "herb",
+    "clinical": false,
+    "en": "yang deficiency",
+    "en_synonyms": [
+      "yang deficiency syndrome"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "duong hu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-qi-deficiency",
+    "domain": "herb",
+    "clinical": false,
+    "en": "qi deficiency",
+    "en_synonyms": [
+      "qi deficiency syndrome"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "khi hu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-phlegm-dampness",
+    "domain": "herb",
+    "clinical": false,
+    "en": "phlegm-dampness",
+    "en_synonyms": [
+      "phlegm dampness syndrome",
+      "Tan shi"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dam thap",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-wind-cold-exterior-syndrome",
+    "domain": "herb",
+    "clinical": false,
+    "en": "wind-cold exterior syndrome",
+    "en_synonyms": [
+      "wind cold"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "ngoai cam phong han",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-acupuncture",
+    "domain": "herb",
+    "clinical": false,
+    "en": "acupuncture",
+    "en_synonyms": [
+      "electroacupuncture",
+      "manual acupuncture"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "cham cuu",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-electroacupuncture",
+    "domain": "herb",
+    "clinical": false,
+    "en": "electroacupuncture",
+    "en_synonyms": [
+      "electro-acupuncture"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "dien cham",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-moxibustion",
+    "domain": "herb",
+    "clinical": false,
+    "en": "moxibustion",
+    "en_synonyms": [
+      "moxa"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "cuu ngai",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-auricular-acupuncture",
+    "domain": "herb",
+    "clinical": false,
+    "en": "auricular acupuncture",
+    "en_synonyms": [
+      "ear acupuncture",
+      "auriculotherapy"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "nhi cham",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-cupping-therapy",
+    "domain": "herb",
+    "clinical": false,
+    "en": "cupping therapy",
+    "en_synonyms": [
+      "cupping"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "giac hoi",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-tuina-massage",
+    "domain": "herb",
+    "clinical": false,
+    "en": "tuina massage",
+    "en_synonyms": [
+      "tuina",
+      "Chinese therapeutic massage"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "xoa bop bam huyet",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-chinese-herbal-decoction",
+    "domain": "herb",
+    "clinical": false,
+    "en": "Chinese herbal decoction",
+    "en_synonyms": [
+      "herbal formula",
+      "herbal medicine"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "thuoc thang",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-qigong",
+    "domain": "herb",
+    "clinical": false,
+    "en": "qigong",
+    "en_synonyms": [
+      "health preservation",
+      "yangsheng"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "duong sinh",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-traditional-chinese-medicine",
+    "domain": "herb",
+    "clinical": false,
+    "en": "traditional Chinese medicine",
+    "en_synonyms": [
+      "TCM",
+      "Chinese medicine"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "trung y",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-traditional-medicine",
+    "domain": "herb",
+    "clinical": false,
+    "en": "traditional medicine",
+    "en_synonyms": [
+      "traditional Chinese medicine",
+      "traditional Vietnamese medicine"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "yhct",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      },
+      {
+        "lang": "vi",
+        "text": "y hoc co truyen",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-pattern-differentiation",
+    "domain": "herb",
+    "clinical": false,
+    "en": "pattern differentiation",
+    "en_synonyms": [
+      "syndrome differentiation",
+      "Bian Zheng"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "bien chung luan tri",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-meridian",
+    "domain": "herb",
+    "clinical": false,
+    "en": "meridian",
+    "en_synonyms": [
+      "meridians and collaterals",
+      "channel"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "kinh lac",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  },
+  {
+    "id": "mig-acupuncture-point",
+    "domain": "herb",
+    "clinical": false,
+    "en": "acupuncture point",
+    "en_synonyms": [
+      "acupoint"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "vi",
+        "text": "huyet vi",
+        "tone_exact": false,
+        "confidence": "low",
+        "diacritic_pending": true
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": true
+  }
+]

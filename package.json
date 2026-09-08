@@ -6,7 +6,9 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "dev": "node --watch server.js"
+    "dev": "node --watch server.js",
+    "test:tcm": "node test/run-tcm-queries.mjs",
+    "tcm:collisions": "node scripts/tcm-collision-report.mjs"
   },
   "keywords": ["chimedis", "tcm", "portal"],
   "author": "Hạ Vân Minh",

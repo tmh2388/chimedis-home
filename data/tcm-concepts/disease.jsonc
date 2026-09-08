@@ -1,0 +1,62 @@
+// Milestone D — concept: bệnh danh (Tây y phổ thông + tương ứng YHCT). §4.
+[
+  {
+    "id": "eczema",
+    "domain": "disease",
+    "clinical": true,
+    "en": "eczema",
+    "en_synonyms": ["atopic dermatitis", "dermatitis"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "chàm", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "bệnh chàm", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "viêm da cơ địa", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "湿疹", "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  },
+  {
+    "id": "stroke",
+    "domain": "disease",
+    "clinical": true,
+    "en": "stroke",
+    "en_synonyms": ["cerebrovascular accident", "brain infarction", "cerebral apoplexy"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đột quỵ", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "đột quỵ não", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "tai biến mạch máu não", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "trúng phong", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "中风", "confidence": "high" },
+      { "lang": "zh", "text": "卒中", "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  },
+  {
+    "id": "hemorrhoids",
+    "domain": "disease",
+    "clinical": true,
+    "en": "hemorrhoids",
+    "en_synonyms": ["haemorrhoids", "piles"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "trĩ", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "bệnh trĩ", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "痔疮", "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  },
+  {
+    "id": "psoriasis",
+    "domain": "disease",
+    "clinical": true,
+    "en": "psoriasis",
+    "en_synonyms": [],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "vảy nến", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "银屑病", "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  }
+]

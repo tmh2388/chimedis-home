@@ -1,0 +1,49 @@
+// Milestone D — concept: từ chung y khoa (điều trị / dự phòng / hiệu quả...). §4.
+// KHÔNG clinical → có thể auto-promote về sau, nhưng vẫn qua review.
+[
+  {
+    "id": "treatment",
+    "domain": "general",
+    "clinical": false,
+    "en": "treatment",
+    "en_synonyms": ["therapy", "therapeutic", "management"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "điều trị", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "trị", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "chữa", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "trị liệu", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "治疗", "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  },
+  {
+    "id": "prevention",
+    "domain": "general",
+    "clinical": false,
+    "en": "prevention",
+    "en_synonyms": ["prophylaxis", "preventive", "prophylactic"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "dự phòng", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "phòng ngừa", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "phòng bệnh", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "预防", "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  },
+  {
+    "id": "rehabilitation",
+    "domain": "general",
+    "clinical": false,
+    "en": "rehabilitation",
+    "en_synonyms": ["recovery", "functional recovery"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "phục hồi chức năng", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "phục hồi", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "康复", "confidence": "high" }
+    ],
+    "trust": "verified", "source": "hand"
+  }
+]

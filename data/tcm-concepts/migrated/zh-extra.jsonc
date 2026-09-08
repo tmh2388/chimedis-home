@@ -1,0 +1,1574 @@
+// TỰ SINH từ lib/tcm-vocab.js — CHƯA có dạng đúng dấu tiếng Việt.
+// Backfill surface_form vi đúng dấu + phân loại domain, rồi chuyển lên ../  để engine nạp.
+[
+  {
+    "id": "mig-acupuncture",
+    "domain": "method",
+    "clinical": true,
+    "en": "acupuncture",
+    "en_synonyms": [
+      "electroacupuncture",
+      "manual acupuncture"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "针灸",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-electroacupuncture",
+    "domain": "method",
+    "clinical": true,
+    "en": "electroacupuncture",
+    "en_synonyms": [
+      "electro-acupuncture"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "电针",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-moxibustion",
+    "domain": "method",
+    "clinical": true,
+    "en": "moxibustion",
+    "en_synonyms": [
+      "moxa"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "艾灸",
+        "confidence": "high"
+      },
+      {
+        "lang": "zh",
+        "text": "灸法",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-auricular-acupuncture",
+    "domain": "method",
+    "clinical": true,
+    "en": "auricular acupuncture",
+    "en_synonyms": [
+      "ear acupuncture"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "耳针",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-cupping-therapy",
+    "domain": "method",
+    "clinical": true,
+    "en": "cupping therapy",
+    "en_synonyms": [
+      "cupping"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "拔罐",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-tuina-massage",
+    "domain": "method",
+    "clinical": true,
+    "en": "tuina massage",
+    "en_synonyms": [
+      "tuina",
+      "Chinese therapeutic massage"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "推拿",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-massage-therapy",
+    "domain": "method",
+    "clinical": true,
+    "en": "massage therapy",
+    "en_synonyms": [
+      "tuina"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "按摩",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-chinese-herbal-medicine",
+    "domain": "method",
+    "clinical": true,
+    "en": "Chinese herbal medicine",
+    "en_synonyms": [
+      "herbal medicine",
+      "Chinese materia medica"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "中药",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-traditional-chinese-medicine",
+    "domain": "method",
+    "clinical": true,
+    "en": "traditional Chinese medicine",
+    "en_synonyms": [
+      "TCM"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "中医",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-integrated-traditional-chinese-and-western-medicine",
+    "domain": "method",
+    "clinical": true,
+    "en": "integrated traditional Chinese and Western medicine",
+    "en_synonyms": [
+      "integrative medicine"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "中西医结合",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-acupuncture-point",
+    "domain": "method",
+    "clinical": true,
+    "en": "acupuncture point",
+    "en_synonyms": [
+      "acupoint"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "穴位",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-meridian",
+    "domain": "method",
+    "clinical": true,
+    "en": "meridian",
+    "en_synonyms": [
+      "meridians and collaterals",
+      "channel"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "经络",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-pattern-differentiation-and-treatment",
+    "domain": "method",
+    "clinical": true,
+    "en": "pattern differentiation and treatment",
+    "en_synonyms": [
+      "syndrome differentiation"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "辨证论治",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-rehabilitation",
+    "domain": "method",
+    "clinical": true,
+    "en": "rehabilitation",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "康复",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-spleen-deficiency",
+    "domain": "method",
+    "clinical": true,
+    "en": "spleen deficiency",
+    "en_synonyms": [
+      "spleen qi deficiency"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "脾虚",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-spleen-qi-deficiency",
+    "domain": "method",
+    "clinical": true,
+    "en": "spleen qi deficiency",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "脾气虚",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-qi-deficiency",
+    "domain": "method",
+    "clinical": true,
+    "en": "qi deficiency",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "气虚",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-blood-deficiency",
+    "domain": "method",
+    "clinical": true,
+    "en": "blood deficiency",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "血虚",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-yin-deficiency",
+    "domain": "method",
+    "clinical": true,
+    "en": "yin deficiency",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "阴虚",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-yang-deficiency",
+    "domain": "method",
+    "clinical": true,
+    "en": "yang deficiency",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "阳虚",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-blood-stasis",
+    "domain": "method",
+    "clinical": true,
+    "en": "blood stasis",
+    "en_synonyms": [
+      "blood stasis syndrome"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "血瘀",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-qi-stagnation-and-blood-stasis",
+    "domain": "method",
+    "clinical": true,
+    "en": "qi stagnation and blood stasis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "气滞血瘀",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-liver-qi-stagnation",
+    "domain": "method",
+    "clinical": true,
+    "en": "liver qi stagnation",
+    "en_synonyms": [
+      "liver depression"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "肝郁",
+        "confidence": "high"
+      },
+      {
+        "lang": "zh",
+        "text": "肝气郁结",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-phlegm-dampness",
+    "domain": "method",
+    "clinical": true,
+    "en": "phlegm-dampness",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "痰湿",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-damp-heat",
+    "domain": "method",
+    "clinical": true,
+    "en": "damp-heat",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "湿热",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-kidney-deficiency",
+    "domain": "method",
+    "clinical": true,
+    "en": "kidney deficiency",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "肾虚",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-kidney-yang-deficiency",
+    "domain": "method",
+    "clinical": true,
+    "en": "kidney yang deficiency",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "肾阳虚",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-kidney-yin-deficiency",
+    "domain": "method",
+    "clinical": true,
+    "en": "kidney yin deficiency",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "肾阴虚",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-stroke",
+    "domain": "method",
+    "clinical": true,
+    "en": "stroke",
+    "en_synonyms": [
+      "cerebrovascular accident"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "中风",
+        "confidence": "high"
+      },
+      {
+        "lang": "zh",
+        "text": "脑卒中",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-cerebral-infarction",
+    "domain": "method",
+    "clinical": true,
+    "en": "cerebral infarction",
+    "en_synonyms": [
+      "ischemic stroke"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "脑梗死",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-cerebral-hemorrhage",
+    "domain": "method",
+    "clinical": true,
+    "en": "cerebral hemorrhage",
+    "en_synonyms": [
+      "intracerebral hemorrhage"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "脑出血",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-hemiplegia",
+    "domain": "method",
+    "clinical": true,
+    "en": "hemiplegia",
+    "en_synonyms": [
+      "hemiparesis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "偏瘫",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-facial-paralysis",
+    "domain": "method",
+    "clinical": true,
+    "en": "facial paralysis",
+    "en_synonyms": [
+      "Bell's palsy"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "面瘫",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-hypertension",
+    "domain": "method",
+    "clinical": true,
+    "en": "hypertension",
+    "en_synonyms": [
+      "high blood pressure"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "高血压",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-diabetes-mellitus",
+    "domain": "method",
+    "clinical": true,
+    "en": "diabetes mellitus",
+    "en_synonyms": [
+      "diabetes"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "糖尿病",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-insomnia",
+    "domain": "method",
+    "clinical": true,
+    "en": "insomnia",
+    "en_synonyms": [
+      "sleep disorder"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "失眠",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-depression",
+    "domain": "method",
+    "clinical": true,
+    "en": "depression",
+    "en_synonyms": [
+      "depressive disorder"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "抑郁症",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-anxiety-disorder",
+    "domain": "method",
+    "clinical": true,
+    "en": "anxiety disorder",
+    "en_synonyms": [
+      "anxiety"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "焦虑症",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-headache",
+    "domain": "method",
+    "clinical": true,
+    "en": "headache",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "头痛",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-migraine",
+    "domain": "method",
+    "clinical": true,
+    "en": "migraine",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "偏头痛",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-vertigo",
+    "domain": "method",
+    "clinical": true,
+    "en": "vertigo",
+    "en_synonyms": [
+      "dizziness"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "眩晕",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-cervical-spondylosis",
+    "domain": "method",
+    "clinical": true,
+    "en": "cervical spondylosis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "颈椎病",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-low-back-pain",
+    "domain": "method",
+    "clinical": true,
+    "en": "low back pain",
+    "en_synonyms": [
+      "lumbago"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "腰痛",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-lumbar-disc-herniation",
+    "domain": "method",
+    "clinical": true,
+    "en": "lumbar disc herniation",
+    "en_synonyms": [
+      "herniated disc"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "腰椎间盘突出",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-osteoarthritis",
+    "domain": "method",
+    "clinical": true,
+    "en": "osteoarthritis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "骨关节炎",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-rheumatoid-arthritis",
+    "domain": "method",
+    "clinical": true,
+    "en": "rheumatoid arthritis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "类风湿关节炎",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-knee-osteoarthritis",
+    "domain": "method",
+    "clinical": true,
+    "en": "knee osteoarthritis",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "膝骨关节炎",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-coronary-heart-disease",
+    "domain": "method",
+    "clinical": true,
+    "en": "coronary heart disease",
+    "en_synonyms": [
+      "coronary artery disease"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "冠心病",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-chronic-fatigue",
+    "domain": "method",
+    "clinical": true,
+    "en": "chronic fatigue",
+    "en_synonyms": [
+      "chronic fatigue syndrome"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "慢性疲劳",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-tumor",
+    "domain": "method",
+    "clinical": true,
+    "en": "tumor",
+    "en_synonyms": [
+      "neoplasm"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "肿瘤",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-cancer",
+    "domain": "method",
+    "clinical": true,
+    "en": "cancer",
+    "en_synonyms": [
+      "carcinoma"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "癌症",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-chemotherapy",
+    "domain": "method",
+    "clinical": true,
+    "en": "chemotherapy",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "化疗",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-prevention",
+    "domain": "method",
+    "clinical": true,
+    "en": "prevention",
+    "en_synonyms": [
+      "prophylaxis",
+      "preventive"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "预防",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-treatment",
+    "domain": "method",
+    "clinical": true,
+    "en": "treatment",
+    "en_synonyms": [
+      "therapy",
+      "therapeutic"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "治疗",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-efficacy",
+    "domain": "method",
+    "clinical": true,
+    "en": "efficacy",
+    "en_synonyms": [
+      "effectiveness",
+      "therapeutic effect"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "疗效",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-clinical",
+    "domain": "method",
+    "clinical": true,
+    "en": "clinical",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "临床",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-diagnosis",
+    "domain": "method",
+    "clinical": true,
+    "en": "diagnosis",
+    "en_synonyms": [
+      "diagnostic"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "诊断",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-mechanism",
+    "domain": "method",
+    "clinical": true,
+    "en": "mechanism",
+    "en_synonyms": [
+      "mechanisms",
+      "molecular mechanism"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "机制",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-randomized-controlled-trial",
+    "domain": "method",
+    "clinical": true,
+    "en": "randomized controlled trial",
+    "en_synonyms": [
+      "RCT",
+      "clinical trial"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "随机对照",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-review",
+    "domain": "method",
+    "clinical": true,
+    "en": "review",
+    "en_synonyms": [
+      "systematic review"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "综述",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-systematic-review",
+    "domain": "method",
+    "clinical": true,
+    "en": "systematic review",
+    "en_synonyms": [
+      "meta-analysis"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "系统评价",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-meta-analysis",
+    "domain": "method",
+    "clinical": true,
+    "en": "meta-analysis",
+    "en_synonyms": [
+      "systematic review"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "荟萃分析",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-syndrome",
+    "domain": "method",
+    "clinical": true,
+    "en": "syndrome",
+    "en_synonyms": [
+      "pattern",
+      "TCM syndrome"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "证候",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-prognosis",
+    "domain": "method",
+    "clinical": true,
+    "en": "prognosis",
+    "en_synonyms": [
+      "outcome"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "预后",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-rehabilitation-training",
+    "domain": "method",
+    "clinical": true,
+    "en": "rehabilitation training",
+    "en_synonyms": [
+      "rehabilitation"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "康复训练",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-combined-therapy",
+    "domain": "method",
+    "clinical": true,
+    "en": "combined therapy",
+    "en_synonyms": [
+      "combination therapy"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "联合",
+        "confidence": "high"
+      },
+      {
+        "lang": "zh",
+        "text": "联用",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-trial",
+    "domain": "method",
+    "clinical": true,
+    "en": "trial",
+    "en_synonyms": [
+      "clinical trial"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "试验",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-research",
+    "domain": "method",
+    "clinical": true,
+    "en": "research",
+    "en_synonyms": [
+      "study"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "研究",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-observation",
+    "domain": "method",
+    "clinical": true,
+    "en": "observation",
+    "en_synonyms": [
+      "clinical observation"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "观察",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-treatment-course",
+    "domain": "method",
+    "clinical": true,
+    "en": "treatment course",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "疗程",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-effectiveness",
+    "domain": "method",
+    "clinical": true,
+    "en": "effectiveness",
+    "en_synonyms": [
+      "efficacy"
+    ],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "有效性",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  },
+  {
+    "id": "mig-safety",
+    "domain": "method",
+    "clinical": true,
+    "en": "safety",
+    "en_synonyms": [],
+    "mesh_id": null,
+    "mesh_term": null,
+    "same_as": [],
+    "surface_forms": [
+      {
+        "lang": "zh",
+        "text": "安全性",
+        "confidence": "high"
+      }
+    ],
+    "trust": "verified",
+    "source": "import",
+    "diacritic_pending": false
+  }
+]
