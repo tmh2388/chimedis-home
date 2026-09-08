@@ -1,32 +1,216 @@
-// Milestone D — concept: dược liệu. §4. (khởi đầu — CoreDB overlay ở D3 bổ sung hàng loạt)
+// Milestone D — concept: dược liệu. §4. trust:verified = tone tiếng Việt đã rà (Hạ Vân Minh).
+// CoreDB overlay (D3) bổ sung hàng loạt ở trust:auto — không đè các mục verified này.
 [
-  {
-    "id": "astragalus-membranaceus",
-    "domain": "herb",
-    "clinical": false,
-    "en": "Astragalus membranaceus",
-    "en_synonyms": ["Huangqi", "Astragalus propinquus", "Radix Astragali", "Astragalus"],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+  { "id": "astragalus-membranaceus", "domain": "herb", "clinical": false,
+    "en": "Astragalus membranaceus", "en_synonyms": ["Huangqi", "Radix Astragali", "Astragalus"],
+    "mesh_id": null, "mesh_term": null, "same_as": ["astragalus-propinquus"],
     "surface_forms": [
       { "lang": "vi", "text": "hoàng kỳ", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "黄芪", "confidence": "high" },
-      { "lang": "zh", "text": "黃芪", "confidence": "high" },
+      { "lang": "zh", "text": "黄芪", "confidence": "high" }, { "lang": "zh", "text": "黃芪", "confidence": "high" },
       { "lang": "py", "text": "huáng qí", "tone_exact": true, "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  },
-  {
-    "id": "angelica-sinensis",
-    "domain": "herb",
-    "clinical": false,
-    "en": "Angelica sinensis",
-    "en_synonyms": ["Danggui", "Dong quai", "Radix Angelicae Sinensis"],
+    ], "trust": "verified", "source": "hand" },
+  { "id": "astragalus-propinquus", "domain": "herb", "clinical": false,
+    "en": "Astragalus propinquus", "en_synonyms": ["Astragalus membranaceus"],
+    "mesh_id": null, "mesh_term": null, "same_as": ["astragalus-membranaceus"],
+    "surface_forms": [ { "lang": "vi", "text": "hoàng kì", "tone_exact": true, "confidence": "medium" } ],
+    "trust": "verified", "source": "hand" },
+  { "id": "angelica-sinensis", "domain": "herb", "clinical": false,
+    "en": "Angelica sinensis", "en_synonyms": ["Danggui", "Dong quai", "Radix Angelicae Sinensis"],
     "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "đương quy", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "当归", "confidence": "high" },
-      { "lang": "py", "text": "dāng guī", "tone_exact": true, "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  }
+      { "lang": "zh", "text": "当归", "confidence": "high" }, { "lang": "py", "text": "dāng guī", "tone_exact": true, "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "panax-ginseng", "domain": "herb", "clinical": false,
+    "en": "Panax ginseng", "en_synonyms": ["Renshen", "Korean ginseng", "Radix Ginseng"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "nhân sâm", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "人参", "confidence": "high" }, { "lang": "py", "text": "rén shēn", "tone_exact": true, "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "glycyrrhiza-uralensis", "domain": "herb", "clinical": false,
+    "en": "Glycyrrhiza uralensis", "en_synonyms": ["Gancao", "licorice", "Radix Glycyrrhizae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "cam thảo", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "甘草", "confidence": "high" }, { "lang": "py", "text": "gān cǎo", "tone_exact": true, "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "atractylodes-macrocephala", "domain": "herb", "clinical": false,
+    "en": "Atractylodes macrocephala", "en_synonyms": ["Baizhu", "Rhizoma Atractylodis Macrocephalae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "bạch truật", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "白术", "confidence": "high" }, { "lang": "zh", "text": "白朮", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "poria-cocos", "domain": "herb", "clinical": false,
+    "en": "Poria cocos", "en_synonyms": ["Fuling", "Wolfiporia extensa", "Poria"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "phục linh", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "bạch linh", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "茯苓", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "ligusticum-chuanxiong", "domain": "herb", "clinical": false,
+    "en": "Ligusticum chuanxiong", "en_synonyms": ["Chuanxiong", "Rhizoma Chuanxiong"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "xuyên khung", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "川芎", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "paeonia-lactiflora", "domain": "herb", "clinical": false,
+    "en": "Paeonia lactiflora", "en_synonyms": ["Baishao", "white peony", "Radix Paeoniae Alba"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "bạch thược", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "白芍", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "rehmannia-glutinosa", "domain": "herb", "clinical": false,
+    "en": "Rehmannia glutinosa", "en_synonyms": ["Dihuang", "Shudihuang", "Radix Rehmanniae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thục địa", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "địa hoàng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "地黄", "confidence": "high" }, { "lang": "zh", "text": "熟地黄", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "coptis-chinensis", "domain": "herb", "clinical": false,
+    "en": "Coptis chinensis", "en_synonyms": ["Huanglian", "Rhizoma Coptidis", "Chinese goldthread"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "hoàng liên", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "黄连", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "berberine", "domain": "herb", "clinical": false,
+    "en": "berberine", "en_synonyms": ["berberine hydrochloride"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [ { "lang": "vi", "text": "berberin", "tone_exact": true, "confidence": "high" } ],
+    "trust": "verified", "source": "hand" },
+  { "id": "scutellaria-baicalensis", "domain": "herb", "clinical": false,
+    "en": "Scutellaria baicalensis", "en_synonyms": ["Huangqin", "Radix Scutellariae", "Chinese skullcap"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "hoàng cầm", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "黄芩", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "bupleurum-chinense", "domain": "herb", "clinical": false,
+    "en": "Bupleurum chinense", "en_synonyms": ["Chaihu", "Radix Bupleuri"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "sài hồ", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "柴胡", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "pueraria-lobata", "domain": "herb", "clinical": false,
+    "en": "Pueraria lobata", "en_synonyms": ["Gegen", "kudzu", "Radix Puerariae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "cát căn", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "葛根", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "ephedra-sinica", "domain": "herb", "clinical": false,
+    "en": "Ephedra sinica", "en_synonyms": ["Mahuang", "Herba Ephedrae", "ephedra"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "ma hoàng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "麻黄", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "cinnamomum-cassia-twig", "domain": "herb", "clinical": false,
+    "en": "Cinnamomum cassia twig", "en_synonyms": ["Guizhi", "Ramulus Cinnamomi", "cassia twig"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "quế chi", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "桂枝", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "aconitum-carmichaelii", "domain": "herb", "clinical": false,
+    "en": "Aconitum carmichaelii", "en_synonyms": ["Fuzi", "aconite", "Radix Aconiti Lateralis Preparata"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "phụ tử", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "附子", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "zingiber-officinale-dried", "domain": "herb", "clinical": false,
+    "en": "dried ginger", "en_synonyms": ["Ganjiang", "Zingiber officinale", "Rhizoma Zingiberis"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "can khương", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "干姜", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "salvia-miltiorrhiza", "domain": "herb", "clinical": false,
+    "en": "Salvia miltiorrhiza", "en_synonyms": ["Danshen", "Radix Salviae Miltiorrhizae", "red sage"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đan sâm", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "丹参", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "lonicera-japonica", "domain": "herb", "clinical": false,
+    "en": "Lonicera japonica", "en_synonyms": ["Jinyinhua", "honeysuckle flower", "Flos Lonicerae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "kim ngân hoa", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "kim ngân", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "金银花", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "forsythia-suspensa", "domain": "herb", "clinical": false,
+    "en": "Forsythia suspensa", "en_synonyms": ["Lianqiao", "Fructus Forsythiae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "liên kiều", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "连翘", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "chrysanthemum-morifolium", "domain": "herb", "clinical": false,
+    "en": "Chrysanthemum morifolium", "en_synonyms": ["Juhua", "chrysanthemum flower", "Flos Chrysanthemi"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "cúc hoa", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "菊花", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "achyranthes-bidentata", "domain": "herb", "clinical": false,
+    "en": "Achyranthes bidentata", "en_synonyms": ["Niuxi", "Radix Achyranthis Bidentatae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "ngưu tất", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "牛膝", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "eucommia-ulmoides", "domain": "herb", "clinical": false,
+    "en": "Eucommia ulmoides", "en_synonyms": ["Duzhong", "Cortex Eucommiae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đỗ trọng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "杜仲", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "lycium-barbarum", "domain": "herb", "clinical": false,
+    "en": "Lycium barbarum", "en_synonyms": ["Gouqizi", "goji berry", "wolfberry", "Fructus Lycii"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "câu kỷ tử", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "kỷ tử", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "枸杞子", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "ziziphus-jujuba", "domain": "herb", "clinical": false,
+    "en": "Ziziphus jujuba", "en_synonyms": ["Dazao", "jujube", "Chinese date", "Fructus Jujubae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đại táo", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "大枣", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "gastrodia-elata", "domain": "herb", "clinical": false,
+    "en": "Gastrodia elata", "en_synonyms": ["Tianma", "Rhizoma Gastrodiae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thiên ma", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "天麻", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "uncaria-rhynchophylla", "domain": "herb", "clinical": false,
+    "en": "Uncaria rhynchophylla", "en_synonyms": ["Gouteng", "cat's claw", "Ramulus Uncariae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "câu đằng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "钩藤", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "curcuma-longa", "domain": "herb", "clinical": false,
+    "en": "Curcuma longa", "en_synonyms": ["turmeric", "Jianghuang", "Rhizoma Curcumae Longae"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "nghệ", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "khương hoàng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "姜黄", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" }
 ]

@@ -1,0 +1,87 @@
+// Milestone D — concept: cổ phương / bài thuốc YHCT. §4. trust:verified (Hạ Vân Minh).
+[
+  { "id": "buzhong-yiqi-tang", "domain": "formula", "clinical": true, "en": "Buzhong Yiqi Tang",
+    "en_synonyms": ["Bu Zhong Yi Qi Tang", "Supplement the Center and Boost the Qi Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "bổ trung ích khí thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "补中益气汤", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "liuwei-dihuang-wan", "domain": "formula", "clinical": true, "en": "Liuwei Dihuang Wan",
+    "en_synonyms": ["Liu Wei Di Huang Wan", "Six Ingredient Rehmannia Pill"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "lục vị địa hoàng hoàn", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "六味地黄丸", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "sijunzi-tang", "domain": "formula", "clinical": true, "en": "Sijunzi Tang",
+    "en_synonyms": ["Si Jun Zi Tang", "Four Gentlemen Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "tứ quân tử thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "四君子汤", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "siwu-tang", "domain": "formula", "clinical": true, "en": "Siwu Tang",
+    "en_synonyms": ["Si Wu Tang", "Four Substances Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "tứ vật thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "四物汤", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "buyang-huanwu-tang", "domain": "formula", "clinical": true, "en": "Buyang Huanwu Tang",
+    "en_synonyms": ["Bu Yang Huan Wu Tang", "Supplement Yang to Restore Five Tenths Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "bổ dương hoàn ngũ thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "补阳还五汤", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "xuefu-zhuyu-tang", "domain": "formula", "clinical": true, "en": "Xuefu Zhuyu Tang",
+    "en_synonyms": ["Xue Fu Zhu Yu Tang", "Drive Out Stasis in the Mansion of Blood Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "huyết phủ trục ứ thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "血府逐瘀汤", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "xiaoyao-san", "domain": "formula", "clinical": true, "en": "Xiaoyao San",
+    "en_synonyms": ["Xiao Yao San", "Free and Easy Wanderer Powder", "Rambling Powder"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "tiêu dao tán", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "逍遥散", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "guizhi-tang", "domain": "formula", "clinical": true, "en": "Guizhi Tang",
+    "en_synonyms": ["Gui Zhi Tang", "Cinnamon Twig Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "quế chi thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "桂枝汤", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "xiao-chaihu-tang", "domain": "formula", "clinical": true, "en": "Xiao Chaihu Tang",
+    "en_synonyms": ["Xiao Chai Hu Tang", "Minor Bupleurum Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "tiểu sài hồ thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "小柴胡汤", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "banxia-xiexin-tang", "domain": "formula", "clinical": true, "en": "Banxia Xiexin Tang",
+    "en_synonyms": ["Ban Xia Xie Xin Tang", "Pinellia Decoction to Drain the Epigastrium"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "bán hạ tả tâm thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "半夏泻心汤", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "duhuo-jisheng-tang", "domain": "formula", "clinical": true, "en": "Duhuo Jisheng Tang",
+    "en_synonyms": ["Du Huo Ji Sheng Tang", "Angelica Pubescens and Sangjisheng Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "độc hoạt tang ký sinh thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "独活寄生汤", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "tianma-gouteng-yin", "domain": "formula", "clinical": true, "en": "Tianma Gouteng Yin",
+    "en_synonyms": ["Tian Ma Gou Teng Yin", "Gastrodia and Uncaria Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thiên ma câu đằng ẩm", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "天麻钩藤饮", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" }
+]

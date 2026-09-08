@@ -1,31 +1,90 @@
-// Milestone D — concept: chứng / thể bệnh biện chứng YHCT. §4.
+// Milestone D — concept: chứng / thể bệnh biện chứng YHCT. §4. trust:verified (Hạ Vân Minh).
 [
-  {
-    "id": "spleen-qi-deficiency",
-    "domain": "pattern",
-    "clinical": true,
-    "en": "spleen qi deficiency",
-    "en_synonyms": ["spleen deficiency", "spleen qi vacuity"],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+  { "id": "spleen-qi-deficiency", "domain": "pattern", "clinical": true, "en": "spleen qi deficiency",
+    "en_synonyms": ["spleen deficiency", "spleen qi vacuity"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "tỳ khí hư", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "tỳ hư", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "脾气虚", "confidence": "high" },
-      { "lang": "zh", "text": "脾虚", "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  },
-  {
-    "id": "blood-stasis",
-    "domain": "pattern",
-    "clinical": true,
-    "en": "blood stasis",
-    "en_synonyms": ["blood stagnation", "static blood"],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+      { "lang": "zh", "text": "脾气虚", "confidence": "high" }, { "lang": "zh", "text": "脾虚", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "blood-stasis", "domain": "pattern", "clinical": true, "en": "blood stasis",
+    "en_synonyms": ["blood stagnation", "static blood"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "huyết ứ", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "血瘀", "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "qi-stagnation", "domain": "pattern", "clinical": true, "en": "qi stagnation",
+    "en_synonyms": ["qi stagnation", "stagnant qi"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "khí trệ", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "气滞", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "liver-qi-stagnation", "domain": "pattern", "clinical": true, "en": "liver qi stagnation",
+    "en_synonyms": ["liver qi depression", "constrained liver qi"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "can khí uất kết", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "can uất", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "肝气郁结", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "liver-yang-hyperactivity", "domain": "pattern", "clinical": true, "en": "liver yang hyperactivity",
+    "en_synonyms": ["ascendant liver yang", "hyperactive liver yang"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "can dương thượng cang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "肝阳上亢", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "kidney-yang-deficiency", "domain": "pattern", "clinical": true, "en": "kidney yang deficiency",
+    "en_synonyms": ["kidney yang vacuity"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thận dương hư", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "肾阳虚", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "kidney-yin-deficiency", "domain": "pattern", "clinical": true, "en": "kidney yin deficiency",
+    "en_synonyms": ["kidney yin vacuity"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thận âm hư", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "肾阴虚", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "yin-deficiency-fire", "domain": "pattern", "clinical": true, "en": "yin deficiency with effulgent fire",
+    "en_synonyms": ["yin deficiency fire", "deficiency heat"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "âm hư hỏa vượng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "阴虚火旺", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "qi-blood-deficiency", "domain": "pattern", "clinical": true, "en": "qi and blood deficiency",
+    "en_synonyms": ["dual deficiency of qi and blood"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "khí huyết lưỡng hư", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "khí huyết hư", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "气血两虚", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "phlegm-dampness", "domain": "pattern", "clinical": true, "en": "phlegm-dampness",
+    "en_synonyms": ["phlegm damp", "damp phlegm"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đàm thấp", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "痰湿", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "damp-heat", "domain": "pattern", "clinical": true, "en": "damp-heat",
+    "en_synonyms": ["dampness-heat"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thấp nhiệt", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "湿热", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "wind-cold", "domain": "pattern", "clinical": true, "en": "wind-cold",
+    "en_synonyms": ["wind cold invasion"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "phong hàn", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "风寒", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "wind-heat", "domain": "pattern", "clinical": true, "en": "wind-heat",
+    "en_synonyms": ["wind heat invasion"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "phong nhiệt", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "风热", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "heart-spleen-deficiency", "domain": "pattern", "clinical": true, "en": "heart and spleen deficiency",
+    "en_synonyms": ["dual deficiency of heart and spleen"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "tâm tỳ lưỡng hư", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "心脾两虚", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" }
 ]

@@ -1,49 +1,76 @@
 // Milestone D — concept: từ chung y khoa (điều trị / dự phòng / hiệu quả...). §4.
-// KHÔNG clinical → có thể auto-promote về sau, nhưng vẫn qua review.
+// clinical:false → về sau có thể auto-promote, nhưng D1-D5 vẫn qua review.
 [
-  {
-    "id": "treatment",
-    "domain": "general",
-    "clinical": false,
-    "en": "treatment",
-    "en_synonyms": ["therapy", "therapeutic", "management"],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+  { "id": "treatment", "domain": "general", "clinical": false, "en": "treatment",
+    "en_synonyms": ["therapy", "therapeutic", "management"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "điều trị", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "trị", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "chữa", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "trị liệu", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "治疗", "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  },
-  {
-    "id": "prevention",
-    "domain": "general",
-    "clinical": false,
-    "en": "prevention",
-    "en_synonyms": ["prophylaxis", "preventive", "prophylactic"],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+    ], "trust": "verified", "source": "hand" },
+  { "id": "prevention", "domain": "general", "clinical": false, "en": "prevention",
+    "en_synonyms": ["prophylaxis", "preventive", "prophylactic"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "dự phòng", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "phòng ngừa", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "phòng bệnh", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "预防", "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  },
-  {
-    "id": "rehabilitation",
-    "domain": "general",
-    "clinical": false,
-    "en": "rehabilitation",
-    "en_synonyms": ["recovery", "functional recovery"],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+    ], "trust": "verified", "source": "hand" },
+  { "id": "rehabilitation", "domain": "general", "clinical": false, "en": "rehabilitation",
+    "en_synonyms": ["recovery", "functional recovery"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "phục hồi chức năng", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "phục hồi", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "康复", "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "efficacy", "domain": "general", "clinical": false, "en": "efficacy",
+    "en_synonyms": ["effectiveness", "clinical efficacy", "therapeutic effect"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "hiệu quả", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "hiệu lực", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "疗效", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "safety", "domain": "general", "clinical": false, "en": "safety",
+    "en_synonyms": ["tolerability", "adverse events"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "an toàn", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "tính an toàn", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "安全性", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "mechanism", "domain": "general", "clinical": false, "en": "mechanism",
+    "en_synonyms": ["mechanisms", "molecular mechanism", "signaling pathway"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "cơ chế", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "cơ chế tác dụng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "机制", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "randomized-controlled-trial", "domain": "general", "clinical": false, "en": "randomized controlled trial",
+    "en_synonyms": ["RCT", "randomised controlled trial"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thử nghiệm lâm sàng ngẫu nhiên có đối chứng", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "thử nghiệm ngẫu nhiên có đối chứng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "随机对照试验", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "systematic-review", "domain": "general", "clinical": false, "en": "systematic review",
+    "en_synonyms": ["meta-analysis"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "tổng quan hệ thống", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "phân tích gộp", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "系统评价", "confidence": "high" }, { "lang": "zh", "text": "meta分析", "confidence": "medium" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "quality-of-life", "domain": "general", "clinical": false, "en": "quality of life",
+    "en_synonyms": ["QoL", "health-related quality of life"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "chất lượng cuộc sống", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "生活质量", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "combined-therapy", "domain": "general", "clinical": false, "en": "combined therapy",
+    "en_synonyms": ["combination therapy", "adjunctive therapy"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "kết hợp", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "phối hợp", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "联合", "confidence": "high" }, { "lang": "zh", "text": "联合治疗", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" }
 ]

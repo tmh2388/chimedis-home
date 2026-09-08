@@ -1,33 +1,83 @@
-// Milestone D — concept: huyệt vị. §4.
-// Lưu ý đụng độ tiếng Việt bỏ dấu: "trung phong" (huyệt LR4) ~ "trúng phong" (đột quỵ)
-// → khoá bỏ dấu "trung phong" vào COLLISION_SET; chỉ tra được khi gõ đúng dấu.
+// Milestone D — concept: huyệt vị. §4. trust:verified (Hạ Vân Minh).
+// ĐỤNG ĐỘ có chủ đích: "trung phong" (huyệt LR4) ~ "trúng phong" (đột quỵ) — chỉ khác dấu.
 [
-  {
-    "id": "st36-zusanli",
-    "domain": "acupoint",
-    "clinical": false,
-    "en": "Zusanli (ST36)",
-    "en_synonyms": ["ST36", "Stomach 36", "Zu San Li"],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+  { "id": "st36-zusanli", "domain": "acupoint", "clinical": false, "en": "Zusanli (ST36)",
+    "en_synonyms": ["ST36", "Stomach 36", "Zu San Li"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "túc tam lý", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "足三里", "confidence": "high" },
-      { "lang": "py", "text": "zú sān lǐ", "tone_exact": true, "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  },
-  {
-    "id": "lr4-zhongfeng",
-    "domain": "acupoint",
-    "clinical": false,
-    "en": "Zhongfeng (LR4)",
-    "en_synonyms": ["LR4", "Liver 4", "Zhong Feng"],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+      { "lang": "zh", "text": "足三里", "confidence": "high" }, { "lang": "py", "text": "zú sān lǐ", "tone_exact": true, "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "lr4-zhongfeng", "domain": "acupoint", "clinical": false, "en": "Zhongfeng (LR4)",
+    "en_synonyms": ["LR4", "Liver 4", "Zhong Feng"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "trung phong", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "huyệt trung phong", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "中封", "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "li4-hegu", "domain": "acupoint", "clinical": false, "en": "Hegu (LI4)",
+    "en_synonyms": ["LI4", "Large Intestine 4", "He Gu"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "hợp cốc", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "合谷", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "li11-quchi", "domain": "acupoint", "clinical": false, "en": "Quchi (LI11)",
+    "en_synonyms": ["LI11", "Large Intestine 11", "Qu Chi"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "khúc trì", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "曲池", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "pc6-neiguan", "domain": "acupoint", "clinical": false, "en": "Neiguan (PC6)",
+    "en_synonyms": ["PC6", "Pericardium 6", "Nei Guan"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "nội quan", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "内关", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "ht7-shenmen", "domain": "acupoint", "clinical": false, "en": "Shenmen (HT7)",
+    "en_synonyms": ["HT7", "Heart 7", "Shen Men"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thần môn", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "神门", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "sp6-sanyinjiao", "domain": "acupoint", "clinical": false, "en": "Sanyinjiao (SP6)",
+    "en_synonyms": ["SP6", "Spleen 6", "San Yin Jiao"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "tam âm giao", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "三阴交", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "lr3-taichong", "domain": "acupoint", "clinical": false, "en": "Taichong (LR3)",
+    "en_synonyms": ["LR3", "Liver 3", "Tai Chong"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thái xung", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "太冲", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "gv20-baihui", "domain": "acupoint", "clinical": false, "en": "Baihui (GV20)",
+    "en_synonyms": ["GV20", "DU20", "Governing Vessel 20", "Bai Hui"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "bách hội", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "百会", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "gb20-fengchi", "domain": "acupoint", "clinical": false, "en": "Fengchi (GB20)",
+    "en_synonyms": ["GB20", "Gallbladder 20", "Feng Chi"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "phong trì", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "风池", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "ki3-taixi", "domain": "acupoint", "clinical": false, "en": "Taixi (KI3)",
+    "en_synonyms": ["KI3", "Kidney 3", "Tai Xi"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thái khê", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "太溪", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "cv4-guanyuan", "domain": "acupoint", "clinical": false, "en": "Guanyuan (CV4)",
+    "en_synonyms": ["CV4", "RN4", "Conception Vessel 4", "Guan Yuan"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "quan nguyên", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "关元", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "cv12-zhongwan", "domain": "acupoint", "clinical": false, "en": "Zhongwan (CV12)",
+    "en_synonyms": ["CV12", "RN12", "Conception Vessel 12", "Zhong Wan"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "trung quản", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "中脘", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" }
 ]

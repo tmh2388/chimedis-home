@@ -1,0 +1,32 @@
+# Milestone D — CI cho engine dịch truy vấn. docs/translation-engine.md §10, §12.
+# Chặn merge nếu: bộ hồi quy có ca fail, HOẶC có đụng độ (COLLISION_SET) mới chưa có ca test.
+name: tcm-translate
+
+on:
+  pull_request:
+    paths:
+      - 'lib/translate/**'
+      - 'data/tcm-concepts/**'
+      - 'test/tcm-queries.json'
+      - 'test/run-tcm-queries.mjs'
+      - 'scripts/tcm-collision-report.mjs'
+      - 'lib/tcm-vocab.js'
+  push:
+    branches: [main, 'impl/translation-engine']
+    paths:
+      - 'lib/translate/**'
+      - 'data/tcm-concepts/**'
+      - 'test/tcm-queries.json'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Bộ hồi quy engine dịch (≥150 ca + negative controls)
+        run: node test/run-tcm-queries.mjs
+      - name: Kiểm mọi đụng độ đều có ca test
+        run: node scripts/tcm-collision-report.mjs

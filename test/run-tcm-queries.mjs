@@ -31,6 +31,12 @@ for (const c of spec.cases) {
   if (c.expect_needs_resolution != null && r.needs_resolution !== c.expect_needs_resolution) {
     problems.push(`needs_resolution = ${r.needs_resolution}, mong đợi ${c.expect_needs_resolution}`);
   }
+  if (c.expect_no_translation && r.translated.length) {
+    problems.push(`đáng lẽ KHÔNG dịch gì, nhưng dịch: ${r.translated.map((t) => t.from + '→' + t.to).join(', ')}`);
+  }
+  if (c.min_translated != null && r.translated.length < c.min_translated) {
+    problems.push(`chỉ dịch ${r.translated.length} span, cần ≥ ${c.min_translated}`);
+  }
 
   if (problems.length) {
     fail++;

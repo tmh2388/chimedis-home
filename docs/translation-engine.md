@@ -273,7 +273,7 @@ Người dùng chọn ở hộp hỏi → lựa chọn ghim vào `search_run.pin
 | **G1. Ba mức tin cậy hiển thị** (§7) | verified dịch thẳng · auto gắn nhãn "chưa rà" · ambiguous hỏi lại | cần code UI |
 | **G2. Truy nguồn mọi mapping** | `query_expanded` v2 (§8) + `source`/`confidence` mỗi concept | `search_runs` đã có; mở rộng payload |
 | **G3. Nút "Báo dịch sai" + hàng đợi** | Mỗi chip có "Sai?" → bảng `dict_corrections(term, wrong_en, suggested_en, reporter_uid, search_run_id, note, status)`. Màn admin "Từ điển" thêm tab "Báo sai" xếp theo tần suất | bảng mới + route + tab admin |
-| **G4. Người chủ trì + nhịp rà** | 1 biên tập viên biết YHCT rà hàng đợi `dict_corrections` + `dict_term_misses` **hàng tuần**. Mỗi sửa → cập nhật concept tay (`trust: verified`) → rebuild → chạy `tcm-queries.json` | cam kết quy trình (không phải code) |
+| **G4. Người chủ trì + nhịp rà** | **Chủ trì: Hạ Vân Minh (chủ dự án, biên tập viên YHCT)** — chốt 2026-09-08. Rà hàng đợi `dict_corrections` + `dict_term_misses` **hàng tuần**. Mỗi sửa → cập nhật concept tay (`trust: verified`, ghi `reviewed_by`/`reviewed_at`) → rebuild → chạy `tcm-queries.json`. Có thể delegate cho editor khác về sau, không để hàng đợi "không owner". | cam kết quy trình (không phải code) |
 | **G5. Bộ test hồi quy** (§10) | `tcm-queries.json` chạy trên mỗi rebuild + CI; đụng độ mới không có test → CI fail | file test + script + CI |
 | **G6. Không auto-promote lâm sàng** (P5) | `dict-learn.refreshLearn()`: chỉ thăng `new→auto_active` khi `domain ∈ {anatomy, physiology, general}`. Domain lâm sàng: dừng ở `new`, chỉ hiện trong màn admin để người duyệt → `approved` | sửa `dict-learn.js` |
 | **G7. Trang minh bạch** | `chimedis.vn/cach-dich` — giải thích: từ điển YHCT có người rà + máy hỗ trợ; luôn hiện cụm tiếng Anh đã gửi; thấy sai bấm "Báo sai"; không chắc thì hệ thống hỏi | trang tĩnh |
@@ -367,8 +367,8 @@ D1/D2/D3 **commit riêng được**, nhưng **bật engine mới cho traffic pro
 
 ### Tiêu chí GATE D1–D3 (review#8 — bắt buộc đạt trước khi chuyển H1a)
 
-- [ ] ≥150 regression cases + **negative controls** trong `tcm-queries.json`.
-- [ ] Mọi đụng độ mới trong `COLLISION_SET` có ca test tương ứng.
+- [x] **≥150 regression cases + negative controls** trong `tcm-queries.json` — **200 ca, 200/200 pass** (D2, 2026-09-08). CI: `.github/workflows/tcm-translate.yml`.
+- [x] Mọi đụng độ mới trong `COLLISION_SET` có ca test tương ứng — `scripts/tcm-collision-report.mjs` chặn CI.
 - [ ] Đối chiếu số lượng concept + surface_form **trước ↔ sau** di trú — không mất dữ liệu.
 - [ ] Các ca tối thiểu đều đúng: `giả châm / chàm`, `châm cứu`, `trị / trĩ`, `trúng / Trung`, ≥1 dược liệu, ≥1 huyệt, ≥1 cụm Hán văn, input **không dấu**.
 - [ ] `buildSearchQuery()` tương thích ngược với caller M1 / H1 / H2 (trường cũ còn nguyên).
@@ -397,7 +397,7 @@ D1/D2/D3 **commit riêng được**, nhưng **bật engine mới cho traffic pro
 |---|---|---|
 | 1 | D1–D3 trước H2? | ✅ **Có** — thứ tự khóa: D1–D3 → H1a → H2 → H3/H4. D4–D6 sau H2 theo nhu cầu. |
 | 2 | Ngưỡng hỏi-lại | ✅ **Luôn hỏi / require resolution** cho collision lâm sàng. Ngữ cảnh **chỉ rank** option, không auto-resolve. |
-| 3 | Người chủ trì G4 | ✅ Giai đoạn đầu: **chủ dự án / biên tập viên YHCT chịu trách nhiệm danh nghĩa**, có audit `reviewed_by`/`reviewed_at`. Không để hàng đợi "không owner". Có thể delegate sau. |
+| 3 | Người chủ trì G4 | ✅ **Hạ Vân Minh (chủ dự án) nhận chủ trì** (2026-09-08). Audit `reviewed_by`/`reviewed_at`. Có thể delegate sau. |
 | 4 | D6 LLM | ✅ **OFF trong v1.** Không cấp quota riêng. Chỉ bật sau khi D1–D5 có số liệu miss/ambiguity; LLM chỉ **sinh candidate**, không tự đổi Evidence query. |
 | 5 | `data/tcm-concepts/` | ✅ **Nhiều `.jsonc` theo domain** + schema validation ở build để chặn trùng `id` xuyên file. |
 | 6 | Song ngữ ngược | ✅ **Để milestone sau.** Không mở phạm vi D1–D3. |

@@ -1,67 +1,110 @@
-// Milestone D — concept: phương pháp / can thiệp YHCT. docs/translation-engine.md §4.
-// trust: verified = đã có người chuyên môn rà (tone tiếng Việt đúng).
+// Milestone D — concept: phương pháp / can thiệp YHCT. §4. trust:verified (Hạ Vân Minh).
 [
-  {
-    "id": "acupuncture",
-    "domain": "method",
-    "clinical": true,
-    "en": "acupuncture",
+  { "id": "acupuncture", "domain": "method", "clinical": true, "en": "acupuncture",
     "en_synonyms": ["needle acupuncture", "manual acupuncture", "body acupuncture"],
     "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "châm cứu", "tone_exact": true, "confidence": "high" },
-      { "lang": "vi", "text": "châm",     "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "châm", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "thể châm", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "针灸", "confidence": "high" },
-      { "lang": "zh", "text": "针刺", "confidence": "high" },
+      { "lang": "zh", "text": "针灸", "confidence": "high" }, { "lang": "zh", "text": "针刺", "confidence": "high" },
       { "lang": "py", "text": "zhēn jiǔ", "tone_exact": true, "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  },
-  {
-    "id": "sham-acupuncture",
-    "domain": "method",
-    "clinical": true,
-    "en": "sham acupuncture",
+    ], "trust": "verified", "source": "hand" },
+  { "id": "sham-acupuncture", "domain": "method", "clinical": true, "en": "sham acupuncture",
     "en_synonyms": ["placebo acupuncture", "sham needling", "minimal acupuncture"],
     "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "giả châm", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "châm giả", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "châm cứu giả", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "假针灸", "confidence": "high" },
-      { "lang": "zh", "text": "假针", "confidence": "high" },
+      { "lang": "zh", "text": "假针灸", "confidence": "high" }, { "lang": "zh", "text": "假针", "confidence": "high" },
       { "lang": "py", "text": "jiǎ zhēn jiǔ", "tone_exact": true, "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  },
-  {
-    "id": "electroacupuncture",
-    "domain": "method",
-    "clinical": true,
-    "en": "electroacupuncture",
+    ], "trust": "verified", "source": "hand" },
+  { "id": "electroacupuncture", "domain": "method", "clinical": true, "en": "electroacupuncture",
     "en_synonyms": ["electro-acupuncture", "electrical acupuncture"],
     "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "điện châm", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "电针", "confidence": "high" },
-      { "lang": "py", "text": "diàn zhēn", "tone_exact": true, "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  },
-  {
-    "id": "moxibustion",
-    "domain": "method",
-    "clinical": true,
-    "en": "moxibustion",
-    "en_synonyms": ["moxa"],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+      { "lang": "zh", "text": "电针", "confidence": "high" }, { "lang": "py", "text": "diàn zhēn", "tone_exact": true, "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "moxibustion", "domain": "method", "clinical": true, "en": "moxibustion",
+    "en_synonyms": ["moxa"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "cứu ngải", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "ngải cứu", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "艾灸", "confidence": "high" },
-      { "lang": "zh", "text": "灸法", "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  }
+      { "lang": "vi", "text": "cứu pháp", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "艾灸", "confidence": "high" }, { "lang": "zh", "text": "灸法", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "warm-needle", "domain": "method", "clinical": true, "en": "warm needle acupuncture",
+    "en_synonyms": ["warm needling", "warm acupuncture"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "ôn châm", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "温针灸", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "auricular-acupuncture", "domain": "method", "clinical": true, "en": "auricular acupuncture",
+    "en_synonyms": ["ear acupuncture", "auriculotherapy"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "nhĩ châm", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "châm loa tai", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "耳针", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "scalp-acupuncture", "domain": "method", "clinical": true, "en": "scalp acupuncture",
+    "en_synonyms": ["head acupuncture"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đầu châm", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "头针", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "acupoint-catgut-embedding", "domain": "method", "clinical": true, "en": "acupoint catgut embedding",
+    "en_synonyms": ["catgut embedding", "thread embedding acupuncture"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "cấy chỉ", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "chôn chỉ", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "穴位埋线", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "acupoint-injection", "domain": "method", "clinical": true, "en": "acupoint injection",
+    "en_synonyms": ["hydro-acupuncture", "point injection"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thủy châm", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "水针", "confidence": "high" }, { "lang": "zh", "text": "穴位注射", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "cupping", "domain": "method", "clinical": true, "en": "cupping therapy",
+    "en_synonyms": ["cupping"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "giác hơi", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "hỏa liệu pháp giác", "tone_exact": true, "confidence": "medium" },
+      { "lang": "zh", "text": "拔罐", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "gua-sha", "domain": "method", "clinical": true, "en": "gua sha",
+    "en_synonyms": ["scraping therapy", "coining"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "cạo gió", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "刮痧", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "tuina", "domain": "method", "clinical": true, "en": "tuina massage",
+    "en_synonyms": ["tuina", "Chinese therapeutic massage", "tui na"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "xoa bóp bấm huyệt", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "tuy na", "tone_exact": true, "confidence": "medium" },
+      { "lang": "zh", "text": "推拿", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "herbal-medicine", "domain": "method", "clinical": true, "en": "Chinese herbal medicine",
+    "en_synonyms": ["herbal medicine", "traditional Chinese herbal medicine", "CHM"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thuốc thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "thuốc bắc", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "trung dược", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "中药", "confidence": "high" }, { "lang": "zh", "text": "中草药", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "qigong", "domain": "method", "clinical": true, "en": "qigong",
+    "en_synonyms": ["qi gong", "chi kung"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "khí công", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "气功", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "tai-chi", "domain": "method", "clinical": true, "en": "tai chi",
+    "en_synonyms": ["taijiquan", "tai chi chuan", "t'ai chi"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thái cực quyền", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "太极拳", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" }
 ]

@@ -1,62 +1,254 @@
-// Milestone D — concept: bệnh danh (Tây y phổ thông + tương ứng YHCT). §4.
+// Milestone D — concept: bệnh danh (Tây y phổ thông + tương ứng YHCT). §4. trust:verified (Hạ Vân Minh).
 [
-  {
-    "id": "eczema",
-    "domain": "disease",
-    "clinical": true,
-    "en": "eczema",
-    "en_synonyms": ["atopic dermatitis", "dermatitis"],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+  { "id": "eczema", "domain": "disease", "clinical": true, "en": "eczema",
+    "en_synonyms": ["atopic dermatitis", "dermatitis"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "chàm", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "bệnh chàm", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "viêm da cơ địa", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "湿疹", "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  },
-  {
-    "id": "stroke",
-    "domain": "disease",
-    "clinical": true,
-    "en": "stroke",
+    ], "trust": "verified", "source": "hand" },
+  { "id": "stroke", "domain": "disease", "clinical": true, "en": "stroke",
     "en_synonyms": ["cerebrovascular accident", "brain infarction", "cerebral apoplexy"],
     "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "đột quỵ", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "đột quỵ não", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "tai biến mạch máu não", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "tai biến", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "trúng phong", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "中风", "confidence": "high" },
-      { "lang": "zh", "text": "卒中", "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  },
-  {
-    "id": "hemorrhoids",
-    "domain": "disease",
-    "clinical": true,
-    "en": "hemorrhoids",
-    "en_synonyms": ["haemorrhoids", "piles"],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+      { "lang": "zh", "text": "中风", "confidence": "high" }, { "lang": "zh", "text": "卒中", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "ischemic-stroke", "domain": "disease", "clinical": true, "en": "ischemic stroke",
+    "en_synonyms": ["cerebral infarction", "ischaemic stroke"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "nhồi máu não", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "脑梗死", "confidence": "high" }, { "lang": "zh", "text": "缺血性中风", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "hemorrhagic-stroke", "domain": "disease", "clinical": true, "en": "hemorrhagic stroke",
+    "en_synonyms": ["intracerebral hemorrhage", "cerebral hemorrhage"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "xuất huyết não", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "脑出血", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "hemiplegia", "domain": "disease", "clinical": true, "en": "hemiplegia",
+    "en_synonyms": ["hemiparesis"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "liệt nửa người", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "bán thân bất toại", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "偏瘫", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "hemorrhoids", "domain": "disease", "clinical": true, "en": "hemorrhoids",
+    "en_synonyms": ["haemorrhoids", "piles"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "trĩ", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "bệnh trĩ", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "痔疮", "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  },
-  {
-    "id": "psoriasis",
-    "domain": "disease",
-    "clinical": true,
-    "en": "psoriasis",
-    "en_synonyms": [],
-    "mesh_id": null, "mesh_term": null, "same_as": [],
+    ], "trust": "verified", "source": "hand" },
+  { "id": "psoriasis", "domain": "disease", "clinical": true, "en": "psoriasis",
+    "en_synonyms": [], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "vảy nến", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "银屑病", "confidence": "high" }
-    ],
-    "trust": "verified", "source": "hand"
-  }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "hypertension", "domain": "disease", "clinical": true, "en": "hypertension",
+    "en_synonyms": ["high blood pressure", "arterial hypertension"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "tăng huyết áp", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "cao huyết áp", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "高血压", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "diabetes-mellitus", "domain": "disease", "clinical": true, "en": "diabetes mellitus",
+    "en_synonyms": ["diabetes", "type 2 diabetes"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đái tháo đường", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "tiểu đường", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "糖尿病", "confidence": "high" }, { "lang": "zh", "text": "消渴", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "insomnia", "domain": "disease", "clinical": true, "en": "insomnia",
+    "en_synonyms": ["sleeplessness", "sleep disorder"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "mất ngủ", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "thất miên", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "失眠", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "migraine", "domain": "disease", "clinical": true, "en": "migraine",
+    "en_synonyms": ["migraine headache"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đau nửa đầu", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "đau đầu migraine", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "偏头痛", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "headache", "domain": "disease", "clinical": true, "en": "headache",
+    "en_synonyms": ["cephalgia"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đau đầu", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "nhức đầu", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "头痛", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "rheumatoid-arthritis", "domain": "disease", "clinical": true, "en": "rheumatoid arthritis",
+    "en_synonyms": ["RA"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "viêm khớp dạng thấp", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "类风湿关节炎", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "knee-osteoarthritis", "domain": "disease", "clinical": true, "en": "knee osteoarthritis",
+    "en_synonyms": ["knee OA", "gonarthrosis"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thoái hóa khớp gối", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "膝骨关节炎", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "low-back-pain", "domain": "disease", "clinical": true, "en": "low back pain",
+    "en_synonyms": ["lumbago", "lower back pain"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đau thắt lưng", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "đau lưng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "腰痛", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "neck-pain", "domain": "disease", "clinical": true, "en": "neck pain",
+    "en_synonyms": ["cervicalgia"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đau vai gáy", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "đau cổ", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "颈痛", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "bells-palsy", "domain": "disease", "clinical": true, "en": "Bell's palsy",
+    "en_synonyms": ["facial nerve palsy", "peripheral facial paralysis"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "liệt dây thần kinh số 7 ngoại biên", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "liệt mặt", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "khẩu nhãn oa tà", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "面瘫", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "asthma", "domain": "disease", "clinical": true, "en": "asthma",
+    "en_synonyms": ["bronchial asthma"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "hen phế quản", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "hen suyễn", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "哮喘", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "allergic-rhinitis", "domain": "disease", "clinical": true, "en": "allergic rhinitis",
+    "en_synonyms": ["hay fever"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "viêm mũi dị ứng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "过敏性鼻炎", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "constipation", "domain": "disease", "clinical": true, "en": "constipation",
+    "en_synonyms": [], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "táo bón", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "便秘", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "irritable-bowel-syndrome", "domain": "disease", "clinical": true, "en": "irritable bowel syndrome",
+    "en_synonyms": ["IBS"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "hội chứng ruột kích thích", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "肠易激综合征", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "depression", "domain": "disease", "clinical": true, "en": "depression",
+    "en_synonyms": ["major depressive disorder", "depressive disorder"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "trầm cảm", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "uất chứng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "抑郁症", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "anxiety", "domain": "disease", "clinical": true, "en": "anxiety",
+    "en_synonyms": ["anxiety disorder", "generalized anxiety disorder"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "lo âu", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "rối loạn lo âu", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "焦虑症", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "tinnitus", "domain": "disease", "clinical": true, "en": "tinnitus",
+    "en_synonyms": [], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "ù tai", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "nhĩ minh", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "耳鸣", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "vertigo", "domain": "disease", "clinical": true, "en": "vertigo",
+    "en_synonyms": ["dizziness"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "chóng mặt", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "huyễn vựng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "眩晕", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "dysmenorrhea", "domain": "disease", "clinical": true, "en": "dysmenorrhea",
+    "en_synonyms": ["menstrual pain", "period pain"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "thống kinh", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "đau bụng kinh", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "痛经", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "menopausal-syndrome", "domain": "disease", "clinical": true, "en": "menopausal syndrome",
+    "en_synonyms": ["climacteric syndrome", "perimenopause"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "hội chứng tiền mãn kinh", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "mãn kinh", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "更年期综合征", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "obesity", "domain": "disease", "clinical": true, "en": "obesity",
+    "en_synonyms": ["overweight"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "béo phì", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "肥胖", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "nafld", "domain": "disease", "clinical": true, "en": "non-alcoholic fatty liver disease",
+    "en_synonyms": ["NAFLD", "fatty liver", "hepatic steatosis"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "gan nhiễm mỡ", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "gan nhiễm mỡ không do rượu", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "非酒精性脂肪肝", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "peptic-ulcer", "domain": "disease", "clinical": true, "en": "peptic ulcer",
+    "en_synonyms": ["gastric ulcer", "stomach ulcer"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "loét dạ dày", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "viêm loét dạ dày tá tràng", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "消化性溃疡", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "gerd", "domain": "disease", "clinical": true, "en": "gastroesophageal reflux disease",
+    "en_synonyms": ["GERD", "acid reflux"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "trào ngược dạ dày thực quản", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "胃食管反流病", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "parkinsons-disease", "domain": "disease", "clinical": true, "en": "Parkinson's disease",
+    "en_synonyms": ["parkinsonism", "PD"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "bệnh parkinson", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "帕金森病", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "dementia", "domain": "disease", "clinical": true, "en": "dementia",
+    "en_synonyms": ["cognitive impairment"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "sa sút trí tuệ", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "痴呆", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "alzheimers-disease", "domain": "disease", "clinical": true, "en": "Alzheimer's disease",
+    "en_synonyms": ["AD"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "bệnh alzheimer", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "阿尔茨海默病", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "epilepsy", "domain": "disease", "clinical": true, "en": "epilepsy",
+    "en_synonyms": ["seizure disorder"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "động kinh", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "chứng giản", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "癫痫", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "cancer", "domain": "disease", "clinical": true, "en": "cancer",
+    "en_synonyms": ["neoplasm", "tumor", "malignancy", "carcinoma"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "ung thư", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "ung bướu", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "癌症", "confidence": "high" }, { "lang": "zh", "text": "肿瘤", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "chemotherapy-side-effects", "domain": "disease", "clinical": true, "en": "chemotherapy-induced nausea and vomiting",
+    "en_synonyms": ["CINV", "chemotherapy side effects"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "buồn nôn do hóa trị", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "tác dụng phụ hóa trị", "tone_exact": true, "confidence": "high" }
+    ], "trust": "verified", "source": "hand" }
 ]
