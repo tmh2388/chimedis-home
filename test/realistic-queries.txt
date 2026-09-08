@@ -1,0 +1,141 @@
+# Truy vấn YHCT thực tế để đối chiếu legacy vs engine v2 (giữ dấu).
+# Một truy vấn / dòng. Dòng bắt đầu bằng # là ghi chú, bỏ qua.
+# Chạy: node scripts/compare-legacy-v2.mjs
+
+# ===== A. Dược liệu + bệnh (câu hoàn chỉnh) =====
+hiệu quả của hoàng kỳ trong điều trị đái tháo đường típ 2
+tác dụng hạ đường huyết của mạch môn ở bệnh nhân đái tháo đường
+đan sâm trong điều trị bệnh mạch vành
+tam thất và cầm máu sau phẫu thuật
+cam thảo điều trị viêm loét dạ dày tá tràng
+nhân sâm cải thiện mệt mỏi mạn tính
+đương quy điều trị thiếu máu
+xuyên khung trong đau nửa đầu
+hoàng liên kháng khuẩn đường ruột
+bạch truật kiện tỳ trong hội chứng ruột kích thích
+sài hồ điều trị trầm cảm
+câu đằng hạ huyết áp
+ngưu tất thoái hóa khớp gối
+địa hoàng trong suy thận mạn
+hà thủ ô điều trị rụng tóc
+kim ngân hoa kháng viêm hô hấp trên
+diệp hạ châu bảo vệ gan
+actiso hỗ trợ chức năng gan mật
+nghệ curcumin chống viêm khớp dạng thấp
+đông trùng hạ thảo tăng cường miễn dịch
+
+# ===== B. Châm cứu / phương pháp + tình trạng =====
+châm cứu điều trị đau lưng mạn tính
+điện châm phục hồi vận động sau đột quỵ
+châm cứu dự phòng đau nửa đầu
+nhĩ châm hỗ trợ cai thuốc lá
+cấy chỉ điều trị thoái hóa cột sống cổ
+ôn châm trị đau khớp do lạnh
+thủy châm điều trị viêm quanh khớp vai
+châm cứu cải thiện mất ngủ
+điện châm kết hợp phục hồi chức năng ở bệnh nhân liệt nửa người sau đột quỵ
+cứu ngải điều trị tiêu chảy mạn
+châm cứu giảm buồn nôn sau hóa trị
+châm cứu hỗ trợ thụ tinh trong ống nghiệm
+xoa bóp bấm huyệt điều trị đau vai gáy
+giác hơi điều trị đau cơ
+châm cứu điều trị liệt dây thần kinh mặt ngoại biên
+tác dụng của điện châm huyệt Túc Tam Lý trên nhu động ruột
+châm huyệt Hợp Cốc giảm đau răng
+châm cứu đầu điều trị di chứng đột quỵ trẻ em
+laser châm điều trị hội chứng ống cổ tay
+châm cứu và chất lượng cuộc sống ở bệnh nhân ung thư
+
+# ===== C. Giả châm / nhóm chứng (ca lỗi đã biết) =====
+giả châm
+so sánh châm cứu thật và giả châm trong điều trị đau
+hiệu quả giả châm ở nhóm chứng
+giả châm và tác dụng trong điều trị trúng phong
+châm cứu so với giả châm cho đau thắt lưng
+điện châm so với giả điện châm trên phục hồi chức năng vận động
+
+# ===== D. Cổ phương + bệnh =====
+bổ trung ích khí thang điều trị sa tạng
+lục vị địa hoàng hoàn trong suy thận
+tứ quân tử thang kiện tỳ ích khí
+bát trân thang điều trị thiếu máu sau sinh
+quế chi thang điều trị cảm mạo phong hàn
+tiểu sài hồ thang điều trị sốt kéo dài
+độc hoạt tang ký sinh thang trị đau lưng do phong thấp
+huyết phủ trục ứ thang điều trị đau ngực
+ma hoàng thang điều trị hen phế quản
+bán hạ tả tâm thang trong viêm dạ dày
+
+# ===== E. Chứng / biện chứng =====
+can khí uất kết và rối loạn kinh nguyệt
+tỳ khí hư trong hội chứng mệt mỏi mạn tính
+thận dương hư và loãng xương ở phụ nữ mãn kinh
+huyết ứ trong lạc nội mạc tử cung
+đàm thấp và hội chứng buồng trứng đa nang
+âm hư hỏa vượng trong mất ngủ
+khí trệ huyết ứ điều trị đau bụng kinh
+tỳ vị hư nhược ở trẻ suy dinh dưỡng
+phong hàn thấp tý và viêm khớp dạng thấp
+can dương thượng cang và tăng huyết áp
+
+# ===== F. Phương pháp nghiên cứu / dạng bài =====
+châm cứu điều trị đau lưng tổng quan hệ thống và phân tích gộp
+thử nghiệm lâm sàng ngẫu nhiên có đối chứng về điện châm sau đột quỵ
+đánh giá an toàn của dược liệu trong thai kỳ
+nghiên cứu thuần tập về sử dụng thảo dược ở bệnh nhân đái tháo đường
+báo cáo ca lâm sàng châm cứu điều trị liệt mặt
+phân tích tổng hợp hiệu quả hoàng kỳ trên chức năng thận
+
+# ===== G. Gõ KHÔNG DẤU (rất phổ biến ở người dùng Việt) =====
+cham cuu dieu tri dau lung
+hoang ky dai thao duong
+dien cham phuc hoi sau dot quy
+gia cham va nhom chung
+cham cuu du phong dau nua dau
+tri lieu trung phong bang cham cuu
+tac dung cua dan sam tren benh mach vanh
+bo trung ich khi thang
+than duong hu va loang xuong
+cham cuu mat ngu
+
+# ===== H. Tiếng Trung =====
+针灸治疗慢性腰痛
+电针促进中风后运动功能恢复
+黄芪治疗糖尿病
+针灸预防偏头痛随机对照试验
+假针灸与真针灸比较
+补中益气汤治疗脏器下垂
+丹参对冠心病的疗效
+针灸联合康复训练治疗中风偏瘫的系统评价
+脾气虚与慢性疲劳综合征
+六味地黄丸治疗肾虚
+
+# ===== I. Hỗn hợp / lệch =====
+黄芪 combined with metformin for type 2 diabetes
+acupuncture 针灸 for chronic low back pain
+electroacupuncture stroke rehabilitation randomized trial
+giả châm sham acupuncture placebo control
+đan sâm salvia miltiorrhiza coronary artery disease
+trúng phong stroke acupuncture rehabilitation
+
+# ===== J. Đơn thuật ngữ =====
+giả châm
+trúng phong
+chàm
+châm cứu
+hoàng kỳ
+điện châm
+điều trị
+đột quỵ
+mất ngủ
+đau lưng
+
+# ===== K. Đối chứng âm (KHÔNG được dịch bừa) =====
+machine learning for medical image segmentation
+covid-19 vaccine efficacy in elderly
+randomized controlled trial methodology
+gut microbiome and obesity
+transcranial magnetic stimulation depression
+Nguyen Van A et al 2023 cohort study
+10.1001/jama.2023.12345
+systematic review PRISMA guidelines
