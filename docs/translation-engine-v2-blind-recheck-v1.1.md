@@ -3,6 +3,19 @@
 > Chạy lại **đúng bộ blind** 170 case A01–Q10 sau khi áp 3 patch nhỏ nhất từ scoring v1 §7.
 > Raw v1.1: `docs/translation-engine-v2-blind-results-v1.1.md`. So với v1.0: `docs/translation-engine-v2-blind-results-v1.md`.
 > Engine: `te-v2-d1` (không đổi version — patch là sửa lỗi, không đổi contract).
+>
+> **MERGE VÀO MAIN (2026-09-09):** nhánh `impl/translation-engine` off từ D3; `main` đã tiến xa
+> hơn (D6 LLM fallback + **D8** stoplist mở rộng / cắt cụm generic). Merge lấy engine `main`
+> (D6+D8) làm nền, **re-apply R1/R3/R2 lên bản D8**, rồi blind re-run trên engine THẬT của main.
+> - R1 trên main: D8 dùng `VI_STOP` **bỏ dấu** (danh sách lớn) → thêm `VI_STOP_KEEP_EXACT`
+>   (dạng đúng dấu/đúng thanh) để `isFiller` KHÔNG nuốt: `khí não nǎo nhiễu đo dò cơ cổ số ổ
+>   tử bì bí băng bơi vận mô vị phế nội thiên`.
+> - D8 đã tự sửa vài S2/S3 của v1.0: `đau→"Heading"` biến mất (lọc surface auto 1-âm-tiết ≤4 kí tự);
+>   `"stethalgia"→"chest pain"`, `"Diarrhea"→"diarrhea"`, `thiếu máu→"anemia"`, `bệnh mạch vành→
+>   "coronary artery disease"`, `hư→"deficiency"`, `mạn tính→"chronic"`, `phụ nữ mãn kinh→"postmenopausal"`.
+> - Còn tồn (D8-introduced, thấp rủi ro — nhận diện R11 lô sau): `mỏi` (mệt **mỏi**), `tái` (**tái**
+>   phát), `thị`/`văn` (hư tự tên người) bị bỏ khi đứng riêng — head word vẫn còn, không mất concept.
+> - Kiểm cuối trên main: suite **200/200**, `/api/research` + engine legacy KHÔNG đổi, server boot OK.
 
 ## Patch đã áp
 
