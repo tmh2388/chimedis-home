@@ -61,5 +61,12 @@ app.get('*', (req, res) => {
 
 app.listen(PORT, () => {
   console.log(`Chimedis portal listening on port ${PORT}`);
+  // P0 rollout: in cấu hình engine dịch + quota LLM để xác nhận nhanh trên Runtime logs.
+  console.log(JSON.stringify({
+    evt: 'translate_config',
+    translate_engine: String(process.env.TRANSLATE_ENGINE || 'legacy').toLowerCase(),
+    llm_translate_daily_max: process.env.LLM_TRANSLATE_DAILY_MAX ?? '(unset→400)',
+    anthropic_key: process.env.ANTHROPIC_API_KEY ? 'set' : 'unset',
+  }));
   startDictLearn(); // GĐ2: nạp + làm mới lớp phủ từ điển tự học (no-op nếu chưa cấu hình MySQL)
 });
