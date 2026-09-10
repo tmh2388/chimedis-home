@@ -1602,6 +1602,76 @@
       "id": "K-shape-empty-on-english",
       "q": "cohort study protocol",
       "expect_no_translation": true
+    },
+
+    {
+      "id": "PN-neg-hoangky-anh",
+      "q": "Hoàng Kỳ Anh luận văn thạc sĩ",
+      "must_not_contain": ["Astragalus", "Huangqi"],
+      "expect_no_translation": true,
+      "_note": "P0-0483 S1: tên người, 'Hoàng Kỳ' đa-token nằm trong Title-Case name run ('...Anh') → KHÔNG dịch thành dược liệu."
+    },
+    {
+      "id": "PN-neg-tran-hoangky",
+      "q": "Trần Hoàng Kỳ",
+      "must_not_contain": ["Astragalus", "Huangqi"],
+      "expect_no_translation": true
+    },
+    {
+      "id": "PN-neg-tran-hoangky-topic",
+      "q": "Trần Hoàng Kỳ nghiên cứu đột quỵ",
+      "expect_terms": ["stroke"],
+      "must_not_contain": ["Astragalus", "Huangqi"],
+      "min_translated": 1,
+      "_note": "Tên người + chủ đề thật: 'đột quỵ' vẫn dịch, 'Hoàng Kỳ' (trong name run) thì không."
+    },
+    {
+      "id": "PN-neg-nguyen-thi-cham",
+      "q": "Nguyễn Thị Châm phân tích tổng hợp",
+      "must_not_contain": ["\"acupuncture\""],
+      "_note": "R2: tên người 'Châm' đơn-token trong name run → không thành acupuncture."
+    },
+    {
+      "id": "PN-neg-nguyen-bach-truat",
+      "q": "Nguyễn Bạch Truật báo cáo hội nghị",
+      "must_not_contain": ["Atractylodes"],
+      "expect_no_translation": true,
+      "_note": "Dược liệu đa-token 'Bạch Truật' trùng tên người, nằm trong name run → không dịch."
+    },
+
+    {
+      "id": "PN-pos-hoangky-context",
+      "q": "hoàng kỳ điều trị đột quỵ",
+      "expect_terms": ["Astragalus membranaceus", "stroke"],
+      "min_translated": 2,
+      "_note": "Positive control: thuật ngữ thật viết thường vẫn dịch đủ."
+    },
+    {
+      "id": "PN-pos-hoangky-sentence-initial",
+      "q": "Hoàng kỳ điều trị đột quỵ",
+      "expect_terms": ["Astragalus membranaceus", "stroke"],
+      "min_translated": 2,
+      "_note": "Positive control: Hoa-đầu-câu ('Hoàng kỳ', 'kỳ' viết thường) KHÔNG kích guard tên riêng."
+    },
+    {
+      "id": "PN-pos-cham-cuu-sentence-initial",
+      "q": "Châm cứu điều trị đau lưng",
+      "expect_terms": ["acupuncture", "low back pain"],
+      "min_translated": 2
+    },
+    {
+      "id": "PN-pos-name-plus-real-term",
+      "q": "Trần Văn Trung nghiên cứu châm cứu",
+      "expect_terms": ["acupuncture"],
+      "min_translated": 1,
+      "_note": "Tên người giữ nguyên; 'châm cứu' viết thường vẫn dịch."
+    },
+    {
+      "id": "PN-pos-formula-titlecased-standalone",
+      "q": "Lục Vị Địa Hoàng Hoàn",
+      "expect_terms": ["Liuwei Dihuang Wan"],
+      "min_translated": 1,
+      "_note": "Thuật ngữ Title-Case đứng một mình, KHÔNG có token tên nào ngoài span → vẫn dịch."
     }
   ]
 }
