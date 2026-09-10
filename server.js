@@ -11,6 +11,7 @@ import researchRoutes from './routes/research.js';
 import workbenchRoutes from './routes/workbench.js';
 import dictMissRoutes from './routes/dict-misses.js';
 import { startDictLearn } from './lib/dict-learn.js';
+import { initShadowLogPrune } from './lib/translate/shadow-log.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -69,4 +70,5 @@ app.listen(PORT, () => {
     anthropic_key: process.env.ANTHROPIC_API_KEY ? 'set' : 'unset',
   }));
   startDictLearn(); // GĐ2: nạp + làm mới lớp phủ từ điển tự học (no-op nếu chưa cấu hình MySQL)
+  initShadowLogPrune(); // P0: prune translate_shadow_log > 14 ngày (no-op nếu chưa cấu hình MySQL)
 });

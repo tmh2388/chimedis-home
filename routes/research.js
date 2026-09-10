@@ -14,6 +14,11 @@ import { buildSearchQuery } from '../lib/tcm-vocab.js';
 import { logSearchMiss } from '../lib/search-log.js';
 import { enrichUntranslated } from '../lib/dict-learn.js';
 
+// P0 rollout: đánh dấu synthetic shadow-validation workload để sink MySQL lưu full outcome.
+// Organic traffic (không khớp UA) → sink chỉ lưu metrics/hash, không văn bản.
+const shadowTestTagOf = (req) =>
+  (/^chimedis-p0-synthetic/i.test(req.get('user-agent') || '') ? 'p0-synthetic-v1' : null);
+
 const router = Router();
 
 const VALID_SOURCES = ['openalex', 'europepmc', 'core', 'semanticscholar'];
@@ -176,7 +181,7 @@ router.get('/search', async (req, res) => {
   if (rawQ.length > 300) {
     return res.status(400).json({ success: false, error: 'Từ khoá quá dài.' });
   }
-  let ex = buildSearchQuery(rawQ, { orSynonyms: true });
+  let ex = buildSearchQuery(rawQ, { orSynonyms: true, shadowTestTag: shadowTestTagOf(req) });
   if (ex.untranslated?.length) ex = await enrichUntranslated(rawQ, ex); // GĐ2: LLM dịch cụm còn sót
   await runSearch({
     mode: 'GET',
@@ -216,7 +221,7 @@ router.post('/search', async (req, res) => {
   if (rawQ.length < 2) {
     return res.status(400).json({ success: false, error: 'Nhập từ khoá tìm kiếm (ít nhất 2 ký tự).' });
   }
-  let ex = buildSearchQuery(rawQ, { orSynonyms: true });
+  let ex = buildSearchQuery(rawQ, { orSynonyms: true, shadowTestTag: shadowTestTagOf(req) });
   if (ex.untranslated?.length) ex = await enrichUntranslated(rawQ, ex); // GĐ2: LLM dịch cụm còn sót
   await runSearch({
     mode: 'POST',
