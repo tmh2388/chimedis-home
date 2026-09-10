@@ -1,0 +1,15 @@
+{
+  "cohort": "B-local-engine",
+  "started_at": "2026-09-10T02:32:29.516Z",
+  "ended_at": "2026-09-10T02:32:29.917Z",
+  "git_commit": "13983e53d8806e3f698039e99240782f5c7b48d4",
+  "engine_version": "te-v2-d1",
+  "total_cases": 620,
+  "evidence_cases": 103,
+  "evidence_gated": 103,
+  "evidence_uncertain_not_gated": 0,
+  "evidence_policy_fail_ids": [],
+  "boolean_fail_count": 0,
+  "negative_high_clinical_flag_count": 2,
+  "out": "docs/translation-shadow-p0-local-engine-run-v1.jsonl"
+}
