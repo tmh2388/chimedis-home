@@ -2,7 +2,7 @@
 
 > Raw-first artifact. Sinh bằng `scripts/shadow-p0-report.mjs`. Commit TRƯỚC mọi scoring/patch.
 > Tài liệu điều hành: `docs/translation-engine-production-rollout-v1.md` §3 + `docs/translation-shadow-p0-automation-v1.md`.
-> Generated: 2026-09-10T03:38:17.790Z
+> Generated: 2026-09-10T04:08:18.791Z
 
 ## Nguồn artifact
 
@@ -11,7 +11,7 @@
 | A — Production synthetic Discovery | `docs/translation-shadow-p0-synthetic-run-v1.jsonl` | 517 case (+2 _meta) |
 | B — Local deterministic Evidence + local prediction | `docs/translation-shadow-p0-local-engine-run-v1.jsonl` | 620 case |
 | Pack generator | `scripts/generate-shadow-traffic-pack-v1.mjs` @5ee9dd1 | 620 unique, md5 ca9f0fa64040254434f33e1c49043ff0 |
-| Runtime logs (translate_shadow_diff) | **CHƯA CÓ — chờ chủ dự án export** | n/a |
+| Runtime logs (translate_shadow_diff) | **KHÔNG CỨU ĐƯỢC** — Hostinger Runtime logs chỉ giữ tới lần restart kế; cửa sổ synthetic đã bị xoay vòng | n/a |
 
 ## Cohort A — cửa sổ chạy
 

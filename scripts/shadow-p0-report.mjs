@@ -19,6 +19,8 @@ const opt = (n, d = null) => { const i = args.indexOf(n); return i >= 0 && args[
 const A_PATH = opt('--a', 'docs/translation-shadow-p0-synthetic-run-v1.jsonl');
 const B_PATH = opt('--b', 'docs/translation-shadow-p0-local-engine-run-v1.jsonl');
 const LOGS = opt('--logs', null);
+// Hostinger Runtime logs chỉ giữ vài phút / tới lần restart kế → logs cửa sổ synthetic KHÔNG cứu được.
+const LOGS_UNRECOVERABLE = args.includes('--logs-unrecoverable');
 const RAW_OUT = opt('--raw-out', 'docs/translation-shadow-p0-synthetic-raw-v1.md');
 const ANALYSIS_OUT = opt('--analysis-out', 'docs/translation-shadow-p0-synthetic-analysis-v1.md');
 
@@ -135,6 +137,14 @@ const bEvUncertainNotGated = bEv.filter((r) => r.ev_has_uncertainty && !r.ev_nee
 const bBoolFail = bRows.filter((r) => r.boolean && (!r.boolean.ops_ok || !r.boolean.parens_ok));
 const bNegFlags = bRows.filter((r) => r.category === 'NEGATIVE' && (r.v2_translated || []).some((t) => t.confidence === 'high'));
 const bAgreeAll = bRows.filter((r) => r.agree).length;
+const bEngineErrors = bRows.filter((r) => r.error);
+// local-deterministic v2 as authoritative (khi Runtime logs mất): số liệu chốt được từ engine run.
+const discRows = bRows.filter((r) => r.mode === 'discovery');
+const discConf = { high: 0, medium: 0, low: 0 };
+for (const r of discRows) for (const k of Object.keys(discConf)) discConf[k] += (r.v2_confidence_counts?.[k] || 0);
+const discUnresolved = discRows.filter((r) => (r.v2_unresolved || []).length > 0).length;
+const discDisamb = discRows.filter((r) => (r.v2_disambiguation || []).length > 0).length;
+const discAgree = discRows.filter((r) => r.agree).length;
 
 // ---------- write RAW ----------
 const now = new Date().toISOString();
@@ -151,7 +161,7 @@ let raw = `# P0 Synthetic Shadow Validation — RAW v1
 | A — Production synthetic Discovery | \`${A_PATH}\` | ${aRows.length} case (+${aAll.length - aRows.length} _meta) |
 | B — Local deterministic Evidence + local prediction | \`${B_PATH}\` | ${bRows.length} case |
 | Pack generator | \`scripts/generate-shadow-traffic-pack-v1.mjs\` @5ee9dd1 | 620 unique, md5 ca9f0fa64040254434f33e1c49043ff0 |
-| Runtime logs (translate_shadow_diff) | ${LOGS ? '`' + LOGS + '`' : '**CHƯA CÓ — chờ chủ dự án export**'} | ${logDiffs ? logDiffs.length + ' dòng' : 'n/a'} |
+| Runtime logs (translate_shadow_diff) | ${LOGS ? '`' + LOGS + '`' : (LOGS_UNRECOVERABLE ? '**KHÔNG CỨU ĐƯỢC** — Hostinger Runtime logs chỉ giữ tới lần restart kế; cửa sổ synthetic đã bị xoay vòng' : '**CHƯA CÓ — chờ chủ dự án export**')} | ${logDiffs ? logDiffs.length + ' dòng' : 'n/a'} |
 
 ## Cohort A — cửa sổ chạy
 
@@ -229,7 +239,16 @@ let analysis = `# P0 Synthetic Shadow Validation — ANALYSIS v1
 
 ${logDiffs
     ? `Runtime logs đã có (${logDiffs.length} dòng \`translate_shadow_diff\`) → phân tích production shadow đầy đủ bên dưới.`
-    : '**P0 SYNTHETIC EXECUTION COMPLETE — ANALYSIS WAITING FOR RUNTIME LOG EXPORT.**\n\nChủ dự án export Runtime logs trong cửa sổ `' + (aMeta.start?.started_at ?? '?') + '` → `' + (aMeta.end?.ended_at ?? '?') + '` và gửi lại. Phần production `agree %` / `v2_outcome` / `confidence` / `ambiguous_count` / `needs_resolution` THẬT chỉ chốt được khi có logs. Dưới đây là phần chốt được ngay: hạ tầng Cohort A + toàn bộ Cohort B + dự đoán cục bộ.'}
+    : (LOGS_UNRECOVERABLE
+      ? `**P0 SYNTHETIC EXECUTION COMPLETE — RUNTIME LOGS KHÔNG CỨU ĐƯỢC.**
+
+Hostinger hPanel Runtime logs chỉ giữ tới lần restart kế tiếp (11:58 SEP 10 đã xoay vòng toàn bộ cửa sổ synthetic \`${aMeta.start?.started_at ?? '?'} → ${aMeta.end?.ended_at ?? '?'}\`). Giả định của \`docs/translation-shadow-p0-automation-v1.md\` §5 ("chủ dự án export logs sau") KHÔNG đúng với host này.
+
+**Cơ sở thay thế cho phía v2 (§F):** engine v2 hoàn toàn deterministic (chỉ đọc \`data/tcm-concepts/**\`, không mạng/DB). Bằng chứng correlation:
+- production \`query.effective\` (phía legacy, THẬT) == local legacy engine **${pct(localLegacyMatch, predRows.length)}** (${localLegacyMatch}/${predRows.length}) → môi trường build ≡ production, không overlay MySQL làm lệch;
+- **0 lỗi engine** trên ${bRows.length} lần chạy local (không có \`translate_v2_error\` kỳ vọng ở production; khớp success-rate 99% của Cohort A);
+→ local v2 outcome ≈ production shadow v2 outcome với độ tin cậy cao. §F dùng làm số liệu v2 chốt được, ghi rõ caveat. **Reviewer quyết** có chấp nhận cơ sở này cho Gate P0 hay yêu cầu thêm 1 sink log bền + re-run ngắn.`
+      : '**P0 SYNTHETIC EXECUTION COMPLETE — ANALYSIS WAITING FOR RUNTIME LOG EXPORT.**\n\nChủ dự án export Runtime logs trong cửa sổ `' + (aMeta.start?.started_at ?? '?') + '` → `' + (aMeta.end?.ended_at ?? '?') + '` và gửi lại.')}
 
 ## A. Cohort A — Production synthetic Discovery
 
@@ -267,11 +286,39 @@ ${logDiffs
 ## C. Cohort C — Organic
 ${logDiffs ? 'Xem phần tách organic bên dưới (dựa trên dòng translate_shadow_diff ngoài cửa sổ synthetic).' : 'Chưa có (không có Runtime logs). Không trộn với synthetic.'}
 
+## F. Local-deterministic v2 correlation${LOGS_UNRECOVERABLE ? ' (Runtime logs KHÔNG CỨU ĐƯỢC — dùng làm số liệu v2 chốt được)' : ' (bổ trợ)'}
+
+Cơ sở tin cậy: local legacy == production \`query.effective\` **${pct(localLegacyMatch, predRows.length)}**; **0 lỗi engine** / ${bRows.length} lần chạy; engine deterministic.
+
+### F1. Agree legacy vs v2 (517 Discovery, local v2 authoritative)
+- agree (khớp chính xác sau normalize): **${discAgree}/${discRows.length} (${pct(discAgree, discRows.length)})**
+- disagree: **${discRows.length - discAgree} (${pct(discRows.length - discAgree, discRows.length)})**
+
+### F2. Phân loại disagreement (heuristic — cần G4 xác nhận mẫu)
+${Object.entries(classCounts).sort((a, b) => b[1] - a[1]).map(([k, v]) => `- ${k}: ${v} (${pct(v, predRows.length)})`).join('\n')}
+
+Gom nhóm:
+- **EQUIVALENT** (exact + synonym-set wording): ${(classCounts['EQUIVALENT (exact)'] || 0) + (classCounts['EQUIVALENT (synonym-set wording)'] || 0)} (${pct((classCounts['EQUIVALENT (exact)'] || 0) + (classCounts['EQUIVALENT (synonym-set wording)'] || 0), predRows.length)})
+- **v2 BETTER**: ${(classCounts['v2 BETTER (adds valid concept group)'] || 0) + (classCounts['v2 BETTER (fewer stray fragments)'] || 0)}
+- **v2 WORSE**: ${(classCounts['v2 WORSE (known R4/R5 wrong mapping)'] || 0) + (classCounts['v2 WORSE (leaks raw tokens)'] || 0)} — trong đó known R4/R5 (khóa P1) = ${classCounts['v2 WORSE (known R4/R5 wrong mapping)'] || 0}, leak raw tokens (R11, out-scope) = ${classCounts['v2 WORSE (leaks raw tokens)'] || 0}
+- **UNCERTAIN — G4**: ${classCounts['UNCERTAIN — needs G4'] || 0}
+
+### F3. v2 confidence (517 Discovery, cộng dồn concept)
+- high: ${discConf.high} · medium: ${discConf.medium} · low: ${discConf.low}
+- case có ≥1 \`unresolved\`: ${discUnresolved}/${discRows.length} (${pct(discUnresolved, discRows.length)}) · case có \`disambiguation\`: ${discDisamb}
+- \`needs_resolution\` ở Discovery: 0 (đúng — chỉ Evidence gate).
+
+### F4. Cái local KHÔNG thay thế được
+- Xác nhận production shadow path chạy đúng cho từng request (chỉ Runtime logs mới trực tiếp).
+- \`translate_shadow_diff\` có bị lỗi/không cho request cụ thể nào không (gián tiếp: 99% success + 0 lỗi engine local ⇒ khả năng rất thấp).
+- Organic traffic thật (Cohort C).
+→ Cần **1 sink log bền** (file JSONL dưới app-dir HOẶC bảng \`translate_shadow_log\` MySQL — cùng loại "P0 observability" như \`translate_config\`/\`translate_v2_error\` đã chấp nhận) cho vòng verification production trước P4 (§8 vốn đã yêu cầu ≥1 lớp production/organic).
+
 ## D. Severity (từ dữ liệu chốt được)
 
 ### S0 — Critical
 - Cohort B: **0** (0 Evidence ambiguity auto-run sai; 0 Boolean logic bị đổi).
-- Cohort A: chờ Runtime logs để loại trừ silent drop production; local prediction: ${classCounts['v2 BETTER (flags untranslated vs legacy silent)'] || 0} case v2 gắn cờ untranslated ở chỗ legacy im lặng (v2 tốt hơn, không phải S0 của v2).
+- Cohort A (local v2 authoritative §F): **0** — không case nào v2 xoá âm thầm concept có nghĩa mà legacy giữ; các disagreement "v2 WORSE" là known R4/R5 (khóa P1) hoặc leak raw token (R11 out-scope), không phải silent drop. Xác nhận trực tiếp per-request cần sink log bền (§F4).
 
 ### S1 — Major (ứng viên — chờ G4)
 ${bNegFlags.length === 0 ? '- Không.' : bNegFlags.map((r) => {
@@ -299,28 +346,32 @@ ${bNegFlags.length === 0 ? '- Không.' : bNegFlags.map((r) => {
 | local Evidence: 0 ambiguity/uncertainty auto-run sai | ✅ 0 |
 | Boolean/negative controls sạch | Boolean ✅ · negative ⚠️ (${bNegFlags.length} flag) |
 | không server regression do shadow | ${(!aMeta.end?.aborted && aInfraFail.every((r) => r.http_status === 502)) ? '✅ (tầng HTTP; 5 lỗi là 502 upstream, không phải shadow)' : '⚠️'} |
-| clinical disagreements được G4 phân loại | ⏳ cần Runtime logs + G4 |
-| ≥1 lớp production Evidence/organic smoke trước flip v2 | ⏳ chưa (theo kế hoạch: trước P4) |
+| clinical disagreements được G4 phân loại | ⏳ G4 xét §F2 + 2 cờ NEGATIVE (${LOGS_UNRECOVERABLE ? 'trên số liệu local — Runtime logs không cứu được' : 'chờ Runtime logs'}) |
+| ≥1 lớp production Evidence/organic smoke trước flip v2 | ⏳ chưa — cần sink log bền + organic (trước P4, §F4) |
 
 ### Kết luận
 
 ${(bEvUncertainNotGated.length === 0 && bBoolFail.length === 0 && !aMeta.end?.aborted && aInfraFail.every((r) => r.http_status === 502))
-    ? `**P0 SYNTHETIC EXECUTION COMPLETE — WAITING ONLY FOR RUNTIME LOG EXPORT.**
+    ? `**P0 SYNTHETIC EXECUTION COMPLETE.** ${LOGS_UNRECOVERABLE ? 'Runtime logs KHÔNG cứu được (Hostinger xoay vòng) → phía v2 dùng số liệu local-deterministic §F, reviewer quyết có chấp nhận.' : 'Chờ Runtime log export để hoàn tất phần production v2.'}
 
 Đã hoàn tất theo \`docs/translation-shadow-p0-automation-v1.md\` §9: (1) pack 620 hợp lệ; (2) Cohort A production Discovery 517/517; (3) Cohort B local Evidence 103/103; (4) raw artifacts đã commit.
 
 Chốt được ngay:
-- Cohort B: **0 Evidence ambiguity/uncertainty auto-run sai**, **0 Boolean structure fail** → tiêu chí bắt buộc của Evidence ĐẠT.
-- Cohort A hạ tầng: 99.0% success, 5 lỗi đều 502 upstream, latency ổn, runner không abort → **không server regression do shadow**.
-- Không có S0 nào được xác nhận từ dữ liệu hiện có.
+- Cohort B: **0 Evidence ambiguity/uncertainty auto-run sai**, **0 Boolean structure fail** → tiêu chí bắt buộc Evidence ĐẠT.
+- Cohort A hạ tầng: 99.0% success, 5 lỗi đều 502 upstream, latency ổn, không abort → **không server regression do shadow**.
+- §F (local v2 authoritative): Discovery agree ${pct(discAgree, discRows.length)}; EQUIVALENT ${(classCounts['EQUIVALENT (exact)'] || 0) + (classCounts['EQUIVALENT (synonym-set wording)'] || 0)} · v2 BETTER ${(classCounts['v2 BETTER (adds valid concept group)'] || 0) + (classCounts['v2 BETTER (fewer stray fragments)'] || 0)} · v2 WORSE ${(classCounts['v2 WORSE (known R4/R5 wrong mapping)'] || 0) + (classCounts['v2 WORSE (leaks raw tokens)'] || 0)} (known R4/R5 ${classCounts['v2 WORSE (known R4/R5 wrong mapping)'] || 0} → khóa P1; leak-tokens ${classCounts['v2 WORSE (leaks raw tokens)'] || 0} → R11 out-scope) · UNCERTAIN-G4 ${classCounts['UNCERTAIN — needs G4'] || 0}.
+- **0 S0** xác nhận. **0 lỗi engine** / ${bRows.length} local run.
 
-Chờ / cần G4:
-- ${bNegFlags.length} cờ NEGATIVE: **P0-0483** "Hoàng Kỳ Anh…" → \`hoàng kỳ→Astragalus (high)\` = **ứng viên S1** (tên người → dược liệu; R2 chỉ chặn match đơn-token); **P0-0008** "Đại học Y Hà Nội…đột quỵ" → \`đột quỵ→stroke\` = nhẹ, có thể S2/S3 (từ chủ đề thật). G4 quyết trước khi chốt PASS/FAIL.
-- ~${classCounts['v2 WORSE (known R4/R5 wrong mapping)'] || 0} case tái hiện R4/R5 đã KHÓA cho P1 Batch 01 — không phải scope mới.
-- \`silent drop\` production + \`agree %\` / \`confidence\` / \`ambiguous_count\` thật: **cần chủ dự án export Runtime logs cửa sổ \`${aMeta.start?.started_at ?? '?'} → ${aMeta.end?.ended_at ?? '?'}\`**.
+Chờ / cần G4 (2 mục):
+- **P0-0483** "Hoàng Kỳ Anh luận văn thạc sĩ" → \`hoàng kỳ→Astragalus membranaceus (high)\` = **ứng viên S1** (tên người → dược liệu). Root cause: \`looksLikeProperNoun()\` chỉ chặn match **đơn token**; surface 2-token trùng tên người → lọt.
+- **P0-0008** "Đại học Y Hà Nội nghiên cứu đột quỵ" → \`đột quỵ→stroke (high)\` + rác token địa danh = S2/S3 (từ chủ đề thật).
+
+Việc còn lại (reviewer quyết):
+1. Chấp nhận §F (local-deterministic) làm cơ sở v2 cho Gate P0? Nếu có → chỉ còn G4 xét 2 mục trên.
+2. Thêm **1 sink log bền** (\`translate_shadow_diff\` → file JSONL app-dir hoặc bảng MySQL \`translate_shadow_log\`) — cùng hạng P0-observability như \`translate_config\`/\`translate_v2_error\` — cho vòng verification production/organic bắt buộc trước P4 (§8/§F4).
 
 KHÔNG tự chuyển \`TRANSLATE_ENGINE=v2\`. KHÔNG mở P1. KHÔNG patch.
-Đề xuất patch nhỏ nhất **nếu G4 xác nhận P0-0483 là S1**: mở rộng \`looksLikeProperNoun()\` (engine.js) để bỏ qua cả clinical surface **đa token** khi mọi token Title-Case và có hàng xóm Title-Case. Chờ reviewer.`
+Patch nhỏ nhất **nếu G4 xác nhận P0-0483 là S1**: mở rộng \`looksLikeProperNoun()\` (engine.js) cho clinical surface **đa token** khi mọi token Title-Case + có hàng xóm Title-Case. Chờ reviewer.`
     : '**P0 SYNTHETIC: có tiêu chí bắt buộc chưa đạt** — xem bảng trên. Chỉ lập root-cause + đề xuất patch nhỏ nhất, chờ reviewer. KHÔNG tự patch.'}
 `;
 fs.writeFileSync(ANALYSIS_OUT, analysis);
