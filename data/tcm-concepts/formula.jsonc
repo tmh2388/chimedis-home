@@ -83,5 +83,27 @@
     "surface_forms": [
       { "lang": "vi", "text": "thiên ma câu đằng ẩm", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "天麻钩藤饮", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+
+  { "id": "guipi-tang", "domain": "formula", "clinical": true, "en": "Guipi Tang",
+    "en_synonyms": ["Gui Pi Tang", "Restore the Spleen Decoction", "Return Spleen Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "quy tỳ thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "归脾汤", "confidence": "high" }, { "lang": "zh", "text": "歸脾湯", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "wendan-tang", "domain": "formula", "clinical": true, "en": "Wendan Tang",
+    "en_synonyms": ["Wen Dan Tang", "Warm the Gallbladder Decoction", "Gallbladder-Warming Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "ôn đởm thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "温胆汤", "confidence": "high" }, { "lang": "zh", "text": "溫膽湯", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "da-chengqi-tang", "domain": "formula", "clinical": true, "en": "Da Chengqi Tang",
+    "en_synonyms": ["Da Cheng Qi Tang", "Major Order the Qi Decoction", "Major Purgative Decoction"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đại thừa khí thang", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "大承气汤", "confidence": "high" }, { "lang": "zh", "text": "大承氣湯", "confidence": "high" }
     ], "trust": "verified", "source": "hand" }
 ]

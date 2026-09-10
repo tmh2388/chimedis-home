@@ -7,7 +7,7 @@
       { "lang": "vi", "text": "châm cứu", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "châm", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "thể châm", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "针灸", "confidence": "high" }, { "lang": "zh", "text": "针刺", "confidence": "high" },
+      { "lang": "zh", "text": "针灸", "confidence": "high" }, { "lang": "zh", "text": "針灸", "confidence": "high" }, { "lang": "zh", "text": "针刺", "confidence": "high" }, { "lang": "zh", "text": "針刺", "confidence": "high" },
       { "lang": "py", "text": "zhēn jiǔ", "tone_exact": true, "confidence": "high" }
     ], "trust": "verified", "source": "hand" },
   { "id": "sham-acupuncture", "domain": "method", "clinical": true, "en": "sham acupuncture",
@@ -25,7 +25,7 @@
     "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "điện châm", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "电针", "confidence": "high" }, { "lang": "py", "text": "diàn zhēn", "tone_exact": true, "confidence": "high" }
+      { "lang": "zh", "text": "电针", "confidence": "high" }, { "lang": "zh", "text": "電針", "confidence": "high" }, { "lang": "py", "text": "diàn zhēn", "tone_exact": true, "confidence": "high" }
     ], "trust": "verified", "source": "hand" },
   { "id": "moxibustion", "domain": "method", "clinical": true, "en": "moxibustion",
     "en_synonyms": ["moxa"], "mesh_id": null, "mesh_term": null, "same_as": [],
@@ -106,5 +106,22 @@
     "surface_forms": [
       { "lang": "vi", "text": "thái cực quyền", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "太极拳", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+
+  { "id": "fire-needling", "domain": "method", "clinical": true, "en": "fire needling",
+    "en_synonyms": ["fire needle acupuncture", "fire needle therapy"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "hỏa châm", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "火针", "confidence": "high" }, { "lang": "zh", "text": "火針", "confidence": "high" },
+      { "lang": "py", "text": "huǒ zhēn", "tone_exact": true, "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "plum-blossom-needling", "domain": "method", "clinical": true, "en": "plum-blossom needling",
+    "en_synonyms": ["plum blossom needle", "seven-star needle", "cutaneous acupuncture", "dermal needling"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "mai hoa châm", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "kim mai hoa", "tone_exact": true, "confidence": "medium" },
+      { "lang": "zh", "text": "梅花针", "confidence": "high" }, { "lang": "zh", "text": "梅花針", "confidence": "high" },
+      { "lang": "py", "text": "méi huā zhēn", "tone_exact": true, "confidence": "high" }
     ], "trust": "verified", "source": "hand" }
 ]

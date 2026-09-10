@@ -212,5 +212,13 @@
       { "lang": "vi", "text": "nghệ", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "khương hoàng", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "姜黄", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "prunus-mume", "domain": "herb", "clinical": false,
+    "en": "Prunus mume", "en_synonyms": ["Japanese apricot", "mume flower", "plum blossom"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "mai hoa", "tone_exact": true, "confidence": "medium" },
+      { "lang": "zh", "text": "梅花", "confidence": "high" },
+      { "lang": "py", "text": "méi huā", "tone_exact": true, "confidence": "medium" }
     ], "trust": "verified", "source": "hand" }
 ]

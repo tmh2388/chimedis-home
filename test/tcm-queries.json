@@ -1672,6 +1672,98 @@
       "expect_terms": ["Liuwei Dihuang Wan"],
       "min_translated": 1,
       "_note": "Thuật ngữ Title-Case đứng một mình, KHÔNG có token tên nào ngoài span → vẫn dịch."
+    },
+
+    {
+      "id": "B01-coredb-brain-zh",
+      "q": "脑卒中",
+      "expect_terms": ["brain", "stroke"],
+      "must_not_contain": ["part of the brain"],
+      "_note": "P1 Batch01: 脑→brain (verified che coredb 'part of the brain')."
+    },
+    {
+      "id": "B01-neuralgia",
+      "q": "đau thần kinh",
+      "expect_terms": ["neuralgia"],
+      "must_not_contain": ["nephralgia"],
+      "_note": "P1 Batch01: đau thần kinh→neuralgia; KHÔNG rơi vào folded 'đau thận'→nephralgia."
+    },
+    {
+      "id": "B01-nephralgia-kept",
+      "q": "đau thận",
+      "expect_terms": ["nephralgia"],
+      "_note": "Positive: 'đau thận' (đau thận thật) VẪN → nephralgia đúng."
+    },
+    {
+      "id": "B01-sciatica",
+      "q": "đau thần kinh tọa",
+      "expect_terms": ["sciatica"],
+      "must_not_contain": ["nephralgia"]
+    },
+    {
+      "id": "B01-knee-pain-keep-goi",
+      "q": "đau khớp gối",
+      "expect_terms": ["knee pain"],
+      "must_not_contain": ["arthralgia\" gối", "gối"],
+      "_note": "P1 Batch01: 'gối' không còn rớt ra ngoài dưới dạng token lẻ."
+    },
+    {
+      "id": "B01-formula-guipi",
+      "q": "quy tỳ thang điều trị mất ngủ",
+      "expect_terms": ["Guipi Tang", "insomnia"],
+      "min_translated": 2
+    },
+    {
+      "id": "B01-formula-wendan",
+      "q": "ôn đởm thang",
+      "expect_terms": ["Wendan Tang"]
+    },
+    {
+      "id": "B01-formula-dachengqi",
+      "q": "đại thừa khí thang",
+      "expect_terms": ["Da Chengqi Tang"]
+    },
+    {
+      "id": "B01-pattern-phlegm-heat-heart",
+      "q": "đàm nhiệt nhiễu tâm",
+      "expect_terms": ["phlegm-heat harassing the heart"]
+    },
+    {
+      "id": "B01-method-fire-needling",
+      "q": "hỏa châm điều trị đau lưng",
+      "expect_terms": ["fire needling", "low back pain"],
+      "min_translated": 2
+    },
+    {
+      "id": "B01-method-plum-blossom",
+      "q": "mai hoa châm",
+      "expect_terms": ["plum-blossom needling"],
+      "must_not_contain": ["Prunus mume"]
+    },
+    {
+      "id": "B01-zhongfeng-toneless-ambiguous",
+      "q": "zhong feng",
+      "expect_ambiguous": ["zhong feng"],
+      "_note": "P1 Batch01: pinyin không thanh 'zhong feng' = đụng độ verified LR4(中封) vs stroke(中风) → phải ambiguous, KHÔNG mặc định."
+    },
+    {
+      "id": "B01-zhongfeng-tone-lr4",
+      "q": "zhōng fēng",
+      "expect_terms": ["Zhongfeng (LR4)"],
+      "_note": "Có thanh 1+1 → huyệt LR4 (không ambiguous)."
+    },
+    {
+      "id": "B01-zhongfeng-tone-stroke",
+      "q": "zhòng fēng",
+      "expect_terms": ["stroke"],
+      "_note": "Có thanh 4+1 → 中风 stroke (không ambiguous)."
+    },
+    {
+      "id": "B01-traditional-multi-concept",
+      "q": "腎陰虛針灸治療",
+      "expect_terms": ["kidney yin deficiency", "acupuncture"],
+      "min_translated": 2,
+      "_note": "P1 Batch01: phồn thể đa-concept không-space giờ nhận diện được (blind R6)."
     }
   ]
 }

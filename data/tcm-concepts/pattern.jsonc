@@ -5,7 +5,7 @@
     "surface_forms": [
       { "lang": "vi", "text": "tỳ khí hư", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "tỳ hư", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "脾气虚", "confidence": "high" }, { "lang": "zh", "text": "脾虚", "confidence": "high" }
+      { "lang": "zh", "text": "脾气虚", "confidence": "high" }, { "lang": "zh", "text": "脾氣虛", "confidence": "high" }, { "lang": "zh", "text": "脾虚", "confidence": "high" }, { "lang": "zh", "text": "脾虛", "confidence": "high" }
     ], "trust": "verified", "source": "hand" },
   { "id": "blood-stasis", "domain": "pattern", "clinical": true, "en": "blood stasis",
     "en_synonyms": ["blood stagnation", "static blood"], "mesh_id": null, "mesh_term": null, "same_as": [],
@@ -36,13 +36,13 @@
     "en_synonyms": ["kidney yang vacuity"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "thận dương hư", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "肾阳虚", "confidence": "high" }
+      { "lang": "zh", "text": "肾阳虚", "confidence": "high" }, { "lang": "zh", "text": "腎陽虛", "confidence": "high" }
     ], "trust": "verified", "source": "hand" },
   { "id": "kidney-yin-deficiency", "domain": "pattern", "clinical": true, "en": "kidney yin deficiency",
     "en_synonyms": ["kidney yin vacuity"], "mesh_id": null, "mesh_term": null, "same_as": [],
     "surface_forms": [
       { "lang": "vi", "text": "thận âm hư", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "肾阴虚", "confidence": "high" }
+      { "lang": "zh", "text": "肾阴虚", "confidence": "high" }, { "lang": "zh", "text": "腎陰虛", "confidence": "high" }
     ], "trust": "verified", "source": "hand" },
   { "id": "yin-deficiency-fire", "domain": "pattern", "clinical": true, "en": "yin deficiency with effulgent fire",
     "en_synonyms": ["yin deficiency fire", "deficiency heat"], "mesh_id": null, "mesh_term": null, "same_as": [],
@@ -86,5 +86,12 @@
     "surface_forms": [
       { "lang": "vi", "text": "tâm tỳ lưỡng hư", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "心脾两虚", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "phlegm-heat-harassing-heart", "domain": "pattern", "clinical": true, "en": "phlegm-heat harassing the heart",
+    "en_synonyms": ["phlegm-fire harassing the heart", "phlegm heat disturbing the mind"],
+    "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đàm nhiệt nhiễu tâm", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "痰热扰心", "confidence": "high" }, { "lang": "zh", "text": "痰熱擾心", "confidence": "high" }
     ], "trust": "verified", "source": "hand" }
 ]

@@ -42,13 +42,15 @@ function isAffix(en) {
   const first = String(en).split(',')[0].trim();
   return /^-|-$/.test(first) || first.replace(/[-()]/g, '').length < 3;
 }
+// P1 Batch 01 (§4 item 5): dọn nhãn English bẩn — hậu tố tác giả thực vật học lặp/nhiều tầng
+// ("Prunus mume Sieb. et", "... Sieb. et Zucc. fruit"). Lột LẶP các token tác giả ở cuối chuỗi.
+const BOTAN_AUTHOR =
+  /\s+(?:Bge?\.|L\.|Linn\.|Miq\.|DC\.|Thunb\.|Franch\.|Maxim\.|Sieb\.|Zucc\.|Hance|Turcz\.|Rupr\.|Kar\.|Kir\.|Willd\.|Bunge|Nakai|Kom\.|Rehd\.|Gaertn\.|Sm\.|Sm|Lindl\.|Baill\.|Benth\.|Hook\.|Wall\.|Roxb\.|Pers\.|Br\.|R\.Br\.|f\.|et|ex|emend\.|nom\.)\.?\s*$/i;
 function cleanEn(en) {
-  return String(en)
-    .split(/[,;]/)[0]
-    .replace(/\([^)]*\)/g, '')
-    .replace(/\s+(Bge?\.|L\.|Linn\.|Miq\.|DC\.|Thunb\.|Franch\.|Maxim\.|Sieb\.|Zucc\.|Hance|Turcz\.|Rupr\.|Kar\.|Kir\.|Willd\.)\.?\s*$/i, '')
-    .replace(/\s+/g, ' ')
-    .trim();
+  let s = String(en).split(/[,;]/)[0].replace(/\([^)]*\)/g, '');
+  let prev;
+  do { prev = s; s = s.replace(BOTAN_AUTHOR, '').trimEnd(); } while (s !== prev);
+  return s.replace(/\s+/g, ' ').trim();
 }
 const slug = (s) =>
   stripDiacritics(String(s)).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 72);

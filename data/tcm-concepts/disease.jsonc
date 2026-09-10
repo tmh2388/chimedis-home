@@ -17,7 +17,10 @@
       { "lang": "vi", "text": "tai biến mạch máu não", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "tai biến", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "trúng phong", "tone_exact": true, "confidence": "high" },
-      { "lang": "zh", "text": "中风", "confidence": "high" }, { "lang": "zh", "text": "卒中", "confidence": "high" }
+      { "lang": "zh", "text": "中风", "confidence": "high" }, { "lang": "zh", "text": "中風", "confidence": "high" },
+      { "lang": "zh", "text": "卒中", "confidence": "high" },
+      { "lang": "zh", "text": "脑卒中", "confidence": "high" }, { "lang": "zh", "text": "腦卒中", "confidence": "high" },
+      { "lang": "py", "text": "zhòng fēng", "tone_exact": true, "confidence": "high" }
     ], "trust": "verified", "source": "hand" },
   { "id": "ischemic-stroke", "domain": "disease", "clinical": true, "en": "ischemic stroke",
     "en_synonyms": ["cerebral infarction", "ischaemic stroke"], "mesh_id": null, "mesh_term": null, "same_as": [],
@@ -37,6 +40,14 @@
       { "lang": "vi", "text": "liệt nửa người", "tone_exact": true, "confidence": "high" },
       { "lang": "vi", "text": "bán thân bất toại", "tone_exact": true, "confidence": "high" },
       { "lang": "zh", "text": "偏瘫", "confidence": "high" }
+    ], "trust": "verified", "source": "hand" },
+  { "id": "sciatica", "domain": "disease", "clinical": true, "en": "sciatica",
+    "en_synonyms": ["sciatic neuralgia", "sciatic nerve pain"], "mesh_id": null, "mesh_term": null, "same_as": [],
+    "surface_forms": [
+      { "lang": "vi", "text": "đau thần kinh tọa", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "đau thần kinh toạ", "tone_exact": true, "confidence": "high" },
+      { "lang": "vi", "text": "đau dây thần kinh tọa", "tone_exact": true, "confidence": "high" },
+      { "lang": "zh", "text": "坐骨神经痛", "confidence": "high" }, { "lang": "zh", "text": "坐骨神經痛", "confidence": "high" }
     ], "trust": "verified", "source": "hand" },
   { "id": "hemorrhoids", "domain": "disease", "clinical": true, "en": "hemorrhoids",
     "en_synonyms": ["haemorrhoids", "piles"], "mesh_id": null, "mesh_term": null, "same_as": [],
