@@ -1764,6 +1764,40 @@
       "expect_terms": ["kidney yin deficiency", "acupuncture"],
       "min_translated": 2,
       "_note": "P1 Batch01: phồn thể đa-concept không-space giờ nhận diện được (blind R6)."
+    },
+
+    {
+      "id": "P2-1-orgroup-dedupe-vi-zh",
+      "q": "túc tam lý 足三里 điều trị mất ngủ",
+      "expect_terms": ["Zusanli (ST36)", "insomnia"],
+      "must_not_contain": ["Zu San Li\") (\"Zusanli"],
+      "_note": "P2.1: VI + ZH surface cùng conceptId → OR-group chỉ phát 1 lần trong effective_query."
+    },
+    {
+      "id": "P2-1-orgroup-dedupe-acupuncture",
+      "q": "châm cứu 针灸 điều trị đột quỵ",
+      "expect_terms": ["acupuncture", "stroke"],
+      "must_not_contain": ["body acupuncture\") (\"acupuncture"]
+    },
+    {
+      "id": "P2-2-evidence-toneless-medium-clinical",
+      "q": "cham cuu dieu tri dot quy",
+      "mode": "evidence",
+      "expect_needs_resolution": true,
+      "_note": "P2.2: clinical concept khớp qua folded/toneless ở mức medium trong Evidence → cần xác nhận."
+    },
+    {
+      "id": "P2-2-evidence-tone-exact-not-gated",
+      "q": "châm cứu điều trị đột quỵ",
+      "mode": "evidence",
+      "expect_needs_resolution": false,
+      "_note": "P2.2: nhập ĐÚNG DẤU, khớp exact high → KHÔNG bị chặn confirm."
+    },
+    {
+      "id": "P2-2-discovery-toneless-not-gated",
+      "q": "cham cuu dieu tri dot quy",
+      "expect_needs_resolution": false,
+      "_note": "P2.2: chỉ Evidence mới gate; Discovery không đổi."
     }
   ]
 }
