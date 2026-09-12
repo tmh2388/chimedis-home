@@ -1156,6 +1156,33 @@ document.addEventListener('click', (e)=>{
     try{ await wbApi(`/api/workbench/projects/${__wbActiveProject}/library`, {method:'DELETE', body: JSON.stringify({all:true})}); await renderWbPanel(); }
     catch(e){ alert('Lỗi xoá: '+e.message); }
   };
+  window.wbPanelToggleManual = (force) => {
+    const el = document.getElementById('wbPanelManualForm');
+    if(!el) return;
+    const show = force !== undefined ? force : el.style.display === 'none';
+    el.style.display = show ? 'block' : 'none';
+    if(show){ const t = document.getElementById('pmTitle'); if(t) t.focus(); }
+  };
+  window.wbPanelSaveManual = async () => {
+    const g = (id) => (document.getElementById(id) || {}).value || '';
+    const title = g('pmTitle').trim();
+    if(!title){ alert('Cần nhập tiêu đề.'); return; }
+    if(!__wbActiveProject) return;
+    const splitList = (s) => s.split(',').map(x=>x.trim()).filter(Boolean);
+    try{
+      await wbApi(`/api/workbench/projects/${__wbActiveProject}/library`, {
+        method:'POST',
+        body: JSON.stringify({ record: {
+          title, authors: splitList(g('pmAuthors')), venue: g('pmJournal').trim() || null,
+          year: parseInt(g('pmYear'),10) || null, doi: g('pmDoi').trim() || null,
+          keywords: splitList(g('pmKeywords')), abstract: g('pmAbstract').trim() || null,
+          source: 'manual',
+        } }),
+      });
+      wbPanelToggleManual(false);
+      await renderWbPanel();
+    }catch(e){ alert('Lỗi lưu: '+e.message); }
+  };
   function wbSetActiveProject(id){
     __wbActiveProject = String(id);
     localStorage.setItem('chimedisActiveProject', __wbActiveProject);
@@ -1213,9 +1240,23 @@ document.addEventListener('click', (e)=>{
         ${projects.map(p=>`<option value="${p.id}" ${String(p.id)===__wbActiveProject?'selected':''}>${esc(p.title)}</option>`).join('')}
         <option value="__new__">+ Dự án mới…</option>
       </select>
-      <p class="hint" style="margin:0 0 4px">Thư viện (${lib.records.length}) — bấm "💾 Lưu thư viện" ở kết quả tìm kiếm để thêm
+      <p class="hint" style="margin:0 0 4px">Thư viện (${lib.records.length}) — bấm "💾 Lưu thư viện" ở kết quả tìm kiếm,
+        hoặc <a href="#" onclick="wbPanelToggleManual();return false">tự nhập tay</a> (VD: bài từ Wanfang/CNKI đọc ở tab riêng)
         ${lib.records.length ? `· Xuất: <a href="#" onclick="wbPanelExport('xlsx');return false">Excel</a> · <a href="#" onclick="wbPanelExport('docx');return false">Word</a>
           · <a href="#" onclick="wbPanelDeleteAll();return false" style="color:#9a2f2f">Xoá tất cả</a>` : ''}</p>
+      <div id="wbPanelManualForm" style="display:none;border:1px solid var(--border-strong,#ddd);border-radius:8px;padding:10px;margin-bottom:10px">
+        <input id="pmTitle" placeholder="Tiêu đề *">
+        <input id="pmAuthors" placeholder="Tác giả (phẩy giữa các tên)">
+        <input id="pmJournal" placeholder="Tạp chí/Nguồn (VD: Wanfang, CNKI)">
+        <input id="pmYear" type="number" min="1900" max="2100" placeholder="Năm">
+        <input id="pmDoi" placeholder="DOI">
+        <input id="pmKeywords" placeholder="Từ khoá (phẩy giữa các từ)">
+        <textarea id="pmAbstract" rows="3" placeholder="Tóm tắt"></textarea>
+        <div style="display:flex;gap:6px;margin-top:4px">
+          <button type="button" class="btn btn-sm" onclick="wbPanelSaveManual()">Lưu</button>
+          <button type="button" class="btn btn-sm" onclick="wbPanelToggleManual(false)">Huỷ</button>
+        </div>
+      </div>
       ${lib.records.length ? lib.records.map(r=>`
         <div class="wb-lib-item" style="display:flex;gap:8px;align-items:flex-start">
           <div style="flex:1">
@@ -1314,7 +1355,7 @@ document.addEventListener('click', (e)=>{
         body: JSON.stringify({ record: {
           title:r.title, abstract:r.abstract, authors:r.authors, venue:r.venue, year:r.year,
           doi:r.doi, pmid:r.pmid, type:r.type, landingUrl:r.landingUrl, oaUrl:r.oaUrl,
-          isOpenAccess:r.isOpenAccess,
+          isOpenAccess:r.isOpenAccess, keywords:r.keywords, topic:r.topic,
         } }),
       });
       btn.textContent = 'Đã lưu ✓';

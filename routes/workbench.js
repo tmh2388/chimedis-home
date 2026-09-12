@@ -4,6 +4,7 @@
 // KHÔNG có LLM, gap-analysis, evidence matrix trong M1.
 
 import { Router } from 'express';
+import crypto from 'node:crypto';
 import { getPool, isDbConfigured } from '../lib/db.js';
 import { requireUser, requireVerified } from '../lib/auth.js';
 import { rateLimit } from '../lib/rate-limit.js';
@@ -447,17 +448,28 @@ function normalizeInlineRecord(raw) {
     const url = r.landingUrl || r.oaUrl;
     if (url) identifiers.url = String(url).trim().slice(0, 200);
   }
-  if (!Object.keys(identifiers).length || !r.title) return null;
+  if (!r.title) return null;
+  if (!Object.keys(identifiers).length) {
+    // Nhập tay (Wanfang/CNKI… không có DOI/PMID sẵn) — vẫn cho lưu, định danh tổng hợp
+    // từ tiêu đề+năm+tạp chí để dedup hợp lý nếu người dùng lỡ lưu trùng lần sau.
+    const basis = `${r.title}|${r.year || ''}|${r.venue || r.journal || ''}`.toLowerCase();
+    identifiers.manual = crypto.createHash('sha256').update(basis).digest('hex').slice(0, 32);
+  }
+  // Từ khoá: keywords thật (Europe PMC) ưu tiên; topic tự phân loại (OpenAlex) làm subject.
+  const keywords = Array.isArray(r.keywords) ? r.keywords.map(String).slice(0, 20) : [];
+  const subjectHeadings = r.topic ? [String(r.topic).slice(0, 200)] : [];
   return {
     title: String(r.title).slice(0, 700),
     abstract: r.abstract ? String(r.abstract).slice(0, 60000) : null,
     authors: Array.isArray(r.authors) ? r.authors.slice(0, 30) : [],
-    journal: r.venue ? String(r.venue).slice(0, 300) : null,
+    journal: (r.venue || r.journal) ? String(r.venue || r.journal).slice(0, 300) : null,
     year: Number.isInteger(r.year) ? r.year : (parseInt(r.year, 10) || null),
     study_type: STUDY_TYPE_FROM_DOCTYPE[String(r.type || '').toLowerCase()] || guessStudyType(r.title, r.abstract),
     oa_status: r.isOpenAccess ? 'oa' : null,
+    keywords,
+    subject_headings: subjectHeadings,
     identifiers,
-    merged_from: ['public-search'],
+    merged_from: [r.source === 'manual' ? 'manual' : 'public-search'],
   };
 }
 
@@ -538,6 +550,7 @@ async function fetchLibraryRecords(pool, projectId) {
       addedAt: r.added_at, updatedAt: r.updated_at,
       title: r.title, abstract: r.abstract, authors: safeJson(r.authors_json, []),
       journal: r.journal, year: r.year, studyType, studyTypeGuessed: !studyTypeRaw,
+      keywords: safeJson(r.keywords_json, []), subjectHeadings: safeJson(r.subjects_json, []),
       mergedFrom: safeJson(r.merged_from_json, []),
       identifiers: idsByRecord.get(r.record_id) || {},
     };
@@ -677,17 +690,18 @@ function intOrNull(v) {
 }
 
 // ===== M3 — Evidence Matrix export (xlsx/docx/csv) ===================================
-const LIB_COLUMNS = ['Tiêu đề', 'Tác giả', 'Tạp chí', 'Năm', 'Loại nghiên cứu', 'Trạng thái', 'DOI/PMID', 'Ghi chú', 'Tóm tắt'];
+const LIB_COLUMNS = ['Tiêu đề', 'Tác giả', 'Tạp chí', 'Năm', 'Loại nghiên cứu', 'Trạng thái', 'DOI/PMID', 'Từ khoá', 'Ghi chú', 'Tóm tắt'];
 function libRowValues(r) {
   const authors = (r.authors || []).slice(0, 6).join('; ') + ((r.authors || []).length > 6 ? '…' : '');
   const ids = r.identifiers || {};
   const idStr = ids.doi ? `doi:${ids.doi}` : (ids.pmid ? `pmid:${ids.pmid}` : (ids.url || Object.entries(ids).map(([k, v]) => `${k}:${v}`).join(' ')));
   const studyLabel = STUDY_TYPE_LABEL_VI[r.studyType] || r.studyType || 'Chưa rõ';
+  const kw = [...(r.keywords || []), ...(r.subjectHeadings || [])].join('; ');
   return [
     r.title || '', authors, r.journal || '', r.year || '',
     studyLabel + (r.studyTypeGuessed ? ' (tự động, chưa xác nhận)' : ''),
     { shortlisted: 'Đã chọn lọc', included: 'Đưa vào bài', excluded: 'Loại' }[r.status] || r.status,
-    idStr, r.note || '', (r.abstract || '').slice(0, 3000),
+    idStr, kw, r.note || '', (r.abstract || '').slice(0, 3000),
   ];
 }
 function renderLibraryCsv(records) {

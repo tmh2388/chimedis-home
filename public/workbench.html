@@ -349,13 +349,31 @@ function renderLibraryCard(records) {
     </tr>`;
   }).join('');
   return `
-    <h3>Thư viện dự án (${records.length})</h3>
-    <p class="hint">Bản ghi bạn đã lưu từ kết quả tìm kiếm bên dưới — <b>đây là danh sách bạn đang quản lý</b>
+    <h3>Thư viện dự án (${records.length}) <button type="button" class="btn sm sec" style="margin-left:8px" onclick="wbToggleManualForm()">+ Thêm bản ghi thủ công</button></h3>
+    <p class="hint">Bản ghi bạn đã lưu từ kết quả tìm kiếm bên dưới, hoặc <b>tự tay nhập</b> (VD: đọc bài trên Wanfang/CNKI
+      ở tab riêng rồi chép lại tiêu đề/tác giả/tóm tắt/DOI vào đây) — <b>đây là danh sách bạn đang quản lý</b>
       (không phải file tải về máy; file Excel/Word chỉ sinh ra khi bấm Xuất, không lưu lại trên máy chủ).
       * = loại nghiên cứu đoán tự động (chưa xác nhận).
       ${records.length ? `Xuất: <a href="#" onclick="wbLibExport('xlsx');return false">Excel</a> ·
         <a href="#" onclick="wbLibExport('docx');return false">Word</a> ·
         <a href="#" onclick="wbLibExport('csv');return false">CSV</a>` : ''}</p>
+    <div id="wbManualForm" class="card" style="display:none;background:var(--bg);margin:0 0 12px">
+      <label>Tiêu đề *</label><input id="mfTitle" placeholder="Tên bài báo/luận văn">
+      <div class="row">
+        <div><label>Tác giả (phẩy giữa các tên)</label><input id="mfAuthors" placeholder="Nguyễn Văn A, Trần Thị B"></div>
+        <div><label>Tạp chí/Nguồn</label><input id="mfJournal" placeholder="VD: Wanfang, CNKI, tên tạp chí"></div>
+        <div><label>Năm</label><input id="mfYear" type="number" min="1900" max="2100"></div>
+      </div>
+      <div class="row">
+        <div><label>DOI</label><input id="mfDoi" placeholder="10.xxxx/…"></div>
+        <div><label>PMID</label><input id="mfPmid"></div>
+        <div><label>Từ khoá (phẩy giữa các từ)</label><input id="mfKeywords" placeholder="châm cứu, đột quỵ, phục hồi chức năng"></div>
+      </div>
+      <label>Tóm tắt</label><textarea id="mfAbstract" rows="3"></textarea>
+      <button class="btn sm" style="margin-top:6px" onclick="wbSaveManual()">Lưu vào thư viện</button>
+      <button class="btn sm sec" style="margin-top:6px" onclick="wbToggleManualForm(false)">Huỷ</button>
+      <div id="mfMsg"></div>
+    </div>
     ${records.length ? `
     <div class="row" style="align-items:center;margin-bottom:8px">
       <label style="flex:none;display:flex;align-items:center;gap:5px;margin:0">
@@ -401,6 +419,37 @@ async function wbRefreshLibrary() {
   const card = $('libraryCard');
   if (card) card.innerHTML = renderLibraryCard(activeDetail.library);
 }
+window.wbToggleManualForm = (force) => {
+  const el = $('wbManualForm');
+  if (!el) return;
+  const show = force !== undefined ? force : el.style.display === 'none';
+  el.style.display = show ? 'block' : 'none';
+  if (show) $('mfTitle').focus();
+};
+window.wbSaveManual = async () => {
+  const title = $('mfTitle').value.trim();
+  if (!title) { $('mfMsg').innerHTML = '<div class="msg err">Cần nhập tiêu đề.</div>'; return; }
+  const splitList = (s) => s.split(',').map((x) => x.trim()).filter(Boolean);
+  const record = {
+    title,
+    authors: splitList($('mfAuthors').value),
+    venue: $('mfJournal').value.trim() || null,
+    year: parseInt($('mfYear').value, 10) || null,
+    doi: $('mfDoi').value.trim() || null,
+    pmid: $('mfPmid').value.trim() || null,
+    keywords: splitList($('mfKeywords').value),
+    abstract: $('mfAbstract').value.trim() || null,
+    source: 'manual',
+  };
+  try {
+    await api(`/api/workbench/projects/${activeId}/library`, { method: 'POST', body: JSON.stringify({ record }) });
+    ['mfTitle', 'mfAuthors', 'mfJournal', 'mfYear', 'mfDoi', 'mfPmid', 'mfKeywords', 'mfAbstract'].forEach((id) => { $(id).value = ''; });
+    wbToggleManualForm(false);
+    await wbRefreshLibrary();
+  } catch (e) {
+    $('mfMsg').innerHTML = `<div class="msg err">Lỗi lưu: ${esc(e.message)}</div>`;
+  }
+};
 window.wbLibExport = async (fmt) => {
   const token = await auth.currentUser.getIdToken();
   const res = await fetch(`/api/workbench/projects/${activeId}/library/export?fmt=${fmt}`, { headers: { Authorization: 'Bearer ' + token } });
