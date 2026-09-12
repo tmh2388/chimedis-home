@@ -312,6 +312,17 @@ tr.lit-detail .lk a:hover{text-decoration:underline}
 .lib-pick{position:absolute;z-index:50;background:#fff;border:1px solid var(--border-strong,#ddd);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.12);padding:10px;min-width:220px;font-size:13px}
 .lib-pick select{width:100%;margin-bottom:8px;padding:5px}
 .lib-pick .row{display:flex;gap:6px;justify-content:flex-end}
+.wb-panel{position:fixed;top:0;right:0;height:100vh;width:380px;max-width:92vw;background:#fff;border-left:1px solid var(--border-strong,#ddd);box-shadow:-10px 0 28px rgba(0,0,0,.10);z-index:90;display:flex;flex-direction:column}
+.wb-panel[hidden]{display:none}
+.wb-panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border-strong,#eee);font-size:14px}
+.wb-panel-close{background:none;border:none;font-size:17px;cursor:pointer;color:var(--muted-fg,#888);line-height:1}
+.wb-panel-body{flex:1;overflow-y:auto;padding:14px 16px;font-size:13px}
+.wb-panel-body select,.wb-panel-body input{width:100%;padding:7px 8px;margin:4px 0 10px;border:1px solid var(--border-strong,#ddd);border-radius:6px;font:inherit}
+.wb-panel-body .btn{margin-top:4px}
+.wb-lib-item{padding:9px 0;border-bottom:1px solid #f0ede4}
+.wb-lib-item .t{font-weight:600;font-size:12.5px;line-height:1.4}
+.wb-lib-item .m{color:var(--muted-fg,#888);font-size:11.5px;margin-top:2px}
+.wb-panel-open-link{display:block;margin-top:14px;font-size:12px}
 </style>
 </head>
 <body>
@@ -369,10 +380,23 @@ if (auth) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <span data-i18n="dict_cta">Tra từ điển</span>
       </a>
+      <button class="btn btn-sm" id="wbPanelBtn" onclick="toggleWbPanel()" title="Dự án &amp; thư viện nghiên cứu">📚 <span id="wbPanelBtnLabel">Nghiên cứu</span></button>
       <button class="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
     </div>
   </div>
 </header>
+
+<!-- Bàn làm việc thu gọn — panel trượt từ phải, thao tác trực tiếp trên trang tìm chính
+     (kiểu SciSpace) thay vì phải mở /workbench.html riêng cho việc thường ngày: chọn dự án
+     + xem thư viện. Việc nâng cao (câu hỏi nghiên cứu, nhật ký tìm kiếm, xuất file) vẫn ở
+     /workbench.html qua link "Mở đầy đủ" — chưa port toàn bộ trong v1 này. -->
+<aside id="wbPanel" class="wb-panel" hidden>
+  <div class="wb-panel-head">
+    <strong>📚 Nghiên cứu của tôi</strong>
+    <button type="button" class="wb-panel-close" onclick="toggleWbPanel(false)" aria-label="Đóng">✕</button>
+  </div>
+  <div class="wb-panel-body" id="wbPanelBody"><p class="hint">Đang tải…</p></div>
+</aside>
 
 <main>
   <section class="hero wrap">
@@ -1085,13 +1109,15 @@ document.addEventListener('click', (e)=>{
     }
   }
 
-  // "Lưu vào thư viện nghiên cứu" — hợp nhất trang tìm công khai với Bàn làm việc
-  // (workbench.html). Người dùng cần đăng nhập + chọn 1 dự án; bản ghi được upsert
-  // tại chỗ vào identity-graph (M0) qua route dùng chung với workbench.
+  // "Lưu vào thư viện nghiên cứu" — hợp nhất trang tìm công khai với Bàn làm việc.
+  // Người dùng cần đăng nhập; bản ghi upsert tại chỗ vào identity-graph (M0) qua route
+  // dùng chung với workbench.html. Dự án "đang chọn" nhớ trong localStorage (panel bên
+  // phải) để lưu 1-chạm không hỏi lại mỗi lần — chỉ hỏi/chọn khi CHƯA có dự án nào chọn.
   let __wbProjectsCache = null;
+  let __wbActiveProject = localStorage.getItem('chimedisActiveProject') || null;
   async function wbApi(url, opts){
     const token = await window.__wbGetIdToken();
-    if(!token) throw new Error('NOAUTH');
+    if(!token) throw new Error('Chưa đăng nhập');
     const res = await fetch(url, { ...opts, headers:{ 'Content-Type':'application/json', Authorization:'Bearer '+token, ...(opts&&opts.headers||{}) } });
     const data = await res.json().catch(()=>({success:false,error:'Phản hồi không hợp lệ'}));
     if(!res.ok || data.success===false) throw new Error(data.error || ('HTTP '+res.status));
@@ -1103,39 +1129,122 @@ document.addEventListener('click', (e)=>{
     __wbProjectsCache = d.projects || [];
     return __wbProjectsCache;
   }
+  function wbSetActiveProject(id){
+    __wbActiveProject = String(id);
+    localStorage.setItem('chimedisActiveProject', __wbActiveProject);
+  }
   function closeLibPick(){ const el = document.getElementById('libPick'); if(el) el.remove(); }
   document.addEventListener('click', (e)=>{
     const pick = document.getElementById('libPick');
     if(pick && !pick.contains(e.target) && !e.target.classList.contains('save-lib-btn')) closeLibPick();
   });
 
+  // ===== Panel "Nghiên cứu của tôi" (phải, kiểu SciSpace) — thay cho việc phải mở
+  // /workbench.html riêng để làm việc thường ngày (chọn dự án, xem thư viện). =====
+  window.toggleWbPanel = async (force) => {
+    const panel = document.getElementById('wbPanel');
+    const show = force !== undefined ? force : panel.hidden;
+    panel.hidden = !show;
+    if (show) await renderWbPanel();
+  };
+  document.addEventListener('wb-auth-changed', () => {
+    const panel = document.getElementById('wbPanel');
+    if (panel && !panel.hidden) renderWbPanel();
+  });
+
+  async function renderWbPanel(){
+    const body = document.getElementById('wbPanelBody');
+    if(!window.__wbUser){
+      body.innerHTML = `<p>Đăng nhập để lưu bài vào thư viện nghiên cứu và quản lý dự án — không mất gì khi tìm/xem/tải, chỉ cần cho việc lưu lại.</p>
+        <a class="btn btn-primary btn-sm" href="/tai-khoan.html">Đăng nhập / Đăng ký</a>`;
+      return;
+    }
+    body.innerHTML = '<p class="hint">Đang tải…</p>';
+    let projects;
+    try{ projects = await wbGetProjects(true); }
+    catch(e){ body.innerHTML = `<p>Lỗi tải dự án: ${esc(e.message)}</p>`; return; }
+
+    if(!projects.length){
+      body.innerHTML = `<p class="hint">Chưa có dự án nào.</p>
+        <input id="wbNewProjTitle" placeholder="Tên dự án đầu tiên">
+        <button type="button" class="btn btn-sm" onclick="wbCreateProjectFromPanel()">Tạo dự án</button>`;
+      return;
+    }
+    if(!__wbActiveProject || !projects.some(p=>String(p.id)===__wbActiveProject)) wbSetActiveProject(projects[0].id);
+
+    let lib = { records: [] };
+    try{ lib = await wbApi(`/api/workbench/projects/${__wbActiveProject}/library`); }catch(e){ /* để trống nếu lỗi */ }
+
+    body.innerHTML = `
+      <label class="hint">Dự án đang chọn</label>
+      <select id="wbPanelProjectSel" onchange="wbSwitchProject(this.value)">
+        ${projects.map(p=>`<option value="${p.id}" ${String(p.id)===__wbActiveProject?'selected':''}>${esc(p.title)}</option>`).join('')}
+        <option value="__new__">+ Dự án mới…</option>
+      </select>
+      <p class="hint" style="margin:0 0 4px">Thư viện (${lib.records.length}) — bấm "💾 Lưu thư viện" ở kết quả tìm kiếm để thêm</p>
+      ${lib.records.length ? lib.records.map(r=>`
+        <div class="wb-lib-item">
+          <div class="t">${esc(r.title)}</div>
+          <div class="m">${r.year||'—'} · ${esc(r.studyType||'unknown')}${r.status && r.status!=='shortlisted' ? ' · '+esc(r.status) : ''}</div>
+        </div>`).join('') : '<p class="hint">Chưa lưu bài nào.</p>'}
+      <a class="wb-panel-open-link" href="/workbench.html" target="_blank">Mở đầy đủ trong Bàn làm việc (câu hỏi nghiên cứu, nhật ký tìm kiếm, xuất file) ↗</a>`;
+  }
+  window.wbSwitchProject = (val) => {
+    if(val === '__new__'){
+      const sel = document.getElementById('wbPanelProjectSel');
+      if(sel) sel.value = __wbActiveProject; // trả UI về lựa chọn cũ trong lúc chờ prompt
+      const title = prompt('Tên dự án mới:');
+      if(title && title.trim()) return wbCreateProjectFromPanel(title.trim());
+      return;
+    }
+    wbSetActiveProject(val);
+    renderWbPanel();
+  };
+  window.wbCreateProjectFromPanel = async (titleArg) => {
+    const title = titleArg || (document.getElementById('wbNewProjTitle') || {}).value?.trim();
+    if(!title) return;
+    try{
+      const created = await wbApi('/api/workbench/projects', {method:'POST', body: JSON.stringify({title})});
+      __wbProjectsCache = null;
+      wbSetActiveProject(created.id);
+      await renderWbPanel();
+    }catch(e){ alert('Lỗi tạo dự án: ' + e.message); }
+  };
+
   async function saveToLibrary(idx, btn){
     if(!window.__wbUser){
-      alert('Cần đăng nhập để lưu vào thư viện nghiên cứu.\n\nMở "Tài khoản" ở góc trên để đăng nhập/đăng ký (miễn phí), rồi thử lại.');
+      alert('Cần đăng nhập để lưu vào thư viện nghiên cứu.\n\nBấm "📚 Nghiên cứu" ở góc trên để đăng nhập, rồi thử lại.');
+      toggleWbPanel(true);
       return;
     }
     const r = (window.__curLitResults || [])[idx];
     if(!r){ alert('Không tìm thấy bản ghi (danh sách đã thay đổi) — thử tìm lại.'); return; }
     closeLibPick();
+
+    // Đã có dự án "đang chọn" (panel bên phải, nhớ trong trình duyệt) → lưu ngay, không hỏi.
+    if(__wbActiveProject){ await doSaveToProject(__wbActiveProject, r, btn); return; }
+
     let projects;
     try{ projects = await wbGetProjects(); }
     catch(e){ alert('Lỗi tải danh sách dự án: ' + e.message); return; }
 
     if(!projects.length){
-      const title = prompt('Chưa có dự án nào trong Bàn làm việc. Đặt tên cho dự án đầu tiên:', 'Dự án nghiên cứu của tôi');
+      const title = prompt('Chưa có dự án nào. Đặt tên cho dự án đầu tiên:', 'Dự án nghiên cứu của tôi');
       if(!title) return;
       try{
         const created = await wbApi('/api/workbench/projects', { method:'POST', body: JSON.stringify({ title }) });
         __wbProjectsCache = null;
+        wbSetActiveProject(created.id);
         await doSaveToProject(created.id, r, btn);
       }catch(e){ alert('Lỗi tạo dự án: ' + e.message); }
       return;
     }
     if(projects.length === 1){
-      if(confirm(`Lưu bài này vào dự án "${projects[0].title}"?`)) await doSaveToProject(projects[0].id, r, btn);
+      wbSetActiveProject(projects[0].id);
+      await doSaveToProject(projects[0].id, r, btn);
       return;
     }
-    // Nhiều dự án → popover chọn nhanh, neo cạnh nút vừa bấm.
+    // Nhiều dự án, chưa từng chọn cái nào → popover chọn 1 lần (từ đó nhớ luôn).
     const rect = btn.getBoundingClientRect();
     const pick = document.createElement('div');
     pick.id = 'libPick';
@@ -1153,6 +1262,7 @@ document.addEventListener('click', (e)=>{
     document.getElementById('libPickOk').onclick = async ()=>{
       const pid = document.getElementById('libPickSel').value;
       closeLibPick();
+      wbSetActiveProject(pid);
       await doSaveToProject(pid, r, btn);
     };
   }
@@ -1170,6 +1280,8 @@ document.addEventListener('click', (e)=>{
         } }),
       });
       btn.textContent = 'Đã lưu ✓';
+      const panel = document.getElementById('wbPanel');
+      if(panel && !panel.hidden) renderWbPanel();
     }catch(e){
       btn.disabled = false; btn.textContent = orig;
       alert('Lỗi lưu vào thư viện: ' + e.message);
