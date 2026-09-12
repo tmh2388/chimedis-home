@@ -103,7 +103,7 @@
 </head>
 <body>
 
-<div id="loginLangWrap" class="lang-wrap">
+<div id="loginLangWrap" class="lang-wrap" hidden>
   <button class="lang-btn" onclick="toggleLangMenu()" aria-label="Language"><span class="lang-label">VI</span> ▾</button>
   <div class="lang-menu">
     <div class="lang-opt" data-l="vi" onclick="setLang('vi')">Tiếng Việt<span class="ck">✓</span></div>
@@ -632,7 +632,7 @@ window.wbRecheckVerify = async () => {
 window.wbSignOut = () => signOut(auth);
 
 onAuthStateChanged(auth, async (user) => {
-  if (!user) { $('loginView').hidden = false; $('appView').hidden = true; return; }
+  if (!user) { $('loginView').hidden = false; $('appView').hidden = true; $('loginLangWrap').hidden = false; return; }
   try {
     await user.reload().catch(() => {});
     // ép token mới nếu Firebase đã xác nhận email nhưng token đang cache còn nói "chưa"
@@ -641,7 +641,7 @@ onAuthStateChanged(auth, async (user) => {
     const d = await r.json();
     if (!d.success) throw new Error(d.error || 'Lỗi đồng bộ');
     currentUser = d.user;
-    $('loginView').hidden = true; $('appView').hidden = false;
+    $('loginView').hidden = true; $('appView').hidden = false; $('loginLangWrap').hidden = true;
     $('whoLabel').textContent = currentUser.display_name || currentUser.email || '';
     const banner = $('verifyBanner');
     if (banner) {
