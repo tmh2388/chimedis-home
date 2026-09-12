@@ -84,6 +84,11 @@
   th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
   th{color:var(--muted-fg);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.03em;background:#FCFAF6}
   tbody tr:hover td{background:#FCFAF6}
+  .lib-title-link{color:var(--ink);font-weight:600;text-decoration:none}
+  .lib-title-link:hover{color:var(--accent);text-decoration:underline}
+  .lib-detail-row td{background:var(--bg)}
+  .lib-detail p{margin:0 0 8px;font-size:13px;line-height:1.5}
+  .lib-detail textarea{width:100%;margin-top:4px}
 
   .cov{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
   .cov.complete{background:#E7F3EA;color:var(--ok)}
@@ -187,6 +192,7 @@ const FIREBASE_CONFIG = {
   appId: '1:969178764176:web:1dc0f34903b052bb691915',
 };
 let auth = null, currentUser = null, projects = [], activeId = null, activeDetail = null;
+let libraryFilters = { source: 'all', type: 'all' }, openRecordId = null;
 try { auth = getAuth(initializeApp(FIREBASE_CONFIG)); } catch (e) { console.error(e); }
 
 const $ = (id) => document.getElementById(id);
@@ -301,6 +307,12 @@ const I18N = {
     import_result: 'Đã nhập {imported}/{total} bản ghi{skipped}.',
     import_result_skipped: ' ({skipped} bị bỏ qua — thiếu tiêu đề hoặc lỗi)',
     import_err_read_file: 'Không đọc được file.',
+    filter_source_label: 'Nguồn:', filter_type_label: 'Loại:', filter_all: 'Tất cả',
+    filter_showing: 'Hiển thị {n}/{total} sau lọc', filter_no_match: 'Không có bản ghi nào khớp bộ lọc.',
+    detail_authors: 'Tác giả', detail_journal: 'Tạp chí/Nguồn', detail_ids: 'Định danh',
+    detail_keywords: 'Từ khoá', detail_topics: 'Chủ đề', detail_abstract: 'Tóm tắt',
+    detail_no_abstract: 'Không có tóm tắt.', detail_note_label: 'Ghi chú',
+    detail_save_note: 'Lưu ghi chú', detail_close: 'Đóng',
   },
   zh: {
     page_title: '研究工作台 — Chimedis',
@@ -402,6 +414,12 @@ const I18N = {
     import_result: '已导入 {imported}/{total} 条记录{skipped}。',
     import_result_skipped: '（{skipped} 条被跳过 — 缺少标题或出错）',
     import_err_read_file: '无法读取文件。',
+    filter_source_label: '来源：', filter_type_label: '类型：', filter_all: '全部',
+    filter_showing: '筛选后显示 {n}/{total} 条', filter_no_match: '没有符合筛选条件的记录。',
+    detail_authors: '作者', detail_journal: '期刊/来源', detail_ids: '标识符',
+    detail_keywords: '关键词', detail_topics: '主题', detail_abstract: '摘要',
+    detail_no_abstract: '暂无摘要。', detail_note_label: '备注',
+    detail_save_note: '保存备注', detail_close: '关闭',
   },
   en: {
     page_title: 'Research Workbench — Chimedis',
@@ -503,6 +521,12 @@ const I18N = {
     import_result: 'Imported {imported}/{total} records{skipped}.',
     import_result_skipped: ' ({skipped} skipped — missing title or error)',
     import_err_read_file: 'Could not read the file.',
+    filter_source_label: 'Source:', filter_type_label: 'Type:', filter_all: 'All',
+    filter_showing: 'Showing {n}/{total} after filter', filter_no_match: 'No records match the filter.',
+    detail_authors: 'Authors', detail_journal: 'Journal/Source', detail_ids: 'Identifiers',
+    detail_keywords: 'Keywords', detail_topics: 'Topics', detail_abstract: 'Abstract',
+    detail_no_abstract: 'No abstract available.', detail_note_label: 'Note',
+    detail_save_note: 'Save note', detail_close: 'Close',
   },
 };
 function t(key, vars) {
@@ -677,6 +701,8 @@ window.wbNewProject = async () => {
 
 window.wbOpen = async (id) => {
   activeId = id;
+  libraryFilters = { source: 'all', type: 'all' };
+  openRecordId = null;
   await loadProjects();
   activeDetail = await api('/api/workbench/projects/' + id);
   try { activeDetail.library = (await api('/api/workbench/projects/' + id + '/library')).records; }
@@ -752,13 +778,42 @@ const STUDY_TYPE_KEY = {
 };
 function studyTypeLabel(type) { return STUDY_TYPE_KEY[type] ? t(STUDY_TYPE_KEY[type]) : (type || t('study_unknown')); }
 
+function renderRecordDetail(r) {
+  const idRows = Object.entries(r.identifiers || {}).filter(([k]) => k !== 'manual');
+  return `<div class="lib-detail">
+    <p><b>${t('detail_authors')}:</b> ${esc((r.authors || []).join('; ')) || t('dash')}</p>
+    <p><b>${t('detail_journal')}:</b> ${esc(r.journal || t('dash'))}${r.year ? ` · ${r.year}` : ''}</p>
+    ${idRows.length ? `<p><b>${t('detail_ids')}:</b> ${idRows.map(([k, v]) => `${k.toUpperCase()}: ${esc(v)}`).join(' · ')}</p>` : ''}
+    ${(r.keywords || []).length ? `<p><b>${t('detail_keywords')}:</b> ${esc(r.keywords.join('; '))}</p>` : ''}
+    ${(r.subjectHeadings || []).length ? `<p><b>${t('detail_topics')}:</b> ${esc(r.subjectHeadings.join('; '))}</p>` : ''}
+    <p><b>${t('detail_abstract')}:</b><br>${esc(r.abstract || t('detail_no_abstract'))}</p>
+    <label>${t('detail_note_label')}</label>
+    <textarea id="detailNote_${r.recordId}" rows="2">${esc(r.note || '')}</textarea>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button type="button" class="btn sm" onclick="wbSaveNote(${r.recordId})">${t('detail_save_note')}</button>
+      <button type="button" class="btn sm sec" onclick="wbToggleRecordDetail(${r.recordId})">${t('detail_close')}</button>
+    </div>
+  </div>`;
+}
 function renderLibraryCard(records) {
   const STATUS_KEY = { shortlisted: 'status_shortlisted', included: 'status_included', excluded: 'status_excluded' };
-  const rows = records.map((r) => {
+  const sources = [...new Set(records.flatMap((r) => r.mergedFrom || []))].sort();
+  const types = [...new Set(records.map((r) => r.studyType || 'unknown'))].sort();
+  const filtered = records.filter((r) => {
+    if (libraryFilters.source !== 'all' && !(r.mergedFrom || []).includes(libraryFilters.source)) return false;
+    if (libraryFilters.type !== 'all' && (r.studyType || 'unknown') !== libraryFilters.type) return false;
+    return true;
+  });
+  const rows = filtered.map((r) => {
     const studyLabel = studyTypeLabel(r.studyType) + (r.studyTypeGuessed ? ' *' : '');
+    const authors = r.authors || [];
+    const authorsShort = authors.slice(0, 3).join(', ') + (authors.length > 3 ? ' …' : '');
+    const detailRow = openRecordId === r.recordId
+      ? `<tr class="lib-detail-row"><td></td><td colspan="6">${renderRecordDetail(r)}</td></tr>` : '';
     return `<tr>
       <td><input type="checkbox" class="lib-check" value="${r.recordId}" onchange="wbLibSelectionChanged()"></td>
-      <td>${esc(r.title)}${r.abstract ? `<br><span class="hint">${esc(r.abstract.slice(0, 160))}…</span>` : ''}
+      <td><a href="#" class="lib-title-link" onclick="wbToggleRecordDetail(${r.recordId});return false">${esc(r.title)}</a>
+        ${authorsShort ? `<br><span class="hint">${esc(authorsShort)}</span>` : ''}
         ${r.note ? `<br><span class="hint">${t('note_prefix')}${esc(r.note)}</span>` : ''}</td>
       <td>${r.year || t('dash')}</td>
       <td>${(r.mergedFrom || []).join(', ') || t('dash')}</td>
@@ -767,8 +822,24 @@ function renderLibraryCard(records) {
         ${Object.entries(STATUS_KEY).map(([v, lk]) => `<option value="${v}" ${r.status === v ? 'selected' : ''}>${esc(t(lk))}</option>`).join('')}
       </select></td>
       <td><a href="#" onclick="wbRemoveFromLibrary(${r.recordId});return false">${t('link_delete')}</a></td>
-    </tr>`;
+    </tr>${detailRow}`;
   }).join('');
+  const filterBar = records.length ? `
+    <div class="row" style="align-items:center;margin-bottom:8px;flex-wrap:wrap;gap:10px">
+      <label style="flex:none;margin:0">${t('filter_source_label')}
+        <select onchange="wbLibFilterChange('source', this.value)">
+          <option value="all" ${libraryFilters.source === 'all' ? 'selected' : ''}>${t('filter_all')}</option>
+          ${sources.map((s) => `<option value="${esc(s)}" ${libraryFilters.source === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}
+        </select>
+      </label>
+      <label style="flex:none;margin:0">${t('filter_type_label')}
+        <select onchange="wbLibFilterChange('type', this.value)">
+          <option value="all" ${libraryFilters.type === 'all' ? 'selected' : ''}>${t('filter_all')}</option>
+          ${types.map((ty) => `<option value="${ty}" ${libraryFilters.type === ty ? 'selected' : ''}>${esc(studyTypeLabel(ty))}</option>`).join('')}
+        </select>
+      </label>
+      ${filtered.length !== records.length ? `<span class="hint">${t('filter_showing', { n: filtered.length, total: records.length })}</span>` : ''}
+    </div>` : '';
   return `
     <h3>${t('library_title', { n: records.length })}
       <button type="button" class="btn sm sec" style="margin-left:8px" onclick="wbToggleManualForm()">${t('library_add_manual')}</button>
@@ -777,6 +848,7 @@ function renderLibraryCard(records) {
       ${records.length ? `${t('library_export')} <a href="#" onclick="wbLibExport('xlsx');return false">${t('export_excel')}</a> ·
         <a href="#" onclick="wbLibExport('docx');return false">${t('export_word')}</a> ·
         <a href="#" onclick="wbLibExport('csv');return false">${t('export_csv')}</a>` : ''}</p>
+    ${filterBar}
     <div id="wbImportForm" class="card" style="display:none;background:var(--bg);margin:0 0 12px">
       <h4 style="margin:0 0 6px">${t('import_title')}</h4>
       <p class="hint">${t('import_hint')}</p>
@@ -819,9 +891,29 @@ function renderLibraryCard(records) {
       <button type="button" class="btn sm sec" id="libDelSelBtn" disabled onclick="wbLibDeleteSelected()">${t('delete_selected')}</button>
       <button type="button" class="btn sm sec" onclick="wbLibDeleteAll()" style="color:var(--bad);border-color:var(--bad)">${t('delete_all_library')}</button>
     </div>
-    <table><thead><tr><th style="width:22px"></th><th>${t('col_title')}</th><th>${t('col_year')}</th><th>${t('col_source')}</th><th>${t('col_type')}</th><th>${t('col_status')}</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+    ${filtered.length
+      ? `<table><thead><tr><th style="width:22px"></th><th>${t('col_title')}</th><th>${t('col_year')}</th><th>${t('col_source')}</th><th>${t('col_type')}</th><th>${t('col_status')}</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+      : `<p class="hint">${t('filter_no_match')}</p>`}`
       : `<p class="hint">${t('library_empty')}</p>`}`;
 }
+window.wbToggleRecordDetail = (recordId) => {
+  openRecordId = openRecordId === recordId ? null : recordId;
+  const card = $('libraryCard');
+  if (card) card.innerHTML = renderLibraryCard(activeDetail.library || []);
+};
+window.wbSaveNote = async (recordId) => {
+  const ta = $('detailNote_' + recordId);
+  const note = ta ? ta.value : '';
+  try {
+    await api(`/api/workbench/projects/${activeId}/library/${recordId}`, { method: 'PATCH', body: JSON.stringify({ note }) });
+    await wbRefreshLibrary();
+  } catch (e) { alert(t('err_update_prefix') + e.message); }
+};
+window.wbLibFilterChange = (key, value) => {
+  libraryFilters[key] = value;
+  const card = $('libraryCard');
+  if (card) card.innerHTML = renderLibraryCard(activeDetail.library || []);
+};
 window.wbLibSelectionChanged = () => {
   const boxes = [...document.querySelectorAll('.lib-check')];
   const n = boxes.filter((b) => b.checked).length;
