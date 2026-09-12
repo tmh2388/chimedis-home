@@ -307,9 +307,36 @@ tr.lit-detail .lk a:hover{text-decoration:underline}
 .lit-spin{width:24px;height:24px;border:3px solid var(--border-strong);border-top-color:var(--accent);border-radius:50%;animation:litspin .8s linear infinite;margin:0 auto 12px}
 @keyframes litspin{to{transform:rotate(360deg)}}
 .lit-disc{margin:6px 0 0;font-size:11.5px;color:#9B8F7E;text-align:center}
+.save-lib-btn{border:1px solid var(--accent,#3d6b4f);background:transparent;color:var(--accent,#3d6b4f);border-radius:6px;padding:4px 9px;font-size:12.5px;cursor:pointer;white-space:nowrap}
+.save-lib-btn:disabled{opacity:.6;cursor:default}
+.lib-pick{position:absolute;z-index:50;background:#fff;border:1px solid var(--border-strong,#ddd);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.12);padding:10px;min-width:220px;font-size:13px}
+.lib-pick select{width:100%;margin-bottom:8px;padding:5px}
+.lib-pick .row{display:flex;gap:6px;justify-content:flex-end}
 </style>
 </head>
 <body>
+
+<!-- Firebase Auth (đọc trạng thái đăng nhập để cho phép "Lưu vào thư viện nghiên cứu";
+     KHÔNG bắt buộc đăng nhập để tìm/xem/tải — chỉ cần cho hành động lưu). -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+const FIREBASE_CONFIG = {
+  apiKey: 'AIzaSyDwzEBH7JpKiPakwilNfv5Eu5cFvJ6CiyY',
+  authDomain: 'chimedis.firebaseapp.com', projectId: 'chimedis',
+  appId: '1:969178764176:web:1dc0f34903b052bb691915',
+};
+let auth = null;
+try { auth = getAuth(initializeApp(FIREBASE_CONFIG)); } catch (e) { console.error(e); }
+window.__wbUser = null;
+window.__wbGetIdToken = async () => (auth && auth.currentUser) ? auth.currentUser.getIdToken() : null;
+if (auth) {
+  onAuthStateChanged(auth, (u) => {
+    window.__wbUser = u;
+    document.dispatchEvent(new Event('wb-auth-changed'));
+  });
+}
+</script>
 
 <header class="site">
   <div class="wrap site-top">
@@ -903,6 +930,7 @@ document.addEventListener('click', (e)=>{
         <td class="c-actions"><div class="act-wrap">
           <button type="button" class="qv-btn" data-qv="${i}">👁 <span data-label>${t('lit_quickview')||'Xem nhanh'}</span></button>
           ${dl}
+          <button type="button" class="save-lib-btn" data-save-idx="${i}" title="Lưu vào thư viện nghiên cứu (Bàn làm việc)">💾 Lưu thư viện</button>
         </div></td>
       </tr>
       <tr class="lit-detail" id="qv-${i}" hidden><td colspan="9">
@@ -1001,6 +1029,9 @@ document.addEventListener('click', (e)=>{
     outEl.querySelectorAll('.dl-btn[data-pdf]').forEach(btn=>{
       btn.addEventListener('click', ()=> downloadPdf(btn));
     });
+    outEl.querySelectorAll('.save-lib-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=> saveToLibrary(Number(btn.getAttribute('data-save-idx')), btn));
+    });
 
     // "Lọc trong kết quả"
     const rInp = document.getElementById('litRefine');
@@ -1054,6 +1085,97 @@ document.addEventListener('click', (e)=>{
     }
   }
 
+  // "Lưu vào thư viện nghiên cứu" — hợp nhất trang tìm công khai với Bàn làm việc
+  // (workbench.html). Người dùng cần đăng nhập + chọn 1 dự án; bản ghi được upsert
+  // tại chỗ vào identity-graph (M0) qua route dùng chung với workbench.
+  let __wbProjectsCache = null;
+  async function wbApi(url, opts){
+    const token = await window.__wbGetIdToken();
+    if(!token) throw new Error('NOAUTH');
+    const res = await fetch(url, { ...opts, headers:{ 'Content-Type':'application/json', Authorization:'Bearer '+token, ...(opts&&opts.headers||{}) } });
+    const data = await res.json().catch(()=>({success:false,error:'Phản hồi không hợp lệ'}));
+    if(!res.ok || data.success===false) throw new Error(data.error || ('HTTP '+res.status));
+    return data;
+  }
+  async function wbGetProjects(force){
+    if(__wbProjectsCache && !force) return __wbProjectsCache;
+    const d = await wbApi('/api/workbench/projects');
+    __wbProjectsCache = d.projects || [];
+    return __wbProjectsCache;
+  }
+  function closeLibPick(){ const el = document.getElementById('libPick'); if(el) el.remove(); }
+  document.addEventListener('click', (e)=>{
+    const pick = document.getElementById('libPick');
+    if(pick && !pick.contains(e.target) && !e.target.classList.contains('save-lib-btn')) closeLibPick();
+  });
+
+  async function saveToLibrary(idx, btn){
+    if(!window.__wbUser){
+      alert('Cần đăng nhập để lưu vào thư viện nghiên cứu.\n\nMở "Tài khoản" ở góc trên để đăng nhập/đăng ký (miễn phí), rồi thử lại.');
+      return;
+    }
+    const r = (window.__curLitResults || [])[idx];
+    if(!r){ alert('Không tìm thấy bản ghi (danh sách đã thay đổi) — thử tìm lại.'); return; }
+    closeLibPick();
+    let projects;
+    try{ projects = await wbGetProjects(); }
+    catch(e){ alert('Lỗi tải danh sách dự án: ' + e.message); return; }
+
+    if(!projects.length){
+      const title = prompt('Chưa có dự án nào trong Bàn làm việc. Đặt tên cho dự án đầu tiên:', 'Dự án nghiên cứu của tôi');
+      if(!title) return;
+      try{
+        const created = await wbApi('/api/workbench/projects', { method:'POST', body: JSON.stringify({ title }) });
+        __wbProjectsCache = null;
+        await doSaveToProject(created.id, r, btn);
+      }catch(e){ alert('Lỗi tạo dự án: ' + e.message); }
+      return;
+    }
+    if(projects.length === 1){
+      if(confirm(`Lưu bài này vào dự án "${projects[0].title}"?`)) await doSaveToProject(projects[0].id, r, btn);
+      return;
+    }
+    // Nhiều dự án → popover chọn nhanh, neo cạnh nút vừa bấm.
+    const rect = btn.getBoundingClientRect();
+    const pick = document.createElement('div');
+    pick.id = 'libPick';
+    pick.className = 'lib-pick';
+    pick.style.top = (window.scrollY + rect.bottom + 6) + 'px';
+    pick.style.left = Math.max(8, window.scrollX + rect.left - 160) + 'px';
+    pick.innerHTML = `
+      <select id="libPickSel">${projects.map(p=>`<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select>
+      <div class="row">
+        <button type="button" class="save-lib-btn" id="libPickCancel">Huỷ</button>
+        <button type="button" class="save-lib-btn" id="libPickOk">Lưu</button>
+      </div>`;
+    document.body.appendChild(pick);
+    document.getElementById('libPickCancel').onclick = closeLibPick;
+    document.getElementById('libPickOk').onclick = async ()=>{
+      const pid = document.getElementById('libPickSel').value;
+      closeLibPick();
+      await doSaveToProject(pid, r, btn);
+    };
+  }
+
+  async function doSaveToProject(projectId, r, btn){
+    const orig = btn.textContent;
+    btn.disabled = true; btn.textContent = 'Đang lưu…';
+    try{
+      await wbApi(`/api/workbench/projects/${projectId}/library`, {
+        method:'POST',
+        body: JSON.stringify({ record: {
+          title:r.title, abstract:r.abstract, authors:r.authors, venue:r.venue, year:r.year,
+          doi:r.doi, pmid:r.pmid, type:r.type, landingUrl:r.landingUrl, oaUrl:r.oaUrl,
+          isOpenAccess:r.isOpenAccess,
+        } }),
+      });
+      btn.textContent = 'Đã lưu ✓';
+    }catch(e){
+      btn.disabled = false; btn.textContent = orig;
+      alert('Lỗi lưu vào thư viện: ' + e.message);
+    }
+  }
+
   function renderResults(data){
     outEl.classList.remove('lit-refreshing');
 
@@ -1082,6 +1204,10 @@ document.addEventListener('click', (e)=>{
         '<div class="lit-state">Không tìm thấy tài liệu phù hợp. Thử từ khoá khác hoặc bỏ bớt bộ lọc.</div>';
       return;
     }
+    // "Lưu vào thư viện" tra theo chỉ số (i) của MẢNG ĐANG HIỂN THỊ này — lưu lại để nút
+    // bấm (data-save-idx) tìm đúng bản ghi, tránh nhúng DOI/URL thô vào HTML attribute.
+    window.__curLitResults = data.results;
+
     // Tổng số tài liệu khớp (gộp các cơ sở dữ liệu, có thể trùng lặp — chỉ mang tính ước
     // lượng độ lớn). KHÔNG hiển thị tách theo từng nguồn — người dùng chỉ cần con số tổng.
     const totalMatched = Object.values(data.totalBySource || {}).reduce((a, b) => a + (Number(b) || 0), 0);

@@ -13,6 +13,7 @@ import { enrichUntranslated } from '../lib/dict-learn.js';
 import { QUESTION_PROFILES, isValidProfile, evaluateCoverage } from '../lib/source-policy.js';
 import {
   writeSearchRun, listSearchRuns, renderSearchLogMarkdown, renderSearchLogCsv,
+  upsertStandaloneRecord,
 } from '../lib/search-runs.js';
 
 const router = Router();
@@ -427,27 +428,68 @@ async function tryRenderDocx(project, runs) {
 // chung xuyên project, M1 identity-graph); wb_project_records chỉ là "đã lưu vào thư viện
 // của DỰ ÁN NÀY". KHÔNG phải gap-analysis/accepted_for_project (đó là M4, chưa làm).
 
-// POST /api/workbench/projects/:id/library  { scheme, value, note? }
-// scheme/value = 1 định danh bất kỳ của bản ghi (doi/pmid/pmcid/openalex/s2/core/...),
-// lấy từ `identifiers` mà chính kết quả tìm kiếm đã trả về (bản ghi đó đã được
-// writeSearchRun() upsert vào wb_research_records lúc chạy tìm kiếm).
+const STUDY_TYPE_FROM_DOCTYPE = {
+  'systematic review': 'systematic_review', review: 'review', rct: 'rct', preprint: 'preprint',
+};
+
+// Chuẩn hoá payload tối giản từ trang tìm công khai (public/index.html — field `r` của
+// tableRow()) sang shape upsertRecord() cần. KHÔNG tin literal `study_type`/`clinical` từ
+// client; chỉ ánh xạ qua bảng cố định ở trên, mặc định 'unknown'.
+function normalizeInlineRecord(raw) {
+  const r = raw || {};
+  const identifiers = {};
+  if (r.doi) identifiers.doi = String(r.doi).toLowerCase().trim();
+  if (r.pmid) identifiers.pmid = String(r.pmid).trim();
+  if (r.pmcid) identifiers.pmcid = String(r.pmcid).trim();
+  if (r.openalexId) identifiers.openalex = String(r.openalexId).trim();
+  if (!Object.keys(identifiers).length) {
+    const url = r.landingUrl || r.oaUrl;
+    if (url) identifiers.url = String(url).trim().slice(0, 200);
+  }
+  if (!Object.keys(identifiers).length || !r.title) return null;
+  return {
+    title: String(r.title).slice(0, 700),
+    abstract: r.abstract ? String(r.abstract).slice(0, 60000) : null,
+    authors: Array.isArray(r.authors) ? r.authors.slice(0, 30) : [],
+    journal: r.venue ? String(r.venue).slice(0, 300) : null,
+    year: Number.isInteger(r.year) ? r.year : (parseInt(r.year, 10) || null),
+    study_type: STUDY_TYPE_FROM_DOCTYPE[String(r.type || '').toLowerCase()] || 'unknown',
+    oa_status: r.isOpenAccess ? 'oa' : null,
+    identifiers,
+    merged_from: ['public-search'],
+  };
+}
+
+// POST /api/workbench/projects/:id/library
+//   { scheme, value, note? }  — bản ghi ĐÃ có trong wb_record_identifiers (từ tìm kiếm
+//                                trong workbench, writeSearchRun() đã upsert sẵn); HOẶC
+//   { record: {...}, note? }  — bản ghi TỪ NGOÀI (trang tìm công khai), upsert tại chỗ
+//                                qua identity-graph dedup (M0), nhãn merged_from=public-search.
 router.post('/projects/:id/library', requireDb, requireUser, requireVerified, rlWrite, async (req, res) => {
   try {
     const project = await ownedProject(req, res);
     if (!project) return;
-    const scheme = String(req.body?.scheme || '').trim();
-    const value = String(req.body?.value || '').trim();
-    if (!scheme || !value) return res.status(400).json({ success: false, error: 'Thiếu định danh bản ghi (scheme/value)' });
-
     const pool = getPool();
-    const [idRows] = await pool.query(
-      'SELECT record_id FROM wb_record_identifiers WHERE scheme=? AND value=? LIMIT 1',
-      [scheme, value]
-    );
-    if (!idRows.length) {
-      return res.status(404).json({ success: false, error: 'Không tìm thấy bản ghi (chưa từng xuất hiện trong kết quả tìm kiếm của bạn)' });
+    let recordId;
+
+    if (req.body?.record) {
+      const norm = normalizeInlineRecord(req.body.record);
+      if (!norm) return res.status(400).json({ success: false, error: 'Thiếu tiêu đề hoặc định danh (DOI/PMID/URL) để lưu bản ghi' });
+      recordId = await upsertStandaloneRecord(norm);
+    } else {
+      const scheme = String(req.body?.scheme || '').trim();
+      const value = String(req.body?.value || '').trim();
+      if (!scheme || !value) return res.status(400).json({ success: false, error: 'Thiếu định danh bản ghi (scheme/value)' });
+      const [idRows] = await pool.query(
+        'SELECT record_id FROM wb_record_identifiers WHERE scheme=? AND value=? LIMIT 1',
+        [scheme, value]
+      );
+      if (!idRows.length) {
+        return res.status(404).json({ success: false, error: 'Không tìm thấy bản ghi (chưa từng xuất hiện trong kết quả tìm kiếm của bạn)' });
+      }
+      recordId = idRows[0].record_id;
     }
-    const recordId = idRows[0].record_id;
+
     const note = req.body?.note != null ? String(req.body.note).slice(0, 4000) : null;
     await pool.query(
       `INSERT INTO wb_project_records (project_id, record_id, note)

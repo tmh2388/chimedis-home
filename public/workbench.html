@@ -347,7 +347,23 @@ function renderLibraryCard(records) {
       : '<p class="hint">Chưa lưu bản ghi nào. Tìm y văn bên dưới rồi bấm "Lưu vào thư viện" ở kết quả.</p>'}`;
 }
 
-window.wbSaveToLibrary = async (scheme, value, btn) => {
+// Gắn listener cho mọi nút "Lưu vào thư viện" mới render trong `root` (không dùng inline
+// onclick — DOI/URL có thể phá escaping HTML attribute). Gọi lại mỗi khi #sResult đổi nội dung.
+function bindLibraryButtons(root) {
+  (root || document).querySelectorAll('.save-lib-btn').forEach((btn) => {
+    if (btn.dataset.bound) return;
+    btn.dataset.bound = '1';
+    btn.addEventListener('click', () => {
+      const rec = (window.__wbLastRecords || [])[Number(btn.dataset.idx)];
+      const ids = (rec && rec.identifiers) || {};
+      const scheme = PREF_SCHEME.find((s) => ids[s]) || Object.keys(ids)[0];
+      if (!scheme) return;
+      wbSaveToLibrary(scheme, ids[scheme], btn);
+    });
+  });
+}
+
+async function wbSaveToLibrary(scheme, value, btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Đang lưu…'; }
   try {
     await api(`/api/workbench/projects/${activeId}/library`, { method: 'POST', body: JSON.stringify({ scheme, value }) });
@@ -359,7 +375,7 @@ window.wbSaveToLibrary = async (scheme, value, btn) => {
     if (btn) { btn.disabled = false; btn.textContent = 'Lưu vào thư viện'; }
     alert('Lỗi lưu vào thư viện: ' + e.message);
   }
-};
+}
 
 window.wbSetLibraryStatus = async (recordId, status) => {
   try {
@@ -474,6 +490,7 @@ window.wbRunSearch = async () => {
       }),
     });
     $('sResult').innerHTML = renderSearchResult(d);
+    bindLibraryButtons($('sResult'));
     activeDetail = await api('/api/workbench/projects/' + activeId);
     // vẽ lại nhật ký ngay (giữ nguyên ô tìm + kết quả vừa hiện)
     const runsCard = $('runsCard');
@@ -486,16 +503,21 @@ window.wbRunSearch = async () => {
   }
 };
 
+// PREF_SCHEME: định danh nào nên ưu tiên để tra lại bản ghi lúc lưu thư viện.
+const PREF_SCHEME = ['doi', 'pmid', 'pmcid', 'trial_reg_id', 'openalex', 's2', 'core'];
+
 function renderSearchResult(d) {
   const cov = d.coverage || {};
   const unmet = (cov.unmet_groups || []).map((g) => `<span class="pill">${g.join(' / ')}</span>`).join('') || '<span class="hint">—</span>';
   const man = (d.manifest || []).map((m) => `<tr><td>${m.connector_id}</td><td class="exec-${m.execution_status}">${m.execution_status}</td><td>${m.retrieved_count}</td><td>${m.duration_ms}</td><td class="hint">${esc(m.error_detail || '')}</td></tr>`).join('');
-  const PREF_SCHEME = ['doi', 'pmid', 'pmcid', 'trial_reg_id', 'openalex', 's2', 'core'];
-  const recs = (d.records || []).map((r) => {
+  // Lưu records ra biến toàn cục thay vì nhúng scheme/value vào onclick — DOI/URL có thể
+  // chứa ký tự phá vỡ escaping HTML attribute. Nút chỉ mang data-idx (số, an toàn tuyệt đối).
+  window.__wbLastRecords = d.records || [];
+  const recs = (d.records || []).map((r, idx) => {
     const ids = r.identifiers || {};
     const scheme = PREF_SCHEME.find((s) => ids[s]) || Object.keys(ids)[0];
     const saveBtn = scheme
-      ? `<button class="btn sm sec" onclick="wbSaveToLibrary('${scheme}', ${JSON.stringify(String(ids[scheme]))}, this)">Lưu vào thư viện</button>`
+      ? `<button class="btn sm sec save-lib-btn" data-idx="${idx}">Lưu vào thư viện</button>`
       : '<span class="hint">không có ID</span>';
     return `<tr>
       <td>${esc(r.title)}${r.abstract ? `<br><span class="hint">${esc(r.abstract.slice(0, 160))}…</span>` : ''}</td>
