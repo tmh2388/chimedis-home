@@ -336,6 +336,7 @@ function renderLibraryCard(records) {
   const rows = records.map((r) => {
     const studyLabel = (STUDY_TYPE_LABEL[r.studyType] || r.studyType || 'Chưa rõ') + (r.studyTypeGuessed ? ' *' : '');
     return `<tr>
+      <td><input type="checkbox" class="lib-check" value="${r.recordId}" onchange="wbLibSelectionChanged()"></td>
       <td>${esc(r.title)}${r.abstract ? `<br><span class="hint">${esc(r.abstract.slice(0, 160))}…</span>` : ''}
         ${r.note ? `<br><span class="hint">Ghi chú: ${esc(r.note)}</span>` : ''}</td>
       <td>${r.year || '—'}</td>
@@ -349,13 +350,56 @@ function renderLibraryCard(records) {
   }).join('');
   return `
     <h3>Thư viện dự án (${records.length})</h3>
-    <p class="hint">Bản ghi bạn đã lưu từ kết quả tìm kiếm bên dưới. * = loại nghiên cứu đoán tự động (chưa xác nhận).
+    <p class="hint">Bản ghi bạn đã lưu từ kết quả tìm kiếm bên dưới — <b>đây là danh sách bạn đang quản lý</b>
+      (không phải file tải về máy; file Excel/Word chỉ sinh ra khi bấm Xuất, không lưu lại trên máy chủ).
+      * = loại nghiên cứu đoán tự động (chưa xác nhận).
       ${records.length ? `Xuất: <a href="#" onclick="wbLibExport('xlsx');return false">Excel</a> ·
         <a href="#" onclick="wbLibExport('docx');return false">Word</a> ·
         <a href="#" onclick="wbLibExport('csv');return false">CSV</a>` : ''}</p>
-    ${records.length
-      ? `<table><thead><tr><th>Tiêu đề</th><th>Năm</th><th>Nguồn</th><th>Loại</th><th>Trạng thái</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+    ${records.length ? `
+    <div class="row" style="align-items:center;margin-bottom:8px">
+      <label style="flex:none;display:flex;align-items:center;gap:5px;margin:0">
+        <input type="checkbox" id="libCheckAll" onchange="wbLibToggleAll(this.checked)"> Chọn tất cả
+      </label>
+      <span id="libSelCount" class="hint" style="flex:none">0 đã chọn</span>
+      <button type="button" class="btn sm sec" id="libDelSelBtn" disabled onclick="wbLibDeleteSelected()">Xoá mục đã chọn</button>
+      <button type="button" class="btn sm sec" onclick="wbLibDeleteAll()" style="color:var(--bad);border-color:var(--bad)">Xoá toàn bộ thư viện</button>
+    </div>
+    <table><thead><tr><th style="width:22px"></th><th>Tiêu đề</th><th>Năm</th><th>Nguồn</th><th>Loại</th><th>Trạng thái</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
       : '<p class="hint">Chưa lưu bản ghi nào. Tìm y văn bên dưới rồi bấm "Lưu vào thư viện" ở kết quả.</p>'}`;
+}
+window.wbLibSelectionChanged = () => {
+  const boxes = [...document.querySelectorAll('.lib-check')];
+  const n = boxes.filter((b) => b.checked).length;
+  const countEl = $('libSelCount'); if (countEl) countEl.textContent = n + ' đã chọn';
+  const delBtn = $('libDelSelBtn'); if (delBtn) delBtn.disabled = n === 0;
+  const allBox = $('libCheckAll'); if (allBox) allBox.checked = boxes.length > 0 && n === boxes.length;
+};
+window.wbLibToggleAll = (checked) => {
+  document.querySelectorAll('.lib-check').forEach((b) => { b.checked = checked; });
+  wbLibSelectionChanged();
+};
+window.wbLibDeleteSelected = async () => {
+  const ids = [...document.querySelectorAll('.lib-check:checked')].map((b) => parseInt(b.value, 10));
+  if (!ids.length) return;
+  if (!confirm(`Xoá ${ids.length} mục đã chọn khỏi thư viện dự án?`)) return;
+  try {
+    await api(`/api/workbench/projects/${activeId}/library`, { method: 'DELETE', body: JSON.stringify({ recordIds: ids }) });
+    await wbRefreshLibrary();
+  } catch (e) { alert('Lỗi xoá: ' + e.message); }
+};
+window.wbLibDeleteAll = async () => {
+  if (!activeDetail.library || !activeDetail.library.length) return;
+  if (!confirm(`Xoá TOÀN BỘ ${activeDetail.library.length} bản ghi khỏi thư viện dự án này? Không thể hoàn tác.`)) return;
+  try {
+    await api(`/api/workbench/projects/${activeId}/library`, { method: 'DELETE', body: JSON.stringify({ all: true }) });
+    await wbRefreshLibrary();
+  } catch (e) { alert('Lỗi xoá: ' + e.message); }
+};
+async function wbRefreshLibrary() {
+  activeDetail.library = (await api('/api/workbench/projects/' + activeId + '/library')).records;
+  const card = $('libraryCard');
+  if (card) card.innerHTML = renderLibraryCard(activeDetail.library);
 }
 window.wbLibExport = async (fmt) => {
   const token = await auth.currentUser.getIdToken();
@@ -389,9 +433,7 @@ async function wbSaveToLibrary(scheme, value, btn) {
   if (btn) { btn.disabled = true; btn.textContent = 'Đang lưu…'; }
   try {
     await api(`/api/workbench/projects/${activeId}/library`, { method: 'POST', body: JSON.stringify({ scheme, value }) });
-    activeDetail.library = (await api('/api/workbench/projects/' + activeId + '/library')).records;
-    const card = $('libraryCard');
-    if (card) card.innerHTML = renderLibraryCard(activeDetail.library);
+    await wbRefreshLibrary();
     if (btn) { btn.textContent = 'Đã lưu ✓'; }
   } catch (e) {
     if (btn) { btn.disabled = false; btn.textContent = 'Lưu vào thư viện'; }
@@ -409,9 +451,7 @@ window.wbRemoveFromLibrary = async (recordId) => {
   if (!confirm('Xoá bản ghi này khỏi thư viện dự án?')) return;
   try {
     await api(`/api/workbench/projects/${activeId}/library/${recordId}`, { method: 'DELETE' });
-    activeDetail.library = (await api('/api/workbench/projects/' + activeId + '/library')).records;
-    const card = $('libraryCard');
-    if (card) card.innerHTML = renderLibraryCard(activeDetail.library);
+    await wbRefreshLibrary();
   } catch (e) { alert('Lỗi xoá: ' + e.message); }
 };
 

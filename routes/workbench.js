@@ -641,6 +641,30 @@ router.delete('/projects/:id/library/:recordId', requireDb, requireUser, require
   }
 });
 
+// DELETE /api/workbench/projects/:id/library  { recordIds: [1,2,3] }  hoặc  { all: true }
+// Xoá NHIỀU / TOÀN BỘ bản ghi khỏi thư viện của dự án (không đụng wb_research_records —
+// canonical record dùng chung xuyên project, chỉ xoá liên kết "đã lưu vào dự án này").
+router.delete('/projects/:id/library', requireDb, requireUser, requireVerified, rlWrite, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const pool = getPool();
+    if (req.body?.all === true) {
+      const [r] = await pool.query('DELETE FROM wb_project_records WHERE project_id=?', [project.id]);
+      return res.json({ success: true, deleted: r.affectedRows });
+    }
+    const ids = Array.isArray(req.body?.recordIds)
+      ? [...new Set(req.body.recordIds.map((v) => parseInt(v, 10)).filter(Number.isInteger))]
+      : [];
+    if (!ids.length) return res.status(400).json({ success: false, error: 'Thiếu recordIds (mảng) hoặc all:true' });
+    const [r] = await pool.query('DELETE FROM wb_project_records WHERE project_id=? AND record_id IN (?)', [project.id, ids]);
+    res.json({ success: true, deleted: r.affectedRows });
+  } catch (err) {
+    console.error('DELETE /workbench/projects/:id/library (bulk):', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi xoá thư viện' });
+  }
+});
+
 function safeJson(s, fallback) {
   if (s == null) return fallback;
   if (typeof s !== 'string') return s;

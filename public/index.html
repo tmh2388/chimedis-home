@@ -1146,6 +1146,16 @@ document.addEventListener('click', (e)=>{
       URL.revokeObjectURL(a.href);
     }catch(e){ alert('Lỗi xuất: '+e.message); }
   };
+  window.wbPanelDeleteOne = async (recordId) => {
+    if(!__wbActiveProject || !confirm('Xoá bài này khỏi thư viện dự án?')) return;
+    try{ await wbApi(`/api/workbench/projects/${__wbActiveProject}/library/${recordId}`, {method:'DELETE'}); await renderWbPanel(); }
+    catch(e){ alert('Lỗi xoá: '+e.message); }
+  };
+  window.wbPanelDeleteAll = async () => {
+    if(!__wbActiveProject || !confirm('Xoá TOÀN BỘ bài trong thư viện dự án này? Không thể hoàn tác.')) return;
+    try{ await wbApi(`/api/workbench/projects/${__wbActiveProject}/library`, {method:'DELETE', body: JSON.stringify({all:true})}); await renderWbPanel(); }
+    catch(e){ alert('Lỗi xoá: '+e.message); }
+  };
   function wbSetActiveProject(id){
     __wbActiveProject = String(id);
     localStorage.setItem('chimedisActiveProject', __wbActiveProject);
@@ -1204,11 +1214,15 @@ document.addEventListener('click', (e)=>{
         <option value="__new__">+ Dự án mới…</option>
       </select>
       <p class="hint" style="margin:0 0 4px">Thư viện (${lib.records.length}) — bấm "💾 Lưu thư viện" ở kết quả tìm kiếm để thêm
-        ${lib.records.length ? `· Xuất: <a href="#" onclick="wbPanelExport('xlsx');return false">Excel</a> · <a href="#" onclick="wbPanelExport('docx');return false">Word</a>` : ''}</p>
+        ${lib.records.length ? `· Xuất: <a href="#" onclick="wbPanelExport('xlsx');return false">Excel</a> · <a href="#" onclick="wbPanelExport('docx');return false">Word</a>
+          · <a href="#" onclick="wbPanelDeleteAll();return false" style="color:#9a2f2f">Xoá tất cả</a>` : ''}</p>
       ${lib.records.length ? lib.records.map(r=>`
-        <div class="wb-lib-item">
-          <div class="t">${esc(r.title)}</div>
-          <div class="m">${r.year||'—'} · ${esc(r.studyType||'unknown')}${r.status && r.status!=='shortlisted' ? ' · '+esc(r.status) : ''}</div>
+        <div class="wb-lib-item" style="display:flex;gap:8px;align-items:flex-start">
+          <div style="flex:1">
+            <div class="t">${esc(r.title)}</div>
+            <div class="m">${r.year||'—'} · ${esc(r.studyType||'unknown')}${r.status && r.status!=='shortlisted' ? ' · '+esc(r.status) : ''}</div>
+          </div>
+          <a href="#" onclick="wbPanelDeleteOne(${r.recordId});return false" title="Xoá khỏi thư viện" style="flex:none;color:#9a2f2f;font-size:15px;line-height:1">✕</a>
         </div>`).join('') : '<p class="hint">Chưa lưu bài nào.</p>'}
       <a class="btn btn-sm wb-panel-open-link" href="/workbench.html" target="_blank">↗ Mở Bàn làm việc đầy đủ</a>
       <p class="hint" style="margin-top:6px">Câu hỏi nghiên cứu, nhật ký tìm kiếm, xuất Word/CSV — chưa có trong panel này.</p>`;
