@@ -326,26 +326,48 @@ function renderProject() {
   wbProfileHint();
 }
 
+const STUDY_TYPE_LABEL = {
+  systematic_review: 'Tổng quan hệ thống', meta_analysis: 'Phân tích gộp', rct: 'RCT',
+  case_control: 'Bệnh-chứng', cohort: 'Đoàn hệ', cross_sectional: 'Cắt ngang', case_report: 'Báo cáo ca',
+  protocol: 'Đề cương', review: 'Tổng quan', preclinical: 'Tiền lâm sàng', qualitative: 'Định tính', unknown: 'Chưa rõ',
+};
 function renderLibraryCard(records) {
   const STATUS_LABEL = { shortlisted: 'Đã chọn lọc', included: 'Đưa vào bài', excluded: 'Loại' };
-  const rows = records.map((r) => `<tr>
+  const rows = records.map((r) => {
+    const studyLabel = (STUDY_TYPE_LABEL[r.studyType] || r.studyType || 'Chưa rõ') + (r.studyTypeGuessed ? ' *' : '');
+    return `<tr>
       <td>${esc(r.title)}${r.abstract ? `<br><span class="hint">${esc(r.abstract.slice(0, 160))}…</span>` : ''}
         ${r.note ? `<br><span class="hint">Ghi chú: ${esc(r.note)}</span>` : ''}</td>
       <td>${r.year || '—'}</td>
       <td>${(r.mergedFrom || []).join(', ') || '—'}</td>
-      <td>${esc(r.studyType || 'unknown')}</td>
+      <td>${esc(studyLabel)}</td>
       <td><select onchange="wbSetLibraryStatus(${r.recordId}, this.value)">
         ${Object.entries(STATUS_LABEL).map(([v, l]) => `<option value="${v}" ${r.status === v ? 'selected' : ''}>${l}</option>`).join('')}
       </select></td>
       <td><a href="#" onclick="wbRemoveFromLibrary(${r.recordId});return false">xoá</a></td>
-    </tr>`).join('');
+    </tr>`;
+  }).join('');
   return `
     <h3>Thư viện dự án (${records.length})</h3>
-    <p class="hint">Bản ghi bạn đã lưu từ kết quả tìm kiếm bên dưới — điểm khởi đầu cho evidence matrix (M3).</p>
+    <p class="hint">Bản ghi bạn đã lưu từ kết quả tìm kiếm bên dưới. * = loại nghiên cứu đoán tự động (chưa xác nhận).
+      ${records.length ? `Xuất: <a href="#" onclick="wbLibExport('xlsx');return false">Excel</a> ·
+        <a href="#" onclick="wbLibExport('docx');return false">Word</a> ·
+        <a href="#" onclick="wbLibExport('csv');return false">CSV</a>` : ''}</p>
     ${records.length
       ? `<table><thead><tr><th>Tiêu đề</th><th>Năm</th><th>Nguồn</th><th>Loại</th><th>Trạng thái</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
       : '<p class="hint">Chưa lưu bản ghi nào. Tìm y văn bên dưới rồi bấm "Lưu vào thư viện" ở kết quả.</p>'}`;
 }
+window.wbLibExport = async (fmt) => {
+  const token = await auth.currentUser.getIdToken();
+  const res = await fetch(`/api/workbench/projects/${activeId}/library/export?fmt=${fmt}`, { headers: { Authorization: 'Bearer ' + token } });
+  if (!res.ok) { alert('Lỗi xuất: HTTP ' + res.status); return; }
+  const blob = await res.blob();
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `thu-vien.${fmt === 'docx' ? 'docx' : (fmt === 'csv' ? 'csv' : 'xlsx')}`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+};
 
 // Gắn listener cho mọi nút "Lưu vào thư viện" mới render trong `root` (không dùng inline
 // onclick — DOI/URL có thể phá escaping HTML attribute). Gọi lại mỗi khi #sResult đổi nội dung.

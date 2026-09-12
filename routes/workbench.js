@@ -11,6 +11,7 @@ import { runSearch, listConnectors, MODE_SOURCES } from '../lib/connectors/index
 import { buildSearchQuery } from '../lib/tcm-vocab.js';
 import { enrichUntranslated } from '../lib/dict-learn.js';
 import { QUESTION_PROFILES, isValidProfile, evaluateCoverage } from '../lib/source-policy.js';
+import { guessStudyType, STUDY_TYPE_LABEL_VI } from '../lib/study-type.js';
 import {
   writeSearchRun, listSearchRuns, renderSearchLogMarkdown, renderSearchLogCsv,
   upsertStandaloneRecord,
@@ -453,7 +454,7 @@ function normalizeInlineRecord(raw) {
     authors: Array.isArray(r.authors) ? r.authors.slice(0, 30) : [],
     journal: r.venue ? String(r.venue).slice(0, 300) : null,
     year: Number.isInteger(r.year) ? r.year : (parseInt(r.year, 10) || null),
-    study_type: STUDY_TYPE_FROM_DOCTYPE[String(r.type || '').toLowerCase()] || 'unknown',
+    study_type: STUDY_TYPE_FROM_DOCTYPE[String(r.type || '').toLowerCase()] || guessStudyType(r.title, r.abstract),
     oa_status: r.isOpenAccess ? 'oa' : null,
     identifiers,
     merged_from: ['public-search'],
@@ -506,42 +507,93 @@ router.post('/projects/:id/library', requireDb, requireUser, requireVerified, rl
 });
 
 // GET /api/workbench/projects/:id/library — danh sách bản ghi đã lưu (khởi đầu evidence matrix)
+// Dùng chung cho GET /library (JSON) và GET /library/export (.xlsx/.docx/.csv).
+// studyType: nếu CoreDB/connector chưa xác định (null/'unknown') → heuristic hiển thị
+// tại chỗ (lib/study-type.js), KHÔNG ghi đè DB — tránh sai lệch âm thầm nếu heuristic sai.
+async function fetchLibraryRecords(pool, projectId) {
+  const [rows] = await pool.query(
+    `SELECT pr.record_id, pr.status, pr.note, pr.added_at, pr.updated_at, r.*
+       FROM wb_project_records pr
+       JOIN wb_research_records r ON r.id = pr.record_id
+      WHERE pr.project_id = ?
+      ORDER BY pr.added_at DESC`,
+    [projectId]
+  );
+  if (!rows.length) return [];
+  const ids = rows.map((r) => r.record_id);
+  const [idRows] = await pool.query(
+    `SELECT record_id, scheme, value FROM wb_record_identifiers WHERE record_id IN (?)`,
+    [ids]
+  );
+  const idsByRecord = new Map();
+  for (const r of idRows) {
+    if (!idsByRecord.has(r.record_id)) idsByRecord.set(r.record_id, {});
+    idsByRecord.get(r.record_id)[r.scheme] = r.value;
+  }
+  return rows.map((r) => {
+    const studyTypeRaw = r.study_type && r.study_type !== 'unknown' ? r.study_type : null;
+    const studyType = studyTypeRaw || guessStudyType(r.title, r.abstract);
+    return {
+      recordId: r.record_id, status: r.status, note: r.note,
+      addedAt: r.added_at, updatedAt: r.updated_at,
+      title: r.title, abstract: r.abstract, authors: safeJson(r.authors_json, []),
+      journal: r.journal, year: r.year, studyType, studyTypeGuessed: !studyTypeRaw,
+      mergedFrom: safeJson(r.merged_from_json, []),
+      identifiers: idsByRecord.get(r.record_id) || {},
+    };
+  });
+}
+
 router.get('/projects/:id/library', requireDb, requireUser, async (req, res) => {
   try {
     const project = await ownedProject(req, res);
     if (!project) return;
-    const pool = getPool();
-    const [rows] = await pool.query(
-      `SELECT pr.record_id, pr.status, pr.note, pr.added_at, pr.updated_at, r.*
-         FROM wb_project_records pr
-         JOIN wb_research_records r ON r.id = pr.record_id
-        WHERE pr.project_id = ?
-        ORDER BY pr.added_at DESC`,
-      [project.id]
-    );
-    if (!rows.length) return res.json({ success: true, records: [] });
-    const ids = rows.map((r) => r.record_id);
-    const [idRows] = await pool.query(
-      `SELECT record_id, scheme, value FROM wb_record_identifiers WHERE record_id IN (?)`,
-      [ids]
-    );
-    const idsByRecord = new Map();
-    for (const r of idRows) {
-      if (!idsByRecord.has(r.record_id)) idsByRecord.set(r.record_id, {});
-      idsByRecord.get(r.record_id)[r.scheme] = r.value;
-    }
-    const records = rows.map((r) => ({
-      recordId: r.record_id, status: r.status, note: r.note,
-      addedAt: r.added_at, updatedAt: r.updated_at,
-      title: r.title, abstract: r.abstract, authors: safeJson(r.authors_json, []),
-      journal: r.journal, year: r.year, studyType: r.study_type,
-      mergedFrom: safeJson(r.merged_from_json, []),
-      identifiers: idsByRecord.get(r.record_id) || {},
-    }));
+    const records = await fetchLibraryRecords(getPool(), project.id);
     res.json({ success: true, records });
   } catch (err) {
     console.error('GET /workbench/projects/:id/library:', err.message);
     res.status(500).json({ success: false, error: 'Lỗi truy vấn thư viện' });
+  }
+});
+
+// GET /api/workbench/projects/:id/library/export?fmt=xlsx|docx|csv — Evidence Matrix (M3).
+router.get('/projects/:id/library/export', requireDb, requireUser, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const records = await fetchLibraryRecords(getPool(), project.id);
+    const fmt = String(req.query.fmt || 'xlsx').toLowerCase();
+    const stamp = new Date().toISOString().slice(0, 10);
+    const safe = project.title.replace(/[^\p{L}\p{N}]+/gu, '-').slice(0, 40) || 'du-an';
+
+    if (fmt === 'csv') {
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="thu-vien-${safe}-${stamp}.csv"`);
+      return res.send('﻿' + renderLibraryCsv(records));
+    }
+    if (fmt === 'docx') {
+      const buf = await tryRenderLibraryDocx(project, records);
+      if (buf) {
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition', `attachment; filename="thu-vien-${safe}-${stamp}.docx"`);
+        return res.send(buf);
+      }
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="thu-vien-${safe}-${stamp}.csv"`);
+      return res.send('﻿' + renderLibraryCsv(records)); // fallback nếu thiếu package `docx`
+    }
+    const buf = await tryRenderLibraryXlsx(project, records);
+    if (!buf) {
+      res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+      res.setHeader('Content-Disposition', `attachment; filename="thu-vien-${safe}-${stamp}.csv"`);
+      return res.send('﻿' + renderLibraryCsv(records)); // fallback nếu thiếu package `exceljs`
+    }
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename="thu-vien-${safe}-${stamp}.xlsx"`);
+    res.send(buf);
+  } catch (err) {
+    console.error('GET /workbench/projects/:id/library/export:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi xuất thư viện' });
   }
 });
 
@@ -598,6 +650,55 @@ function safeJson(s, fallback) {
 function intOrNull(v) {
   const n = parseInt(v, 10);
   return Number.isFinite(n) ? n : null;
+}
+
+// ===== M3 — Evidence Matrix export (xlsx/docx/csv) ===================================
+const LIB_COLUMNS = ['Tiêu đề', 'Tác giả', 'Tạp chí', 'Năm', 'Loại nghiên cứu', 'Trạng thái', 'DOI/PMID', 'Ghi chú', 'Tóm tắt'];
+function libRowValues(r) {
+  const authors = (r.authors || []).slice(0, 6).join('; ') + ((r.authors || []).length > 6 ? '…' : '');
+  const ids = r.identifiers || {};
+  const idStr = ids.doi ? `doi:${ids.doi}` : (ids.pmid ? `pmid:${ids.pmid}` : (ids.url || Object.entries(ids).map(([k, v]) => `${k}:${v}`).join(' ')));
+  const studyLabel = STUDY_TYPE_LABEL_VI[r.studyType] || r.studyType || 'Chưa rõ';
+  return [
+    r.title || '', authors, r.journal || '', r.year || '',
+    studyLabel + (r.studyTypeGuessed ? ' (tự động, chưa xác nhận)' : ''),
+    { shortlisted: 'Đã chọn lọc', included: 'Đưa vào bài', excluded: 'Loại' }[r.status] || r.status,
+    idStr, r.note || '', (r.abstract || '').slice(0, 3000),
+  ];
+}
+function renderLibraryCsv(records) {
+  const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+  const lines = [LIB_COLUMNS.map(esc).join(',')];
+  for (const r of records) lines.push(libRowValues(r).map(esc).join(','));
+  return lines.join('\r\n');
+}
+async function tryRenderLibraryXlsx(project, records) {
+  let ExcelJS;
+  try { ({ default: ExcelJS } = await import('exceljs')); } catch { return null; }
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Chimedis';
+  const ws = wb.addWorksheet('Evidence Matrix');
+  ws.columns = LIB_COLUMNS.map((h) => ({ header: h, key: h, width: h === 'Tiêu đề' || h === 'Tóm tắt' ? 50 : 18 }));
+  ws.getRow(1).font = { bold: true };
+  for (const r of records) ws.addRow(libRowValues(r));
+  ws.views = [{ state: 'frozen', ySplit: 1 }];
+  return wb.xlsx.writeBuffer();
+}
+async function tryRenderLibraryDocx(project, records) {
+  let docx;
+  try { docx = await import('docx'); } catch { return null; }
+  const { Document, Packer, Paragraph, HeadingLevel, Table, TableRow, TableCell, TextRun } = docx;
+  const children = [
+    new Paragraph({ text: `Thư viện dự án — ${project.title}`, heading: HeadingLevel.HEADING_1 }),
+    new Paragraph({ children: [new TextRun({ text: `Xuất ngày ${new Date().toISOString().slice(0, 10)} · ${records.length} bản ghi`, italics: true })] }),
+  ];
+  const headerRow = new TableRow({ children: LIB_COLUMNS.map((h) => new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: h, bold: true })] })] })) });
+  const rows = records.map((r) => new TableRow({
+    children: libRowValues(r).map((v) => new TableCell({ children: [new Paragraph(String(v ?? ''))] })),
+  }));
+  children.push(new Table({ rows: [headerRow, ...rows] }));
+  const doc = new Document({ sections: [{ children }] });
+  return Packer.toBuffer(doc);
 }
 
 export default router;

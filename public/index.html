@@ -1132,6 +1132,20 @@ document.addEventListener('click', (e)=>{
     __wbProjectsCache = d.projects || [];
     return __wbProjectsCache;
   }
+  window.wbPanelExport = async (fmt) => {
+    if(!__wbActiveProject) return;
+    try{
+      const token = await window.__wbGetIdToken();
+      const res = await fetch(`/api/workbench/projects/${__wbActiveProject}/library/export?fmt=${fmt}`, { headers:{ Authorization:'Bearer '+token } });
+      if(!res.ok){ alert('Lỗi xuất: HTTP '+res.status); return; }
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `thu-vien.${fmt==='docx'?'docx':'xlsx'}`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }catch(e){ alert('Lỗi xuất: '+e.message); }
+  };
   function wbSetActiveProject(id){
     __wbActiveProject = String(id);
     localStorage.setItem('chimedisActiveProject', __wbActiveProject);
@@ -1189,7 +1203,8 @@ document.addEventListener('click', (e)=>{
         ${projects.map(p=>`<option value="${p.id}" ${String(p.id)===__wbActiveProject?'selected':''}>${esc(p.title)}</option>`).join('')}
         <option value="__new__">+ Dự án mới…</option>
       </select>
-      <p class="hint" style="margin:0 0 4px">Thư viện (${lib.records.length}) — bấm "💾 Lưu thư viện" ở kết quả tìm kiếm để thêm</p>
+      <p class="hint" style="margin:0 0 4px">Thư viện (${lib.records.length}) — bấm "💾 Lưu thư viện" ở kết quả tìm kiếm để thêm
+        ${lib.records.length ? `· Xuất: <a href="#" onclick="wbPanelExport('xlsx');return false">Excel</a> · <a href="#" onclick="wbPanelExport('docx');return false">Word</a>` : ''}</p>
       ${lib.records.length ? lib.records.map(r=>`
         <div class="wb-lib-item">
           <div class="t">${esc(r.title)}</div>
