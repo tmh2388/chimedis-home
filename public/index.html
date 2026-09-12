@@ -382,7 +382,7 @@ if (auth) {
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
         <span data-i18n="dict_cta">Tra từ điển</span>
       </a>
-      <button class="btn btn-sm" id="wbPanelBtn" onclick="toggleWbPanel()" title="Dự án &amp; thư viện nghiên cứu">📚 <span id="wbPanelBtnLabel">Nghiên cứu</span></button>
+      <button class="btn btn-sm" id="wbPanelBtn" onclick="toggleWbPanel()" data-i18n-title="wb_btn_title">📚 <span id="wbPanelBtnLabel" data-i18n="wb_btn_label">Nghiên cứu</span></button>
       <button class="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
     </div>
   </div>
@@ -395,10 +395,10 @@ if (auth) {
 <div id="wbPanelBackdrop" class="wb-panel-backdrop" hidden onclick="toggleWbPanel(false)"></div>
 <aside id="wbPanel" class="wb-panel" hidden>
   <div class="wb-panel-head">
-    <strong>📚 Nghiên cứu của tôi</strong>
-    <button type="button" class="wb-panel-close" onclick="toggleWbPanel(false)" aria-label="Đóng">✕</button>
+    <strong data-i18n="wb_panel_header">📚 Nghiên cứu của tôi</strong>
+    <button type="button" class="wb-panel-close" onclick="toggleWbPanel(false)" data-i18n-aria="wb_panel_close">✕</button>
   </div>
-  <div class="wb-panel-body" id="wbPanelBody"><p class="hint">Đang tải…</p></div>
+  <div class="wb-panel-body" id="wbPanelBody"><p class="hint" data-i18n="wb_loading">Đang tải…</p></div>
 </aside>
 
 <main>
@@ -1214,19 +1214,19 @@ document.addEventListener('click', (e)=>{
   async function renderWbPanel(){
     const body = document.getElementById('wbPanelBody');
     if(!window.__wbUser){
-      body.innerHTML = `<p>Đăng nhập để lưu bài vào thư viện nghiên cứu và quản lý dự án — không mất gì khi tìm/xem/tải, chỉ cần cho việc lưu lại.</p>
-        <a class="btn btn-primary btn-sm" href="/tai-khoan.html">Đăng nhập / Đăng ký</a>`;
+      body.innerHTML = `<p>${t('wb_login_prompt')}</p>
+        <a class="btn btn-primary btn-sm" href="/tai-khoan.html">${t('wb_login_btn')}</a>`;
       return;
     }
-    body.innerHTML = '<p class="hint">Đang tải…</p>';
+    body.innerHTML = `<p class="hint">${t('wb_loading')}</p>`;
     let projects;
     try{ projects = await wbGetProjects(true); }
-    catch(e){ body.innerHTML = `<p>Lỗi tải dự án: ${esc(e.message)}</p>`; return; }
+    catch(e){ body.innerHTML = `<p>${t('wb_err_load_projects', {msg: esc(e.message)})}</p>`; return; }
 
     if(!projects.length){
-      body.innerHTML = `<p class="hint">Chưa có dự án nào.</p>
-        <input id="wbNewProjTitle" placeholder="Tên dự án đầu tiên">
-        <button type="button" class="btn btn-sm" onclick="wbCreateProjectFromPanel()">Tạo dự án</button>`;
+      body.innerHTML = `<p class="hint">${t('wb_no_projects')}</p>
+        <input id="wbNewProjTitle" placeholder="${esc(t('wb_new_proj_ph'))}">
+        <button type="button" class="btn btn-sm" onclick="wbCreateProjectFromPanel()">${t('wb_create_proj_btn')}</button>`;
       return;
     }
     if(!__wbActiveProject || !projects.some(p=>String(p.id)===__wbActiveProject)) wbSetActiveProject(projects[0].id);
@@ -1234,45 +1234,50 @@ document.addEventListener('click', (e)=>{
     let lib = { records: [] };
     try{ lib = await wbApi(`/api/workbench/projects/${__wbActiveProject}/library`); }catch(e){ /* để trống nếu lỗi */ }
 
+    const manualLink = `<a href="#" onclick="wbPanelToggleManual();return false">${t('wb_manual_link_text')}</a>`;
+    const exportLinks = lib.records.length ? t('wb_export_label', {
+      xlsx: `<a href="#" onclick="wbPanelExport('xlsx');return false">${t('wb_export_xlsx')}</a>`,
+      docx: `<a href="#" onclick="wbPanelExport('docx');return false">${t('wb_export_docx')}</a>`,
+      deleteAll: `<a href="#" onclick="wbPanelDeleteAll();return false" style="color:#9a2f2f">${t('wb_delete_all')}</a>`,
+    }) : '';
+
     body.innerHTML = `
-      <label class="hint">Dự án đang chọn</label>
+      <label class="hint">${t('wb_select_project_label')}</label>
       <select id="wbPanelProjectSel" onchange="wbSwitchProject(this.value)">
         ${projects.map(p=>`<option value="${p.id}" ${String(p.id)===__wbActiveProject?'selected':''}>${esc(p.title)}</option>`).join('')}
-        <option value="__new__">+ Dự án mới…</option>
+        <option value="__new__">${t('wb_new_project_option')}</option>
       </select>
-      <p class="hint" style="margin:0 0 4px">Thư viện (${lib.records.length}) — bấm "💾 Lưu thư viện" ở kết quả tìm kiếm,
-        hoặc <a href="#" onclick="wbPanelToggleManual();return false">tự nhập tay</a> (VD: bài từ Wanfang/CNKI đọc ở tab riêng)
-        ${lib.records.length ? `· Xuất: <a href="#" onclick="wbPanelExport('xlsx');return false">Excel</a> · <a href="#" onclick="wbPanelExport('docx');return false">Word</a>
-          · <a href="#" onclick="wbPanelDeleteAll();return false" style="color:#9a2f2f">Xoá tất cả</a>` : ''}</p>
+      <p class="hint" style="margin:0 0 4px">${t('wb_library_label', {count: lib.records.length, manualLink})} ${exportLinks}</p>
       <div id="wbPanelManualForm" style="display:none;border:1px solid var(--border-strong,#ddd);border-radius:8px;padding:10px;margin-bottom:10px">
-        <input id="pmTitle" placeholder="Tiêu đề *">
-        <input id="pmAuthors" placeholder="Tác giả (phẩy giữa các tên)">
-        <input id="pmJournal" placeholder="Tạp chí/Nguồn (VD: Wanfang, CNKI)">
-        <input id="pmYear" type="number" min="1900" max="2100" placeholder="Năm">
-        <input id="pmDoi" placeholder="DOI">
-        <input id="pmKeywords" placeholder="Từ khoá (phẩy giữa các từ)">
-        <textarea id="pmAbstract" rows="3" placeholder="Tóm tắt"></textarea>
+        <input id="pmTitle" placeholder="${esc(t('pm_title_ph'))}">
+        <input id="pmAuthors" placeholder="${esc(t('pm_authors_ph'))}">
+        <input id="pmJournal" placeholder="${esc(t('pm_journal_ph'))}">
+        <input id="pmYear" type="number" min="1900" max="2100" placeholder="${esc(t('pm_year_ph'))}">
+        <input id="pmDoi" placeholder="${esc(t('pm_doi_ph'))}">
+        <input id="pmKeywords" placeholder="${esc(t('pm_keywords_ph'))}">
+        <textarea id="pmAbstract" rows="3" placeholder="${esc(t('pm_abstract_ph'))}"></textarea>
         <div style="display:flex;gap:6px;margin-top:4px">
-          <button type="button" class="btn btn-sm" onclick="wbPanelSaveManual()">Lưu</button>
-          <button type="button" class="btn btn-sm" onclick="wbPanelToggleManual(false)">Huỷ</button>
+          <button type="button" class="btn btn-sm" onclick="wbPanelSaveManual()">${t('pm_save_btn')}</button>
+          <button type="button" class="btn btn-sm" onclick="wbPanelToggleManual(false)">${t('pm_cancel_btn')}</button>
         </div>
       </div>
       ${lib.records.length ? lib.records.map(r=>`
         <div class="wb-lib-item" style="display:flex;gap:8px;align-items:flex-start">
           <div style="flex:1">
             <div class="t">${esc(r.title)}</div>
-            <div class="m">${r.year||'—'} · ${esc(r.studyType||'unknown')}${r.status && r.status!=='shortlisted' ? ' · '+esc(r.status) : ''}</div>
+            <div class="m">${r.year||'—'} · ${esc(r.studyType||t('wb_status_unknown'))}${r.status && r.status!=='shortlisted' ? ' · '+esc(r.status) : ''}</div>
           </div>
-          <a href="#" onclick="wbPanelDeleteOne(${r.recordId});return false" title="Xoá khỏi thư viện" style="flex:none;color:#9a2f2f;font-size:15px;line-height:1">✕</a>
-        </div>`).join('') : '<p class="hint">Chưa lưu bài nào.</p>'}
-      <a class="btn btn-sm wb-panel-open-link" href="/workbench.html" target="_blank">↗ Mở Bàn làm việc đầy đủ</a>
-      <p class="hint" style="margin-top:6px">Câu hỏi nghiên cứu, nhật ký tìm kiếm, xuất Word/CSV — chưa có trong panel này.</p>`;
+          <a href="#" onclick="wbPanelDeleteOne(${r.recordId});return false" title="${esc(t('wb_delete_one_title'))}" style="flex:none;color:#9a2f2f;font-size:15px;line-height:1">✕</a>
+        </div>`).join('') : `<p class="hint">${t('wb_no_records')}</p>`}
+      <a class="btn btn-sm wb-panel-open-link" href="/workbench.html" target="_blank">${t('wb_open_full_link')}</a>
+      <p class="hint" style="margin-top:6px">${t('wb_open_full_hint')}</p>`;
   }
+  window.renderWbPanel = renderWbPanel;
   window.wbSwitchProject = (val) => {
     if(val === '__new__'){
       const sel = document.getElementById('wbPanelProjectSel');
       if(sel) sel.value = __wbActiveProject; // trả UI về lựa chọn cũ trong lúc chờ prompt
-      const title = prompt('Tên dự án mới:');
+      const title = prompt(t('wb_prompt_new_project'));
       if(title && title.trim()) return wbCreateProjectFromPanel(title.trim());
       return;
     }
@@ -1287,17 +1292,17 @@ document.addEventListener('click', (e)=>{
       __wbProjectsCache = null;
       wbSetActiveProject(created.id);
       await renderWbPanel();
-    }catch(e){ alert('Lỗi tạo dự án: ' + e.message); }
+    }catch(e){ alert(t('wb_err_create_project', {msg: e.message})); }
   };
 
   async function saveToLibrary(idx, btn){
     if(!window.__wbUser){
-      alert('Cần đăng nhập để lưu vào thư viện nghiên cứu.\n\nBấm "📚 Nghiên cứu" ở góc trên để đăng nhập, rồi thử lại.');
+      alert(t('wb_alert_login_required'));
       toggleWbPanel(true);
       return;
     }
     const r = (window.__curLitResults || [])[idx];
-    if(!r){ alert('Không tìm thấy bản ghi (danh sách đã thay đổi) — thử tìm lại.'); return; }
+    if(!r){ alert(t('wb_alert_record_gone')); return; }
     closeLibPick();
 
     // Đã có dự án "đang chọn" (panel bên phải, nhớ trong trình duyệt) → lưu ngay, không hỏi.
@@ -1305,17 +1310,17 @@ document.addEventListener('click', (e)=>{
 
     let projects;
     try{ projects = await wbGetProjects(); }
-    catch(e){ alert('Lỗi tải danh sách dự án: ' + e.message); return; }
+    catch(e){ alert(t('wb_alert_err_load_projects', {msg: e.message})); return; }
 
     if(!projects.length){
-      const title = prompt('Chưa có dự án nào. Đặt tên cho dự án đầu tiên:', 'Dự án nghiên cứu của tôi');
+      const title = prompt(t('wb_prompt_first_project'), t('wb_default_project_title'));
       if(!title) return;
       try{
         const created = await wbApi('/api/workbench/projects', { method:'POST', body: JSON.stringify({ title }) });
         __wbProjectsCache = null;
         wbSetActiveProject(created.id);
         await doSaveToProject(created.id, r, btn);
-      }catch(e){ alert('Lỗi tạo dự án: ' + e.message); }
+      }catch(e){ alert(t('wb_err_create_project', {msg: e.message})); }
       return;
     }
     if(projects.length === 1){
@@ -1333,8 +1338,8 @@ document.addEventListener('click', (e)=>{
     pick.innerHTML = `
       <select id="libPickSel">${projects.map(p=>`<option value="${p.id}">${esc(p.title)}</option>`).join('')}</select>
       <div class="row">
-        <button type="button" class="save-lib-btn" id="libPickCancel">Huỷ</button>
-        <button type="button" class="save-lib-btn" id="libPickOk">Lưu</button>
+        <button type="button" class="save-lib-btn" id="libPickCancel">${t('wb_pick_cancel')}</button>
+        <button type="button" class="save-lib-btn" id="libPickOk">${t('wb_pick_save')}</button>
       </div>`;
     document.body.appendChild(pick);
     document.getElementById('libPickCancel').onclick = closeLibPick;
@@ -1348,7 +1353,7 @@ document.addEventListener('click', (e)=>{
 
   async function doSaveToProject(projectId, r, btn){
     const orig = btn.textContent;
-    btn.disabled = true; btn.textContent = 'Đang lưu…';
+    btn.disabled = true; btn.textContent = t('wb_saving');
     try{
       await wbApi(`/api/workbench/projects/${projectId}/library`, {
         method:'POST',
@@ -1358,12 +1363,12 @@ document.addEventListener('click', (e)=>{
           isOpenAccess:r.isOpenAccess, keywords:r.keywords, topic:r.topic,
         } }),
       });
-      btn.textContent = 'Đã lưu ✓';
+      btn.textContent = t('wb_saved');
       const panel = document.getElementById('wbPanel');
       if(panel && !panel.hidden) renderWbPanel();
     }catch(e){
       btn.disabled = false; btn.textContent = orig;
-      alert('Lỗi lưu vào thư viện: ' + e.message);
+      alert(t('wb_alert_err_save', {msg: e.message}));
     }
   }
 
@@ -1376,7 +1381,7 @@ document.addEventListener('click', (e)=>{
       lastData = data;
       if(!data.results.length){
         outEl.innerHTML = renderWarning(data.warning) + renderExpansion(data.expansion) +
-          '<div class="lit-state">Không tìm thấy tài liệu phù hợp. Thử từ khoá khác hoặc bỏ bớt bộ lọc.</div>';
+          `<div class="lit-state">${t('lit_no_results')}</div>`;
         return;
       }
       return renderResults(viewData());
@@ -1392,7 +1397,7 @@ document.addEventListener('click', (e)=>{
     ];
     if(!data.results.length && !data._refined){
       outEl.innerHTML = renderWarning(data.warning) + renderExpansion(data.expansion) +
-        '<div class="lit-state">Không tìm thấy tài liệu phù hợp. Thử từ khoá khác hoặc bỏ bớt bộ lọc.</div>';
+        `<div class="lit-state">${t('lit_no_results')}</div>`;
       return;
     }
     // "Lưu vào thư viện" tra theo chỉ số (i) của MẢNG ĐANG HIỂN THỊ này — lưu lại để nút
@@ -1405,7 +1410,7 @@ document.addEventListener('click', (e)=>{
     // Chỉ báo khi kết quả có thể chưa đầy đủ, KHÔNG nêu tên cơ sở dữ liệu nào.
     const anyErr = Object.keys(data.sourceErrors || {}).length > 0;
     const srcErr = (anyErr && data.count === 0)
-      ? `<div class="lit-state err" style="padding:10px;text-align:left">Có lỗi khi tra cứu — kết quả có thể chưa đầy đủ, thử lại sau.</div>`
+      ? `<div class="lit-state err" style="padding:10px;text-align:left">${t('lit_search_err')}</div>`
       : '';
     const startIdx = (data.page - 1) * data.perPage;
     const pageTotal = data._pageTotal;
@@ -1418,7 +1423,7 @@ document.addEventListener('click', (e)=>{
     };
     const refineBar =
       `<div class="lit-refine" translate="no">` +
-        `<select id="litRefineField" aria-label="Trường lọc">` +
+        `<select id="litRefineField" aria-label="${esc(t('lit_refine_field_aria'))}">` +
           REFINE_FIELDS.map(f => `<option value="${f}"${f === refineField ? ' selected' : ''}>${esc(FIELD_LABEL[f] || f)}</option>`).join('') +
         `</select>` +
         `<input id="litRefine" type="search" autocomplete="off" spellcheck="false" ` +
@@ -1431,12 +1436,12 @@ document.addEventListener('click', (e)=>{
       `</div>`;
 
     const metaCount = data._refined
-      ? `Trang ${data.page} · ${data.results.length}/${pageTotal} kết quả sau lọc`
-      : `Trang ${data.page} · ${data.count} kết quả trên trang${totalMatched ? ` · khoảng ${Number(totalMatched).toLocaleString('vi-VN')} tài liệu khớp` : ''}`;
+      ? t('lit_meta_filtered', {page: data.page, count: data.results.length, total: pageTotal})
+      : t('lit_meta_plain', {page: data.page, count: data.count, matched: totalMatched ? t('lit_meta_matched', {n: Number(totalMatched).toLocaleString(state.lang === 'zh' ? 'zh-CN' : (state.lang === 'en' ? 'en-US' : 'vi-VN'))}) : ''});
 
     const tableOrEmpty = data.results.length
       ? `<div class="lit-table-wrap"><table class="lit-table">${tableHead(data.sort)}<tbody>${data.results.map((r,i)=>tableRow(r,i,startIdx+i+1)).join('')}</tbody></table></div>`
-      : `<div class="lit-state">Không có kết quả nào khớp bộ lọc trên trang này. Xoá lọc hoặc chuyển trang.</div>`;
+      : `<div class="lit-state">${t('lit_no_results_page')}</div>`;
 
     outEl.innerHTML =
       renderWarning(data.warning) +
@@ -1446,11 +1451,11 @@ document.addEventListener('click', (e)=>{
       srcErr +
       tableOrEmpty +
       `<div class="lit-pager">
-        <button id="litPrev" ${data.page<=1?'disabled':''}>← Trước</button>
-        <span>Trang ${data.page}</span>
-        <button id="litNext" ${data.hasMore ? '' : 'disabled'}>Sau →</button>
+        <button id="litPrev" ${data.page<=1?'disabled':''}>${t('lit_pager_prev')}</button>
+        <span>${t('lit_pager_page', {page: data.page})}</span>
+        <button id="litNext" ${data.hasMore ? '' : 'disabled'}>${t('lit_pager_next')}</button>
       </div>` +
-      `<p class="lit-disc">Tổng hợp từ nhiều cơ sở dữ liệu y văn mở. Không có số liệu lượt xem/lượt tải — sắp xếp được theo năm, số trích dẫn hoặc tên bài. Nội dung phục vụ học tập, nghiên cứu — không thay thế tư vấn y khoa.</p>`;
+      `<p class="lit-disc">${t('lit_disclaimer')}</p>`;
 
     bindResultListeners();
   }
@@ -1467,10 +1472,10 @@ document.addEventListener('click', (e)=>{
 
     if(!opts.silent){
       qEl.innerHTML = req.advanced
-        ? '<b>Tra cứu nâng cao</b> · ' + req.advanced.map(r=>esc(r.field.toUpperCase()+':'+r.term)).join(' ')
+        ? `<b>${t('lit_advanced_label')}</b> · ` + req.advanced.map(r=>esc(r.field.toUpperCase()+':'+r.term)).join(' ')
         : '<b>' + esc(req.q) + '</b>';
       showPanel();
-      outEl.innerHTML = '<div class="lit-state"><div class="lit-spin"></div>Đang tra cứu y văn…</div>';
+      outEl.innerHTML = `<div class="lit-state"><div class="lit-spin"></div>${t('lit_searching')}</div>`;
       window.scrollTo({ top: panel.offsetTop - 70, behavior:'smooth' });
     } else {
       // Sắp xếp nền: không xoá bảng đang hiển thị (đã cập nhật tức thì phía client), chỉ làm mờ nhẹ.
@@ -1483,7 +1488,7 @@ document.addEventListener('click', (e)=>{
         method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)
       });
       data = await res.json();
-      if(!res.ok || !data.success) throw new Error(data.error || 'Lỗi tìm kiếm');
+      if(!res.ok || !data.success) throw new Error(data.error || t('lit_search_generic_err'));
     }catch(e){
       outEl.classList.remove('lit-refreshing');
       if(!opts.silent) outEl.innerHTML = `<div class="lit-state err">${esc(e.message)}</div>`;
@@ -1510,7 +1515,7 @@ document.addEventListener('click', (e)=>{
   if(advRun){
     advRun.addEventListener('click',()=>{
       const rows = collectAdvanced();
-      if(!rows.length){ alert('Nhập từ khoá cho ít nhất một điều kiện.'); return; }
+      if(!rows.length){ alert(t('alert_need_condition')); return; }
       if(typeof toggleAdv === 'function') document.getElementById('advPanel').classList.remove('show');
       runLit({ advanced: rows });
     });
@@ -1575,7 +1580,38 @@ const I18N = {
     store_dl:"Tải xuống trên", promo_online:"Vào bản online",
     footer_desc:"Cổng thông tin tra cứu và nghiên cứu Trung Y — Chinese Medicine Discovery. Nội dung phục vụ học tập, nghiên cứu, không thay thế chẩn đoán y khoa.",
     footer_col_library:"Thư viện", footer_col_product:"Sản phẩm", footer_dict_online:"Tra từ điển online", footer_get_app:"Tải app",
-    footer_col_contact:"Liên hệ", footer_copyright:"© 2026 Hạ Vân Y Đạo", footer_note:"Nội dung minh hoạ — thư viện đang được xây dựng"
+    footer_col_contact:"Liên hệ", footer_copyright:"© 2026 Hạ Vân Y Đạo", footer_note:"Nội dung minh hoạ — thư viện đang được xây dựng",
+    wb_btn_label:"Nghiên cứu", wb_btn_title:"Dự án & thư viện nghiên cứu", wb_panel_header:"📚 Nghiên cứu của tôi", wb_panel_close:"Đóng",
+    wb_login_prompt:"Đăng nhập để lưu bài vào thư viện nghiên cứu và quản lý dự án — không mất gì khi tìm/xem/tải, chỉ cần cho việc lưu lại.",
+    wb_login_btn:"Đăng nhập / Đăng ký", wb_loading:"Đang tải…", wb_err_load_projects:"Lỗi tải dự án: {msg}",
+    wb_no_projects:"Chưa có dự án nào.", wb_new_proj_ph:"Tên dự án đầu tiên", wb_create_proj_btn:"Tạo dự án",
+    wb_select_project_label:"Dự án đang chọn", wb_new_project_option:"+ Dự án mới…",
+    wb_library_label:"Thư viện ({count}) — bấm \"💾 Lưu thư viện\" ở kết quả tìm kiếm, hoặc {manualLink} (VD: bài từ Wanfang/CNKI đọc ở tab riêng)",
+    wb_manual_link_text:"tự nhập tay", wb_export_label:"· Xuất: {xlsx} · {docx} · {deleteAll}",
+    wb_export_xlsx:"Excel", wb_export_docx:"Word", wb_delete_all:"Xoá tất cả",
+    pm_title_ph:"Tiêu đề *", pm_authors_ph:"Tác giả (phẩy giữa các tên)", pm_journal_ph:"Tạp chí/Nguồn (VD: Wanfang, CNKI)",
+    pm_year_ph:"Năm", pm_doi_ph:"DOI", pm_keywords_ph:"Từ khoá (phẩy giữa các từ)", pm_abstract_ph:"Tóm tắt",
+    pm_save_btn:"Lưu", pm_cancel_btn:"Huỷ",
+    wb_no_records:"Chưa lưu bài nào.", wb_delete_one_title:"Xoá khỏi thư viện",
+    wb_open_full_link:"↗ Mở Bàn làm việc đầy đủ", wb_open_full_hint:"Câu hỏi nghiên cứu, nhật ký tìm kiếm, xuất Word/CSV — chưa có trong panel này.",
+    wb_prompt_new_project:"Tên dự án mới:", wb_err_create_project:"Lỗi tạo dự án: {msg}",
+    wb_alert_login_required:"Cần đăng nhập để lưu vào thư viện nghiên cứu.\n\nBấm \"📚 Nghiên cứu\" ở góc trên để đăng nhập, rồi thử lại.",
+    wb_alert_record_gone:"Không tìm thấy bản ghi (danh sách đã thay đổi) — thử tìm lại.",
+    wb_alert_err_load_projects:"Lỗi tải danh sách dự án: {msg}",
+    wb_prompt_first_project:"Chưa có dự án nào. Đặt tên cho dự án đầu tiên:", wb_default_project_title:"Dự án nghiên cứu của tôi",
+    wb_pick_cancel:"Huỷ", wb_pick_save:"Lưu",
+    wb_saving:"Đang lưu…", wb_saved:"Đã lưu ✓", wb_alert_err_save:"Lỗi lưu vào thư viện: {msg}",
+    wb_status_unknown:"unknown",
+    lit_no_results:"Không tìm thấy tài liệu phù hợp. Thử từ khoá khác hoặc bỏ bớt bộ lọc.",
+    lit_search_err:"Có lỗi khi tra cứu — kết quả có thể chưa đầy đủ, thử lại sau.",
+    lit_no_results_page:"Không có kết quả nào khớp bộ lọc trên trang này. Xoá lọc hoặc chuyển trang.",
+    lit_meta_filtered:"Trang {page} · {count}/{total} kết quả sau lọc",
+    lit_meta_plain:"Trang {page} · {count} kết quả trên trang{matched}",
+    lit_meta_matched:" · khoảng {n} tài liệu khớp",
+    lit_pager_prev:"← Trước", lit_pager_page:"Trang {page}", lit_pager_next:"Sau →",
+    lit_disclaimer:"Tổng hợp từ nhiều cơ sở dữ liệu y văn mở. Không có số liệu lượt xem/lượt tải — sắp xếp được theo năm, số trích dẫn hoặc tên bài. Nội dung phục vụ học tập, nghiên cứu — không thay thế tư vấn y khoa.",
+    lit_advanced_label:"Tra cứu nâng cao", lit_searching:"Đang tra cứu y văn…", lit_search_generic_err:"Lỗi tìm kiếm",
+    alert_need_condition:"Nhập từ khoá cho ít nhất một điều kiện.", lit_refine_field_aria:"Trường lọc"
   },
   zh: {
     nav_discover:"文献检索", nav_journal:"期刊", nav_report:"报告", nav_article:"文章", nav_book:"书库", nav_video:"视频", nav_about:"关于我们",
@@ -1606,7 +1642,38 @@ const I18N = {
     store_dl:"下载于", promo_online:"打开在线版",
     footer_desc:"中医查询与研究门户 — Chinese Medicine Discovery。内容仅供学习研究使用，不能替代医学诊断。",
     footer_col_library:"文库", footer_col_product:"产品", footer_dict_online:"在线查词典", footer_get_app:"下载应用",
-    footer_col_contact:"联系方式", footer_copyright:"© 2026 夏雲醫道", footer_note:"示例内容 — 文库建设中"
+    footer_col_contact:"联系方式", footer_copyright:"© 2026 夏雲醫道", footer_note:"示例内容 — 文库建设中",
+    wb_btn_label:"研究", wb_btn_title:"研究项目与文献库", wb_panel_header:"📚 我的研究", wb_panel_close:"关闭",
+    wb_login_prompt:"登录后即可将文献保存到研究文献库并管理项目 — 搜索/查看/下载都无需登录，仅保存时需要。",
+    wb_login_btn:"登录 / 注册", wb_loading:"加载中…", wb_err_load_projects:"加载项目出错：{msg}",
+    wb_no_projects:"暂无项目。", wb_new_proj_ph:"第一个项目的名称", wb_create_proj_btn:"创建项目",
+    wb_select_project_label:"当前项目", wb_new_project_option:"+ 新建项目…",
+    wb_library_label:"文献库（{count}）— 在搜索结果中点击「💾 保存到文献库」，或{manualLink}（例如在其他标签页阅读的万方/知网文献）",
+    wb_manual_link_text:"手动录入", wb_export_label:"· 导出：{xlsx} · {docx} · {deleteAll}",
+    wb_export_xlsx:"Excel", wb_export_docx:"Word", wb_delete_all:"全部删除",
+    pm_title_ph:"标题 *", pm_authors_ph:"作者（用逗号分隔）", pm_journal_ph:"期刊/来源（如：万方、知网）",
+    pm_year_ph:"年份", pm_doi_ph:"DOI", pm_keywords_ph:"关键词（用逗号分隔）", pm_abstract_ph:"摘要",
+    pm_save_btn:"保存", pm_cancel_btn:"取消",
+    wb_no_records:"尚未保存任何文献。", wb_delete_one_title:"从文献库中删除",
+    wb_open_full_link:"↗ 打开完整工作台", wb_open_full_hint:"研究问题、检索日志、导出 Word/CSV — 此面板中暂不支持。",
+    wb_prompt_new_project:"新项目名称：", wb_err_create_project:"创建项目出错：{msg}",
+    wb_alert_login_required:"需要登录才能保存到研究文献库。\n\n点击右上角「📚 研究」登录后重试。",
+    wb_alert_record_gone:"未找到该记录（列表已变化）— 请重新搜索。",
+    wb_alert_err_load_projects:"加载项目列表出错：{msg}",
+    wb_prompt_first_project:"暂无项目，请为第一个项目命名：", wb_default_project_title:"我的研究项目",
+    wb_pick_cancel:"取消", wb_pick_save:"保存",
+    wb_saving:"保存中…", wb_saved:"已保存 ✓", wb_alert_err_save:"保存到文献库出错：{msg}",
+    wb_status_unknown:"未知",
+    lit_no_results:"未找到匹配的文献。请尝试其他关键词或减少筛选条件。",
+    lit_search_err:"检索出错 — 结果可能不完整，请稍后重试。",
+    lit_no_results_page:"本页没有符合筛选条件的结果。清除筛选或切换页面。",
+    lit_meta_filtered:"第 {page} 页 · 筛选后 {count}/{total} 条结果",
+    lit_meta_plain:"第 {page} 页 · 本页 {count} 条结果{matched}",
+    lit_meta_matched:" · 约 {n} 条匹配文献",
+    lit_pager_prev:"← 上一页", lit_pager_page:"第 {page} 页", lit_pager_next:"下一页 →",
+    lit_disclaimer:"汇总自多个开放医学文献数据库。无浏览/下载量数据 — 可按年份、被引次数或标题排序。内容仅供学习研究使用，不能替代医学咨询。",
+    lit_advanced_label:"高级检索", lit_searching:"正在检索文献…", lit_search_generic_err:"检索出错",
+    alert_need_condition:"请至少为一个条件输入关键词。", lit_refine_field_aria:"筛选字段"
   },
   en: {
     nav_discover:"Discover literature", nav_journal:"Journals", nav_report:"Reports", nav_article:"Articles", nav_book:"Book Library", nav_video:"Video", nav_about:"About",
@@ -1637,16 +1704,55 @@ const I18N = {
     store_dl:"Download on the", promo_online:"Open web version",
     footer_desc:"A discovery portal for TCM research — Chinese Medicine Discovery. Content is for study and research only, not a substitute for medical diagnosis.",
     footer_col_library:"Library", footer_col_product:"Product", footer_dict_online:"Open dictionary online", footer_get_app:"Get the app",
-    footer_col_contact:"Contact", footer_copyright:"© 2026 Ha Van Y Dao", footer_note:"Sample content — library under construction"
+    footer_col_contact:"Contact", footer_copyright:"© 2026 Ha Van Y Dao", footer_note:"Sample content — library under construction",
+    wb_btn_label:"Research", wb_btn_title:"Research projects & library", wb_panel_header:"📚 My Research", wb_panel_close:"Close",
+    wb_login_prompt:"Sign in to save articles to your research library and manage projects — searching/viewing/downloading needs no account, only saving does.",
+    wb_login_btn:"Sign in / Sign up", wb_loading:"Loading…", wb_err_load_projects:"Error loading projects: {msg}",
+    wb_no_projects:"No projects yet.", wb_new_proj_ph:"First project name", wb_create_proj_btn:"Create project",
+    wb_select_project_label:"Active project", wb_new_project_option:"+ New project…",
+    wb_library_label:"Library ({count}) — click \"💾 Save to library\" on a search result, or {manualLink} (e.g. an article read from Wanfang/CNKI in another tab)",
+    wb_manual_link_text:"enter manually", wb_export_label:"· Export: {xlsx} · {docx} · {deleteAll}",
+    wb_export_xlsx:"Excel", wb_export_docx:"Word", wb_delete_all:"Delete all",
+    pm_title_ph:"Title *", pm_authors_ph:"Authors (comma-separated)", pm_journal_ph:"Journal/Source (e.g. Wanfang, CNKI)",
+    pm_year_ph:"Year", pm_doi_ph:"DOI", pm_keywords_ph:"Keywords (comma-separated)", pm_abstract_ph:"Abstract",
+    pm_save_btn:"Save", pm_cancel_btn:"Cancel",
+    wb_no_records:"No articles saved yet.", wb_delete_one_title:"Remove from library",
+    wb_open_full_link:"↗ Open full Workbench", wb_open_full_hint:"Research questions, search log, Word/CSV export — not yet in this panel.",
+    wb_prompt_new_project:"New project name:", wb_err_create_project:"Error creating project: {msg}",
+    wb_alert_login_required:"You must sign in to save to the research library.\n\nClick \"📚 Research\" at the top to sign in, then try again.",
+    wb_alert_record_gone:"Record not found (list has changed) — try searching again.",
+    wb_alert_err_load_projects:"Error loading project list: {msg}",
+    wb_prompt_first_project:"No projects yet. Name your first project:", wb_default_project_title:"My research project",
+    wb_pick_cancel:"Cancel", wb_pick_save:"Save",
+    wb_saving:"Saving…", wb_saved:"Saved ✓", wb_alert_err_save:"Error saving to library: {msg}",
+    wb_status_unknown:"unknown",
+    lit_no_results:"No matching literature found. Try different keywords or fewer filters.",
+    lit_search_err:"A search error occurred — results may be incomplete, try again later.",
+    lit_no_results_page:"No results match the filter on this page. Clear the filter or change page.",
+    lit_meta_filtered:"Page {page} · {count}/{total} results after filtering",
+    lit_meta_plain:"Page {page} · {count} results on this page{matched}",
+    lit_meta_matched:" · about {n} matching documents",
+    lit_pager_prev:"← Previous", lit_pager_page:"Page {page}", lit_pager_next:"Next →",
+    lit_disclaimer:"Aggregated from multiple open medical literature databases. No view/download counts — sortable by year, citation count, or title. Content is for study and research only, not a substitute for medical advice.",
+    lit_advanced_label:"Advanced search", lit_searching:"Searching literature…", lit_search_generic_err:"Search error",
+    alert_need_condition:"Enter a keyword for at least one condition.", lit_refine_field_aria:"Filter field"
   }
 };
 let state = { lang: localStorage.getItem('chimedis_portal_lang') || 'vi' };
-function t(key){ return (I18N[state.lang] && I18N[state.lang][key]) || I18N.vi[key] || key; }
+function t(key, vars){
+  let s = (I18N[state.lang] && I18N[state.lang][key]) || I18N.vi[key] || key;
+  if(vars) for(const [k,v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, v);
+  return s;
+}
 function applyI18n(){
   document.querySelectorAll('[data-i18n]').forEach(el=>{ el.textContent = t(el.getAttribute('data-i18n')); });
   document.querySelectorAll('[data-i18n-html]').forEach(el=>{ el.innerHTML = t(el.getAttribute('data-i18n-html')); });
   document.querySelectorAll('[data-i18n-ph]').forEach(el=>{ el.placeholder = t(el.getAttribute('data-i18n-ph')); });
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{ el.title = t(el.getAttribute('data-i18n-title')); });
+  document.querySelectorAll('[data-i18n-aria]').forEach(el=>{ el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria'))); });
   document.documentElement.lang = state.lang;
+  const panel = document.getElementById('wbPanel');
+  if(panel && !panel.hidden && typeof renderWbPanel === 'function') renderWbPanel();
 }
 function setLang(l){
   state.lang = l;
