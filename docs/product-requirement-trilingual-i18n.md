@@ -46,20 +46,18 @@ function setLang(l){ state.lang = l; localStorage.setItem('chimedis_portal_lang'
 
 **Khi xây trang/tính năng mới:** copy đúng cơ chế này (đối tượng `I18N`, `applyI18n()`, `setLang()`, menu chọn ngôn ngữ ở header) — không tự chế cơ chế khác, để về sau có 1 chuẩn duy nhất dễ bảo trì.
 
-## 4. Hiện trạng (kiểm 2026-09-12)
+## 4. Hiện trạng (cập nhật 2026-09-12)
 
 | Trang | `data-i18n` | Trạng thái |
 |---|---|---|
 | `public/index.html` (trang tìm chính) | **122** | ✅ Đủ VI/ZH/EN |
-| `public/tai-khoan.html` (đăng nhập/tài khoản) | **0** | ❌ Chỉ tiếng Việt — **là trang ĐẦU TIÊN người dùng Trung/quốc tế gặp** |
-| `public/workbench.html` (Bàn làm việc nghiên cứu) | **0** | ❌ Chỉ tiếng Việt — toàn bộ UI vừa xây (dự án/câu hỏi/tìm/thư viện/nhật ký) |
+| `public/workbench.html` (Bàn làm việc nghiên cứu) | **176 khoá dịch** | ✅ Đủ VI/ZH/EN (xong 2026-09-12, commit `d246e11`) — đối chiếu 0 khoá thiếu ở cả 3 ngôn ngữ, xác nhận bằng render thực tế qua Browser tool |
+| `public/tai-khoan.html` (đăng nhập/tài khoản) | **0** | ❌ Chỉ tiếng Việt — **là trang ĐẦU TIÊN người dùng Trung/quốc tế gặp** — GAP CÒN LẠI DUY NHẤT |
 
 ## 5. Việc cần làm (backlog ĐÃ CHỐT ƯU TIÊN — không phải "để sau tuỳ hứng")
 
-1. **`workbench.html`** — ưu tiên cao nhất (vừa xây, càng để lâu càng nhiều chuỗi phải dịch):
-   - Static: header, login view, sidebar, nhãn form (Câu hỏi nghiên cứu, Tìm y văn, Thư viện dự án…).
-   - Động (JS sinh): `renderProject()`, `renderLibraryCard()`, `renderRunsCard()`, `renderSearchResult()` — nhãn cột bảng, trạng thái (`shortlisted/included/excluded`), thông báo lỗi/thành công, nhãn study type (`STUDY_TYPE_LABEL`).
-2. **`tai-khoan.html`** — trang đăng nhập, ưu tiên cao (điểm chạm đầu tiên).
+1. ~~`workbench.html`~~ — ✅ ĐÃ XONG 2026-09-12.
+2. **`tai-khoan.html`** — trang đăng nhập, ưu tiên cao nhất còn lại (điểm chạm đầu tiên).
 3. Mọi trang mới sau này (M4 gap analysis, M5/M6 viết bài…) — làm i18n **cùng lúc** lúc build, không tách pha riêng.
 
 ## 6. Gate cho mọi PR/commit UI từ nay
