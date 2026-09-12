@@ -76,6 +76,11 @@
   input,select,textarea{width:100%;height:38px;padding:0 11px;border:1px solid var(--border-strong);border-radius:8px;
     font:inherit;font-size:13.5px;background:#FCFAF6;color:var(--fg)}
   textarea{height:auto;padding:9px 11px}
+  .file-drop{border:1px dashed var(--border-strong);border-radius:8px;background:#FCFAF6;padding:10px 11px}
+  input[type="file"]{width:auto;height:auto;padding:0;border:0;background:transparent;font-size:13px}
+  input[type="file"]::file-selector-button{font:inherit;font-size:13px;padding:6px 12px;margin-right:10px;
+    border:1px solid var(--border-strong);border-radius:7px;background:#fff;color:var(--fg);cursor:pointer}
+  input[type="file"]::file-selector-button:hover{background:var(--bg)}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
   .row{display:flex;gap:12px;flex-wrap:wrap}
   .row>div{flex:1;min-width:150px}
@@ -297,8 +302,7 @@ const I18N = {
     results_after_dedup: '{n} kết quả sau khử trùng (identity-graph). Fingerprint {fp}…',
     not_persisted_hint: 'chưa lưu (DB chưa cấu hình)',
     library_import_btn: 'Nhập RIS/BibTeX', import_title: 'Nhập hàng loạt từ RIS/BibTeX',
-    import_hint: 'Xuất danh sách bài từ Zotero, EndNote, Wanfang, CNKI… (RIS/BibTeX/EndNote/NoteExpress đều được — CNKI thường đặt tên file .ris/.bib/.env/.net), rồi dán nội dung hoặc chọn file vào đây. Hệ thống tự nhận diện cấu trúc, không cần chọn đúng định dạng ở trên.',
-    import_format_label: 'Định dạng', import_format_ris: 'RIS (.ris)', import_format_bibtex: 'BibTeX (.bib)',
+    import_hint: 'Xuất danh sách bài từ Zotero, EndNote, Wanfang, CNKI… (RIS/BibTeX/EndNote/NoteExpress đều được — CNKI thường đặt tên file .ris/.bib/.env/.net), rồi dán nội dung hoặc chọn file vào đây. Hệ thống tự nhận diện cấu trúc.',
     import_file_label: 'Chọn file (tuỳ chọn)', import_or_paste: 'hoặc dán nội dung:',
     import_textarea_ph: 'Dán nội dung RIS/BibTeX vào đây…',
     import_submit: 'Nhập vào thư viện', import_cancel: 'Huỷ',
@@ -404,8 +408,7 @@ const I18N = {
     results_after_dedup: '去重后（identity-graph）共 {n} 条结果。指纹 {fp}…',
     not_persisted_hint: '未保存（数据库未配置）',
     library_import_btn: '导入 RIS/BibTeX', import_title: '批量导入 RIS/BibTeX',
-    import_hint: '从 Zotero、EndNote、万方、知网等工具导出文献列表（RIS/BibTeX/EndNote/NoteExpress 均可 — 知网常见文件名 .ris/.bib/.env/.net），然后粘贴内容或选择文件。系统会自动识别格式，无需选对上面的下拉选项。',
-    import_format_label: '格式', import_format_ris: 'RIS (.ris)', import_format_bibtex: 'BibTeX (.bib)',
+    import_hint: '从 Zotero、EndNote、万方、知网等工具导出文献列表（RIS/BibTeX/EndNote/NoteExpress 均可 — 知网常见文件名 .ris/.bib/.env/.net），然后粘贴内容或选择文件。系统会自动识别格式。',
     import_file_label: '选择文件（可选）', import_or_paste: '或粘贴内容：',
     import_textarea_ph: '将 RIS/BibTeX 内容粘贴在此…',
     import_submit: '导入到文献库', import_cancel: '取消',
@@ -511,8 +514,7 @@ const I18N = {
     results_after_dedup: '{n} results after dedup (identity-graph). Fingerprint {fp}…',
     not_persisted_hint: 'not saved (DB not configured)',
     library_import_btn: 'Import RIS/BibTeX', import_title: 'Bulk import from RIS/BibTeX',
-    import_hint: 'Export your reading list from Zotero, EndNote, Wanfang, CNKI, etc. (RIS/BibTeX/EndNote/NoteExpress all work — CNKI files are often named .ris/.bib/.env/.net), then paste the content or choose a file here. The format is auto-detected, no need to match the dropdown above.',
-    import_format_label: 'Format', import_format_ris: 'RIS (.ris)', import_format_bibtex: 'BibTeX (.bib)',
+    import_hint: 'Export your reading list from Zotero, EndNote, Wanfang, CNKI, etc. (RIS/BibTeX/EndNote/NoteExpress all work — CNKI files are often named .ris/.bib/.env/.net), then paste the content or choose a file here. The format is auto-detected.',
     import_file_label: 'Choose file (optional)', import_or_paste: 'or paste content:',
     import_textarea_ph: 'Paste RIS/BibTeX content here…',
     import_submit: 'Import to library', import_cancel: 'Cancel',
@@ -852,13 +854,8 @@ function renderLibraryCard(records) {
     <div id="wbImportForm" class="card" style="display:none;background:var(--bg);margin:0 0 12px">
       <h4 style="margin:0 0 6px">${t('import_title')}</h4>
       <p class="hint">${t('import_hint')}</p>
-      <label>${t('import_format_label')}</label>
-      <select id="impFormat">
-        <option value="ris">${t('import_format_ris')}</option>
-        <option value="bibtex">${t('import_format_bibtex')}</option>
-      </select>
       <label>${t('import_file_label')}</label>
-      <input id="impFile" type="file" accept=".ris,.bib,.bibtex,.env,.net,.enw,.nx,.txt,text/plain">
+      <div class="file-drop"><input id="impFile" type="file" accept=".ris,.bib,.bibtex,.env,.net,.enw,.nx,.txt,text/plain"></div>
       <label>${t('import_or_paste')}</label>
       <textarea id="impText" rows="6" placeholder="${esc(t('import_textarea_ph'))}"></textarea>
       <button class="btn sm" style="margin-top:6px" onclick="wbImportRefs()">${t('import_submit')}</button>
@@ -985,7 +982,10 @@ window.wbToggleImportForm = (force) => {
   el.style.display = show ? 'block' : 'none';
 };
 window.wbImportRefs = async () => {
-  const format = $('impFormat').value;
+  // Định dạng chỉ mang tính khởi điểm — backend (parseReferences) LUÔN tự dò cả
+  // RIS/BibTeX/EndNote-tag/NoteExpress bất kể giá trị này, nên bỏ hẳn dropdown chọn
+  // định dạng khỏi UI (đã gây rối vì không ảnh hưởng gì tới kết quả thực tế).
+  const format = 'ris';
   const file = $('impFile').files[0];
   const msgEl = $('impMsg');
   let text = $('impText').value;
