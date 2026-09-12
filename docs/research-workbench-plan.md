@@ -563,8 +563,15 @@ Giữ 4 nguồn Discovery hiện có (refactor sang connector) · thêm **PubMed
 **Track business (chủ sở hữu: Hạ Vân Y Đạo):** liên hệ Wanfang theo [Phụ lục D](#26-phụ-lục-d-bộ-câu-hỏi-licensing-wanfang) · khảo sát hợp đồng SinoMed/CNKI/维普.
 **Track code (chỉ khi có key/agreement):** hoàn thiện `wanfang` adapter từ skeleton → production · query expansion Trung–Anh–Việt lưu trong `search_run` · trial-registry coverage qua ChiCTR/WHO ICTRP · test call truy vấn Trung Y thực tế → chuyển `blocked_pending_license` → `approved`.
 
-### M3 — Evidence Workspace
+### M3 — Evidence Workspace ✅ ĐÃ XONG (2026-09-12)
 Project library · import RIS/BibTeX · screening nhẹ · **evidence matrix** + xuất `.xlsx`/`.docx` · phân loại study type.
+Đã code+push tất cả (repo `tmh2388/chimedis-home`, nhánh `main`): project library (lưu từ tìm
+kiếm công khai + panel SciSpace-style + nhập tay), screening nhẹ (trạng thái
+shortlisted/included/excluded qua dropdown), evidence matrix xuất xlsx/docx/csv, phân loại study
+type (heuristic `lib/study-type.js`, hiển thị không ghi đè DB), import RIS/BibTeX hàng loạt
+(`lib/ref-import.js` + `POST /projects/:id/library/import`, commit `7cd7b41`). i18n VI/ZH/EN đầy
+đủ. Việc còn lại (không phải M3): người dùng cần chạy migration `db/m3-workbench.sql` trên
+production nếu chưa chạy, npm install nếu thiếu `exceljs`/`docx`.
 
 ### M4 — Gap Candidate & Verification
 Sinh candidate (nối đất, ≥2 dẫn chứng) · verification Evidence Search · **Gap Evidence Profile** · state machine + hard guardrails · nhãn "ứng viên" ở UI.
