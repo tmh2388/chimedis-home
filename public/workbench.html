@@ -291,7 +291,7 @@ const I18N = {
     results_after_dedup: '{n} kết quả sau khử trùng (identity-graph). Fingerprint {fp}…',
     not_persisted_hint: 'chưa lưu (DB chưa cấu hình)',
     library_import_btn: 'Nhập RIS/BibTeX', import_title: 'Nhập hàng loạt từ RIS/BibTeX',
-    import_hint: 'Xuất danh sách bài từ Zotero, EndNote, Wanfang, CNKI… ra định dạng RIS hoặc BibTeX, rồi dán nội dung hoặc chọn file (.ris/.bib) vào đây.',
+    import_hint: 'Xuất danh sách bài từ Zotero, EndNote, Wanfang, CNKI… (RIS/BibTeX/EndNote/NoteExpress đều được — CNKI thường đặt tên file .ris/.bib/.env/.net), rồi dán nội dung hoặc chọn file vào đây. Hệ thống tự nhận diện cấu trúc, không cần chọn đúng định dạng ở trên.',
     import_format_label: 'Định dạng', import_format_ris: 'RIS (.ris)', import_format_bibtex: 'BibTeX (.bib)',
     import_file_label: 'Chọn file (tuỳ chọn)', import_or_paste: 'hoặc dán nội dung:',
     import_textarea_ph: 'Dán nội dung RIS/BibTeX vào đây…',
@@ -392,7 +392,7 @@ const I18N = {
     results_after_dedup: '去重后（identity-graph）共 {n} 条结果。指纹 {fp}…',
     not_persisted_hint: '未保存（数据库未配置）',
     library_import_btn: '导入 RIS/BibTeX', import_title: '批量导入 RIS/BibTeX',
-    import_hint: '从 Zotero、EndNote、万方、知网等工具导出 RIS 或 BibTeX 格式的文献列表，然后粘贴内容或选择文件（.ris/.bib）。',
+    import_hint: '从 Zotero、EndNote、万方、知网等工具导出文献列表（RIS/BibTeX/EndNote/NoteExpress 均可 — 知网常见文件名 .ris/.bib/.env/.net），然后粘贴内容或选择文件。系统会自动识别格式，无需选对上面的下拉选项。',
     import_format_label: '格式', import_format_ris: 'RIS (.ris)', import_format_bibtex: 'BibTeX (.bib)',
     import_file_label: '选择文件（可选）', import_or_paste: '或粘贴内容：',
     import_textarea_ph: '将 RIS/BibTeX 内容粘贴在此…',
@@ -493,7 +493,7 @@ const I18N = {
     results_after_dedup: '{n} results after dedup (identity-graph). Fingerprint {fp}…',
     not_persisted_hint: 'not saved (DB not configured)',
     library_import_btn: 'Import RIS/BibTeX', import_title: 'Bulk import from RIS/BibTeX',
-    import_hint: 'Export your reading list from Zotero, EndNote, Wanfang, CNKI, etc. as RIS or BibTeX, then paste the content or choose a file (.ris/.bib) here.',
+    import_hint: 'Export your reading list from Zotero, EndNote, Wanfang, CNKI, etc. (RIS/BibTeX/EndNote/NoteExpress all work — CNKI files are often named .ris/.bib/.env/.net), then paste the content or choose a file here. The format is auto-detected, no need to match the dropdown above.',
     import_format_label: 'Format', import_format_ris: 'RIS (.ris)', import_format_bibtex: 'BibTeX (.bib)',
     import_file_label: 'Choose file (optional)', import_or_paste: 'or paste content:',
     import_textarea_ph: 'Paste RIS/BibTeX content here…',
@@ -786,7 +786,7 @@ function renderLibraryCard(records) {
         <option value="bibtex">${t('import_format_bibtex')}</option>
       </select>
       <label>${t('import_file_label')}</label>
-      <input id="impFile" type="file" accept=".ris,.bib,.bibtex,text/plain">
+      <input id="impFile" type="file" accept=".ris,.bib,.bibtex,.env,.net,.enw,.nx,.txt,text/plain">
       <label>${t('import_or_paste')}</label>
       <textarea id="impText" rows="6" placeholder="${esc(t('import_textarea_ph'))}"></textarea>
       <button class="btn sm" style="margin-top:6px" onclick="wbImportRefs()">${t('import_submit')}</button>
