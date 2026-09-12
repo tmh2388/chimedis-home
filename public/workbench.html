@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Bàn làm việc nghiên cứu — Chimedis</title>
+<title id="pageTitle">Bàn làm việc nghiên cứu — Chimedis</title>
 <link rel="icon" href="/assets/logo.png" />
 <style>
   /* Cùng hệ thống thiết kế với chimedis.vn (public/index.html) — token/màu/font giữ
@@ -27,9 +27,23 @@
   header .brand img{width:34px;height:34px;flex:0 0 auto;object-fit:contain}
   header h1{font-family:var(--font-serif);font-size:17px;margin:0;font-weight:700;letter-spacing:.01em;white-space:nowrap}
   header .sub{font-size:11.5px;color:#C9DAD8;letter-spacing:.02em;white-space:nowrap}
-  header .who{margin-left:auto;font-size:13px;color:#DCE7E5;white-space:nowrap}
+  header .who{margin-left:auto;font-size:13px;color:#DCE7E5;white-space:nowrap;display:flex;align-items:center;gap:10px}
   header .who a{color:#F5F0E6;font-weight:600}
   header .who a:hover{color:#fff}
+
+  .lang-wrap{position:relative}
+  .lang-btn{display:flex;align-items:center;gap:5px;padding:7px 10px;border:1px solid rgba(255,255,255,.25);border-radius:8px;background:transparent;color:inherit;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
+  .lang-btn:hover{background:rgba(255,255,255,.1)}
+  .lang-menu{position:absolute;top:calc(100% + 6px);right:0;background:#fff;border-radius:11px;box-shadow:0 8px 24px rgba(14,58,58,.18);border:1px solid var(--border);padding:6px;min-width:140px;display:none;z-index:50}
+  .lang-menu.show{display:block}
+  .lang-opt{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;border-radius:7px;font-size:13.5px;color:var(--fg);cursor:pointer}
+  .lang-opt:hover{background:#F5F0E6}
+  .lang-opt.active{color:var(--accent);font-weight:700}
+  .lang-opt .ck{display:none;color:var(--accent)}
+  .lang-opt.active .ck{display:inline}
+  #loginLangWrap{position:fixed;top:14px;right:16px;z-index:100}
+  #loginLangWrap .lang-btn{border-color:var(--border-strong);color:var(--fg)}
+  #loginLangWrap .lang-btn:hover{background:#EFE8D8}
 
   .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:9px;
     font-family:inherit;font-weight:700;font-size:13.5px;border:1.5px solid transparent;cursor:pointer;white-space:nowrap;
@@ -89,26 +103,35 @@
 </head>
 <body>
 
+<div id="loginLangWrap" class="lang-wrap">
+  <button class="lang-btn" onclick="toggleLangMenu()" aria-label="Language"><span class="lang-label">VI</span> ▾</button>
+  <div class="lang-menu">
+    <div class="lang-opt" data-l="vi" onclick="setLang('vi')">Tiếng Việt<span class="ck">✓</span></div>
+    <div class="lang-opt" data-l="zh" onclick="setLang('zh')">中文<span class="ck">✓</span></div>
+    <div class="lang-opt" data-l="en" onclick="setLang('en')">English<span class="ck">✓</span></div>
+  </div>
+</div>
+
 <div id="loginView" hidden>
   <img src="/assets/logo.png" alt="Chimedis" style="width:52px;height:52px;margin:0 auto 12px;display:block">
-  <h1 style="font-size:19px;margin:0 0 6px">Bàn làm việc nghiên cứu</h1>
-  <p class="muted">Đăng nhập bằng tài khoản Chimedis để tạo dự án, tìm y văn và lưu nhật ký tìm kiếm.</p>
+  <h1 style="font-size:19px;margin:0 0 6px" data-i18n="login_title">Bàn làm việc nghiên cứu</h1>
+  <p class="muted" data-i18n="login_desc">Đăng nhập bằng tài khoản Chimedis để tạo dự án, tìm y văn và lưu nhật ký tìm kiếm.</p>
   <div class="card">
-    <button class="btn" style="width:100%" onclick="wbSocial('google')">Đăng nhập với Google</button>
-    <button class="btn sec" style="width:100%;margin-top:8px" onclick="wbSocial('apple')">Đăng nhập với Apple</button>
-    <button class="btn sec" style="width:100%;margin-top:8px" onclick="wbSocial('facebook')">Đăng nhập với Facebook</button>
-    <div style="text-align:center;margin:10px 0;color:var(--muted-fg);font-size:12px">hoặc</div>
-    <label>Email</label><input id="loginEmail" type="email" />
-    <label>Mật khẩu <span id="pwHint" class="hint" hidden>(tối thiểu 6 ký tự)</span></label>
-    <input id="loginPass" type="password" />
-    <button class="btn" style="width:100%;margin-top:10px" id="authSubmit" onclick="wbAuthSubmit()">Đăng nhập</button>
+    <button class="btn" style="width:100%" onclick="wbSocial('google')" data-i18n="login_google">Đăng nhập với Google</button>
+    <button class="btn sec" style="width:100%;margin-top:8px" onclick="wbSocial('apple')" data-i18n="login_apple">Đăng nhập với Apple</button>
+    <button class="btn sec" style="width:100%;margin-top:8px" onclick="wbSocial('facebook')" data-i18n="login_facebook">Đăng nhập với Facebook</button>
+    <div style="text-align:center;margin:10px 0;color:var(--muted-fg);font-size:12px" data-i18n="login_or">hoặc</div>
+    <label data-i18n="login_email_label">Email</label><input id="loginEmail" type="email" autocomplete="email" />
+    <label><span data-i18n="login_pass_label">Mật khẩu</span> <span id="pwHint" class="hint" hidden data-i18n="login_pass_hint">(tối thiểu 6 ký tự)</span></label>
+    <input id="loginPass" type="password" autocomplete="current-password" />
+    <button class="btn" style="width:100%;margin-top:10px" id="authSubmit" onclick="wbAuthSubmit()" data-i18n="login_submit">Đăng nhập</button>
     <p class="hint" style="text-align:center;margin-top:10px">
-      <a href="#" id="toggleAuth" onclick="wbToggleAuth();return false">Chưa có tài khoản? Đăng ký</a>
-      · <a href="#" onclick="wbResetPw();return false">Quên mật khẩu?</a>
+      <a href="#" id="toggleAuth" onclick="wbToggleAuth();return false" data-i18n="login_toggle_to_register">Chưa có tài khoản? Đăng ký</a>
+      · <a href="#" onclick="wbResetPw();return false" data-i18n="login_forgot">Quên mật khẩu?</a>
     </p>
     <div id="loginMsg"></div>
   </div>
-  <p class="hint"><a href="/">← Về trang chủ Chimedis</a></p>
+  <p class="hint"><a href="/" data-i18n="login_back_home">← Về trang chủ Chimedis</a></p>
 </div>
 
 <div id="appView" hidden>
@@ -116,24 +139,34 @@
     <a href="/" class="brand" style="color:inherit">
       <img src="/assets/logo-dark.png" alt="Chimedis">
       <span>
-        <h1>Bàn làm việc nghiên cứu</h1>
-        <div class="sub">Chimedis · Tìm kiếm + Thư viện + Nhật ký tìm kiếm</div>
+        <h1 data-i18n="app_title">Bàn làm việc nghiên cứu</h1>
+        <div class="sub" data-i18n="app_subtitle">Chimedis · Tìm kiếm + Thư viện + Nhật ký tìm kiếm</div>
       </span>
     </a>
-    <span class="who"><span id="whoLabel"></span> · <a href="/tai-khoan.html">Tài khoản</a> · <a href="#" onclick="wbSignOut();return false">Thoát</a></span>
+    <span class="who">
+      <span id="whoLabel"></span> · <a href="/tai-khoan.html" data-i18n="nav_account">Tài khoản</a> · <a href="#" onclick="wbSignOut();return false" data-i18n="nav_signout">Thoát</a>
+      <span class="lang-wrap">
+        <button class="lang-btn" onclick="toggleLangMenu()" aria-label="Language"><span class="lang-label">VI</span> ▾</button>
+        <div class="lang-menu">
+          <div class="lang-opt" data-l="vi" onclick="setLang('vi')">Tiếng Việt<span class="ck">✓</span></div>
+          <div class="lang-opt" data-l="zh" onclick="setLang('zh')">中文<span class="ck">✓</span></div>
+          <div class="lang-opt" data-l="en" onclick="setLang('en')">English<span class="ck">✓</span></div>
+        </div>
+      </span>
+    </span>
   </header>
   <div id="verifyBanner" class="msg" style="margin:0;border-radius:0;background:#FBF1E4;color:var(--warn)" hidden></div>
   <main>
     <div class="side">
-      <h2>Dự án của tôi</h2>
+      <h2 data-i18n="side_my_projects">Dự án của tôi</h2>
       <div id="projList"></div>
-      <button class="btn sm sec" style="width:100%;margin-top:10px" onclick="wbNewProject()">+ Tạo dự án</button>
+      <button class="btn sm sec" style="width:100%;margin-top:10px" onclick="wbNewProject()" data-i18n="side_new_project">+ Tạo dự án</button>
       <p class="hint" style="margin-top:16px">
-        <a href="#" onclick="wbResetAll();return false" style="color:var(--bad)">Đặt lại — xoá toàn bộ dự án của tôi</a>
+        <a href="#" onclick="wbResetAll();return false" style="color:var(--bad)" data-i18n="side_reset_all">Đặt lại — xoá toàn bộ dự án của tôi</a>
       </p>
     </div>
     <div class="content" id="content">
-      <p class="muted">Chọn hoặc tạo một dự án để bắt đầu.</p>
+      <p class="muted" data-i18n="content_placeholder">Chọn hoặc tạo một dự án để bắt đầu.</p>
     </div>
   </main>
 </div>
@@ -159,13 +192,329 @@ try { auth = getAuth(initializeApp(FIREBASE_CONFIG)); } catch (e) { console.erro
 const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 
+// ===================================================================================
+// I18N — VI/ZH/EN bắt buộc cho MỌI tính năng UI (docs/product-requirement-trilingual-i18n.md).
+// Cùng cơ chế + cùng khoá localStorage với public/index.html (chimedis_portal_lang) để
+// chọn ngôn ngữ nhất quán xuyên site. `t(key, vars?)` hỗ trợ thêm nội suy {var} — index.html
+// chưa cần vì phần lớn tĩnh; workbench có nhiều chuỗi động (đếm số, tên, lỗi) nên mở rộng thêm,
+// vẫn tương thích ngược 100% với t(key) không tham số.
+// ===================================================================================
+const state = { lang: localStorage.getItem('chimedis_portal_lang') || 'vi' };
+const I18N = {
+  vi: {
+    page_title: 'Bàn làm việc nghiên cứu — Chimedis',
+    login_title: 'Bàn làm việc nghiên cứu', login_desc: 'Đăng nhập bằng tài khoản Chimedis để tạo dự án, tìm y văn và lưu nhật ký tìm kiếm.',
+    login_google: 'Đăng nhập với Google', login_apple: 'Đăng nhập với Apple', login_facebook: 'Đăng nhập với Facebook', login_or: 'hoặc',
+    login_email_label: 'Email', login_pass_label: 'Mật khẩu', login_pass_hint: '(tối thiểu 6 ký tự)',
+    login_submit: 'Đăng nhập', login_submit_register: 'Đăng ký',
+    login_toggle_to_register: 'Chưa có tài khoản? Đăng ký', login_toggle_to_login: 'Đã có tài khoản? Đăng nhập',
+    login_forgot: 'Quên mật khẩu?', login_back_home: '← Về trang chủ Chimedis',
+    err_invalid_response: 'Phản hồi không hợp lệ', err_enter_email_pass: 'Nhập email và mật khẩu.',
+    msg_account_created: 'Đã tạo tài khoản. Đã gửi email xác thực tới {email} — bấm link trong email để bắt đầu tạo dự án.',
+    err_enter_email_for_reset: 'Nhập email vào ô trên rồi bấm "Quên mật khẩu?".',
+    msg_reset_sent: 'Đã gửi email đặt lại mật khẩu tới {email}.',
+    msg_verify_resent: 'Đã gửi lại email xác thực. Kiểm tra hộp thư rồi bấm "Đã xác thực".',
+    err_prefix: 'Lỗi: ', err_recheck_prefix: 'Lỗi kiểm tra lại: ',
+    err_operation_not_allowed: 'Phương thức này chưa được bật trên máy chủ. Thử cách khác.',
+    err_account_exists_diff_cred: 'Email này đã đăng ký bằng phương thức khác. Đăng nhập bằng phương thức cũ, rồi liên kết thêm trong trang Tài khoản.',
+    err_unauthorized_domain: 'Tên miền chưa được cho phép trong Firebase (Authorized domains).',
+    verify_banner_prefix: '⚠️ Email', verify_banner_suffix: 'chưa xác thực — bạn xem/tìm được nhưng chưa tạo được dự án.',
+    verify_recheck_link: 'Tôi đã xác thực → kiểm tra lại', verify_resend_link: 'Gửi lại email',
+    app_title: 'Bàn làm việc nghiên cứu', app_subtitle: 'Chimedis · Tìm kiếm + Thư viện + Nhật ký tìm kiếm',
+    nav_account: 'Tài khoản', nav_signout: 'Thoát',
+    side_my_projects: 'Dự án của tôi', side_no_projects: 'Chưa có dự án nào.', side_new_project: '+ Tạo dự án',
+    side_reset_all: 'Đặt lại — xoá toàn bộ dự án của tôi', side_search_runs_count: '{n} lượt tìm',
+    content_placeholder: 'Chọn hoặc tạo một dự án để bắt đầu.', prompt_new_project_title: 'Tên dự án nghiên cứu:',
+    project_hash: 'Dự án #{id}', project_meta: '{q} câu hỏi · {r} lượt tìm', delete_project_link: 'xoá dự án',
+    card_questions_title: 'Câu hỏi nghiên cứu',
+    questions_hint: 'Đây <b>không phải</b> ô tìm kiếm. Viết <b>một câu hoàn chỉnh</b> mô tả điều bạn muốn trả lời bằng đề tài, theo khung PICO: <i>Ở [đối tượng], [can thiệp] so với [đối chứng] có [kết cục] không?</i><br><b>Hồ sơ câu hỏi</b> quyết định những nhóm nguồn <b>bắt buộc</b> phải tìm thấy thì độ phủ mới là <span class="cov complete">complete</span>, chưa đủ thì <span class="cov partial">partial</span>.',
+    question_no_content: '(chưa nhập nội dung)', question_edit: 'sửa', question_delete: 'xoá', questions_empty: 'Chưa có câu hỏi.',
+    question_content_label: 'Nội dung câu hỏi (PICO tóm tắt)',
+    question_content_ph: 'vd: Ở người lớn nguy cơ cao, châm cứu dự phòng so với không châm có làm giảm tỷ lệ đột quỵ lần đầu không?',
+    question_profile_label: 'Hồ sơ câu hỏi (quyết định nguồn tối thiểu)', question_save: 'Lưu câu hỏi',
+    prompt_edit_question: 'Sửa nội dung câu hỏi:', confirm_delete_question: 'Xoá câu hỏi này? Các lượt tìm đã gắn sẽ được gỡ liên kết (không bị xoá).',
+    alert_enter_question: 'Nhập nội dung câu hỏi (một câu hoàn chỉnh, không phải từ khoá tìm kiếm).',
+    profile_general_label: 'Chủ đề chung / chưa phân loại',
+    profile_general_hint: 'Không phân loại được → độ phủ trần là partial. Chọn hồ sơ cụ thể nếu có thể.',
+    profile_tcm_clinical_label: 'Can thiệp TCM / châm cứu / thảo dược (lâm sàng)',
+    profile_tcm_clinical_hint: 'Cần: PubMed + 1 nguồn Trung văn + 1 trial registry. Nguồn Trung văn (Wanfang/CNKI) chưa cấp phép → hiện luôn partial (đúng: đề tài lâm sàng chưa tra y văn Trung Quốc thì chưa thể coi là đủ).',
+    profile_preclinical_label: 'In-vitro / animal (tiền lâm sàng)',
+    profile_preclinical_hint: 'Cần: PubMed + Europe PMC/OpenAlex. KHÔNG đòi trial registry. Có thể đạt complete.',
+    profile_vn_context_label: 'Câu hỏi bối cảnh / dân số Việt Nam',
+    profile_vn_context_hint: 'Cần: PubMed + Europe PMC/OpenAlex + nguồn Việt. Nguồn Trung văn không bắt buộc.',
+    profile_tcm_literature_label: 'Văn hiến / lý luận YHCT',
+    profile_tcm_literature_hint: 'Cần: nguồn Trung văn (chưa cấp phép) + nguồn Việt → hiện thường partial.',
+    card_search_title: 'Tìm y văn',
+    search_hint: '<b>Discovery</b> = tìm rộng để khám phá chủ đề (khi chưa rõ câu hỏi).<br><b>Evidence</b> = lượt tìm được ghi nhật ký bất biến, để đưa vào phần "Chiến lược tìm kiếm" của luận án và (về sau) xác minh khoảng trống. <b>Nhớ chọn "Gắn câu hỏi"</b> — nếu để trống, hệ thống dùng hồ sơ <i>chung</i> và độ phủ luôn chỉ đạt <span class="cov partial">partial</span>.',
+    search_query_label: 'Truy vấn (Việt / Trung / Anh — thuật ngữ YHCT sẽ được dịch tự động)',
+    search_query_ph: 'vd: điện châm phục hồi chức năng sau đột quỵ',
+    search_mode_label: 'Chế độ', search_mode_discovery: 'Discovery (rộng, nhanh)', search_mode_evidence: 'Evidence (tái lập, cho verification)',
+    search_question_label: 'Gắn câu hỏi ⚠️', search_question_none: '— không (hồ sơ chung) —',
+    search_year_from: 'Từ năm', search_year_to: 'Đến năm', search_submit: 'Tìm & ghi nhật ký', search_running: 'Đang tìm ở nhiều nguồn…',
+    library_title: 'Thư viện dự án ({n})', library_add_manual: '+ Thêm bản ghi thủ công',
+    library_desc: 'Bản ghi bạn đã lưu từ kết quả tìm kiếm bên dưới, hoặc <b>tự tay nhập</b> (VD: đọc bài trên Wanfang/CNKI ở tab riêng rồi chép lại tiêu đề/tác giả/tóm tắt/DOI vào đây) — <b>đây là danh sách bạn đang quản lý</b> (không phải file tải về máy; file Excel/Word chỉ sinh ra khi bấm Xuất, không lưu lại trên máy chủ). * = loại nghiên cứu đoán tự động (chưa xác nhận).',
+    library_export: 'Xuất:', export_excel: 'Excel', export_word: 'Word', export_csv: 'CSV',
+    library_empty: 'Chưa lưu bản ghi nào. Tìm y văn bên dưới rồi bấm "Lưu vào thư viện" ở kết quả.',
+    manual_title_label: 'Tiêu đề *', manual_title_ph: 'Tên bài báo/luận văn',
+    manual_authors_label: 'Tác giả (phẩy giữa các tên)', manual_authors_ph: 'Nguyễn Văn A, Trần Thị B',
+    manual_journal_label: 'Tạp chí/Nguồn', manual_journal_ph: 'VD: Wanfang, CNKI, tên tạp chí', manual_year_label: 'Năm',
+    manual_doi_label: 'DOI', manual_doi_ph: '10.xxxx/…', manual_pmid_label: 'PMID',
+    manual_keywords_label: 'Từ khoá (phẩy giữa các từ)', manual_keywords_ph: 'châm cứu, đột quỵ, phục hồi chức năng',
+    manual_abstract_label: 'Tóm tắt', manual_save: 'Lưu vào thư viện', manual_cancel: 'Huỷ',
+    manual_err_title_required: 'Cần nhập tiêu đề.', manual_err_save_prefix: 'Lỗi lưu: ',
+    select_all: 'Chọn tất cả', n_selected: '{n} đã chọn', delete_selected: 'Xoá mục đã chọn', delete_all_library: 'Xoá toàn bộ thư viện',
+    col_title: 'Tiêu đề', col_year: 'Năm', col_source: 'Nguồn', col_type: 'Loại', col_status: 'Trạng thái', col_id: 'ID',
+    status_shortlisted: 'Đã chọn lọc', status_included: 'Đưa vào bài', status_excluded: 'Loại',
+    study_systematic_review: 'Tổng quan hệ thống', study_meta_analysis: 'Phân tích gộp', study_rct: 'RCT',
+    study_case_control: 'Bệnh-chứng', study_cohort: 'Đoàn hệ', study_cross_sectional: 'Cắt ngang', study_case_report: 'Báo cáo ca',
+    study_protocol: 'Đề cương', study_review: 'Tổng quan', study_preclinical: 'Tiền lâm sàng', study_qualitative: 'Định tính', study_unknown: 'Chưa rõ',
+    note_prefix: 'Ghi chú: ', link_delete: 'xoá', dash: '—',
+    confirm_delete_selected: 'Xoá {n} mục đã chọn khỏi thư viện dự án?',
+    confirm_delete_all_library: 'Xoá TOÀN BỘ {n} bản ghi khỏi thư viện dự án này? Không thể hoàn tác.',
+    confirm_remove_one: 'Xoá bản ghi này khỏi thư viện dự án?', err_delete_prefix: 'Lỗi xoá: ',
+    err_export_http: 'Lỗi xuất: HTTP {code}',
+    btn_save_to_library: 'Lưu vào thư viện', btn_saving: 'Đang lưu…', btn_saved: 'Đã lưu ✓',
+    err_save_to_library_prefix: 'Lỗi lưu vào thư viện: ', err_update_prefix: 'Lỗi cập nhật: ', no_id_hint: 'không có ID',
+    runs_title: 'Nhật ký tìm kiếm ({n})',
+    runs_legend: '<span class="cov complete">complete</span> = đã tìm thấy ở mọi nhóm nguồn bắt buộc của hồ sơ câu hỏi · <span class="cov partial">partial</span> = còn thiếu nhóm nguồn hoặc có nguồn lỗi · <span class="cov incomplete">incomplete</span> = không nguồn nào trả kết quả.',
+    runs_export: 'Xuất:', export_markdown: 'Markdown', runs_empty: 'Chưa có lượt tìm nào.',
+    col_mode: 'Chế độ', col_query: 'Truy vấn', col_results: 'Kết quả', col_coverage: 'Độ phủ', col_date: 'Ngày', col_num: '#',
+    mode_discovery_short: 'Discovery', mode_evidence_short: 'Evidence',
+    alert_no_projects_to_delete: 'Không có dự án nào để xoá.',
+    confirm_reset_all: 'Xoá TẤT CẢ {n} dự án của bạn (kèm câu hỏi + nhật ký tìm kiếm)? Không hoàn tác được.\n\nLưu ý: kho bài báo dùng chung (wb_research_records) KHÔNG bị xoá.',
+    reset_done: 'Đã đặt lại. Tạo dự án mới để bắt đầu.', project_deleted: 'Đã xoá. Chọn hoặc tạo dự án khác.',
+    confirm_delete_project: 'Xoá dự án này và toàn bộ nhật ký tìm kiếm của nó?',
+    coverage_label: 'Độ phủ: {state}', profile_meta_label: 'hồ sơ: {p} · policy {v}', unmet_groups_label: 'Nhóm nguồn chưa đạt: ',
+    query_sent_label: 'Truy vấn gửi đi: ', untranslated_label: 'Chưa dịch (cần LLM ở M4): ',
+    evidence_manifest_summary: 'Evidence Coverage Manifest',
+    manifest_col_source: 'Nguồn', manifest_col_status: 'Trạng thái', manifest_col_count: 'Số bản', manifest_col_ms: 'ms', manifest_col_note: 'Ghi chú',
+    results_after_dedup: '{n} kết quả sau khử trùng (identity-graph). Fingerprint {fp}…',
+    not_persisted_hint: 'chưa lưu (DB chưa cấu hình)',
+  },
+  zh: {
+    page_title: '研究工作台 — Chimedis',
+    login_title: '研究工作台', login_desc: '使用您的 Chimedis 账户登录，创建项目、检索文献并保存检索日志。',
+    login_google: '使用 Google 登录', login_apple: '使用 Apple 登录', login_facebook: '使用 Facebook 登录', login_or: '或',
+    login_email_label: '邮箱', login_pass_label: '密码', login_pass_hint: '（至少 6 个字符）',
+    login_submit: '登录', login_submit_register: '注册',
+    login_toggle_to_register: '还没有账户？注册', login_toggle_to_login: '已有账户？登录',
+    login_forgot: '忘记密码？', login_back_home: '← 返回 Chimedis 首页',
+    err_invalid_response: '服务器响应无效', err_enter_email_pass: '请输入邮箱和密码。',
+    msg_account_created: '账户已创建。验证邮件已发送至 {email} — 点击邮件中的链接后即可开始创建项目。',
+    err_enter_email_for_reset: '请先在上方输入邮箱，再点击"忘记密码？"。',
+    msg_reset_sent: '密码重置邮件已发送至 {email}。',
+    msg_verify_resent: '验证邮件已重新发送。请查收邮箱后点击"我已验证"。',
+    err_prefix: '错误：', err_recheck_prefix: '重新检查失败：',
+    err_operation_not_allowed: '服务器尚未启用此登录方式，请尝试其他方式。',
+    err_account_exists_diff_cred: '该邮箱已通过其他方式注册。请先用原方式登录，再到"账户"页面绑定此方式。',
+    err_unauthorized_domain: '该域名尚未在 Firebase 中被授权（Authorized domains）。',
+    verify_banner_prefix: '⚠️ 邮箱', verify_banner_suffix: '尚未验证 — 您可以查看/检索，但暂时无法创建项目。',
+    verify_recheck_link: '我已验证 → 重新检查', verify_resend_link: '重新发送邮件',
+    app_title: '研究工作台', app_subtitle: 'Chimedis · 检索 + 文献库 + 检索日志',
+    nav_account: '账户', nav_signout: '退出',
+    side_my_projects: '我的项目', side_no_projects: '暂无项目。', side_new_project: '+ 新建项目',
+    side_reset_all: '重置 — 删除我的全部项目', side_search_runs_count: '{n} 次检索',
+    content_placeholder: '请选择或新建一个项目开始。', prompt_new_project_title: '研究项目名称：',
+    project_hash: '项目 #{id}', project_meta: '{q} 个研究问题 · {r} 次检索', delete_project_link: '删除项目',
+    card_questions_title: '研究问题',
+    questions_hint: '这里<b>不是</b>检索框。请写出<b>完整的一句话</b>描述本课题想回答的问题，采用 PICO 框架：<i>对于[人群]，[干预]相较于[对照]是否能改善[结局]？</i><br><b>问题类型</b>决定了哪些来源组是<b>必须</b>检索到的，只有全部满足覆盖度才是 <span class="cov complete">complete</span>，否则为 <span class="cov partial">partial</span>。',
+    question_no_content: '（尚未填写内容）', question_edit: '编辑', question_delete: '删除', questions_empty: '暂无研究问题。',
+    question_content_label: '问题内容（PICO 摘要）',
+    question_content_ph: '例：在高风险成年人中，预防性针灸相较于不针灸能否降低首次脑卒中的发生率？',
+    question_profile_label: '问题类型（决定最低所需来源）', question_save: '保存问题',
+    prompt_edit_question: '编辑问题内容：', confirm_delete_question: '删除此问题？已关联的检索记录将解除关联（不会被删除）。',
+    alert_enter_question: '请输入问题内容（完整的一句话，不是检索关键词）。',
+    profile_general_label: '一般主题 / 未分类',
+    profile_general_hint: '无法分类 → 覆盖度上限为 partial。如可能请选择具体类型。',
+    profile_tcm_clinical_label: '中医干预 / 针灸 / 中药（临床）',
+    profile_tcm_clinical_hint: '需要：PubMed + 至少 1 个中文来源 + 1 个试验注册库。中文来源（万方/CNKI）尚未获得授权 → 目前始终为 partial（合理：临床课题若未检索中文文献，则不能视为已完整覆盖）。',
+    profile_preclinical_label: '体外实验 / 动物实验（临床前）',
+    profile_preclinical_hint: '需要：PubMed + Europe PMC/OpenAlex。不要求试验注册库。可达到 complete。',
+    profile_vn_context_label: '越南背景/人群相关问题',
+    profile_vn_context_hint: '需要：PubMed + Europe PMC/OpenAlex + 越南文献来源。中文来源非强制。',
+    profile_tcm_literature_label: '中医文献 / 理论研究',
+    profile_tcm_literature_hint: '需要：中文来源（尚未获得授权）+ 越南文献来源 → 目前通常为 partial。',
+    card_search_title: '文献检索',
+    search_hint: '<b>Discovery（探索）</b> = 广泛检索以探索课题方向（问题尚不明确时使用）。<br><b>Evidence（证据）</b> = 该次检索会被永久记录，用于论文"检索策略"部分，未来也用于验证研究空白。<b>请务必选择"关联问题"</b> — 若留空，系统将使用<i>通用</i>类型，覆盖度只能达到 <span class="cov partial">partial</span>。',
+    search_query_label: '检索词（越文 / 中文 / 英文 — 中医术语将自动翻译）',
+    search_query_ph: '例：电针促进脑卒中后功能恢复',
+    search_mode_label: '模式', search_mode_discovery: 'Discovery（广泛、快速）', search_mode_evidence: 'Evidence（可复现，用于验证）',
+    search_question_label: '关联问题 ⚠️', search_question_none: '— 不关联（通用类型）—',
+    search_year_from: '起始年份', search_year_to: '结束年份', search_submit: '检索并记录日志', search_running: '正在从多个来源检索…',
+    library_title: '项目文献库（{n}）', library_add_manual: '+ 手动添加记录',
+    library_desc: '此列表包含您从下方检索结果中保存的文献，或<b>手动录入</b>的文献（例如：在单独标签页阅读万方/CNKI 上的文章后，将标题/作者/摘要/DOI 复制到此处）——<b>这是您正在管理的列表</b>（并非下载到本地的文件；Excel/Word 文件仅在点击"导出"时生成，不会保存在服务器上）。* = 系统自动推测的研究类型（尚未确认）。',
+    library_export: '导出：', export_excel: 'Excel', export_word: 'Word', export_csv: 'CSV',
+    library_empty: '文献库暂无记录。请在下方检索文献，然后在结果中点击"保存到文献库"。',
+    manual_title_label: '标题 *', manual_title_ph: '文章/论文标题',
+    manual_authors_label: '作者（用逗号分隔）', manual_authors_ph: '张三, 李四',
+    manual_journal_label: '期刊/来源', manual_journal_ph: '例：万方、CNKI、期刊名称', manual_year_label: '年份',
+    manual_doi_label: 'DOI', manual_doi_ph: '10.xxxx/…', manual_pmid_label: 'PMID',
+    manual_keywords_label: '关键词（用逗号分隔）', manual_keywords_ph: '针灸, 脑卒中, 康复',
+    manual_abstract_label: '摘要', manual_save: '保存到文献库', manual_cancel: '取消',
+    manual_err_title_required: '请输入标题。', manual_err_save_prefix: '保存失败：',
+    select_all: '全选', n_selected: '已选 {n} 项', delete_selected: '删除已选项', delete_all_library: '清空整个文献库',
+    col_title: '标题', col_year: '年份', col_source: '来源', col_type: '类型', col_status: '状态', col_id: 'ID',
+    status_shortlisted: '已初筛', status_included: '纳入论文', status_excluded: '已排除',
+    study_systematic_review: '系统综述', study_meta_analysis: 'Meta 分析', study_rct: '随机对照试验（RCT）',
+    study_case_control: '病例对照', study_cohort: '队列研究', study_cross_sectional: '横断面研究', study_case_report: '病例报告',
+    study_protocol: '研究方案', study_review: '综述', study_preclinical: '临床前研究', study_qualitative: '质性研究', study_unknown: '未知',
+    note_prefix: '备注：', link_delete: '删除', dash: '—',
+    confirm_delete_selected: '确定从文献库中删除已选的 {n} 项？',
+    confirm_delete_all_library: '确定清空本项目文献库中的全部 {n} 条记录？此操作不可撤销。',
+    confirm_remove_one: '确定从项目文献库中删除此记录？', err_delete_prefix: '删除失败：',
+    err_export_http: '导出失败：HTTP {code}',
+    btn_save_to_library: '保存到文献库', btn_saving: '正在保存…', btn_saved: '已保存 ✓',
+    err_save_to_library_prefix: '保存到文献库失败：', err_update_prefix: '更新失败：', no_id_hint: '无可用标识符',
+    runs_title: '检索日志（{n}）',
+    runs_legend: '<span class="cov complete">complete</span> = 已在问题类型要求的全部来源组中检索到结果 · <span class="cov partial">partial</span> = 部分来源组缺失或出错 · <span class="cov incomplete">incomplete</span> = 所有来源均无结果。',
+    runs_export: '导出：', export_markdown: 'Markdown', runs_empty: '暂无检索记录。',
+    col_mode: '模式', col_query: '检索词', col_results: '结果数', col_coverage: '覆盖度', col_date: '日期', col_num: '#',
+    mode_discovery_short: 'Discovery', mode_evidence_short: 'Evidence',
+    alert_no_projects_to_delete: '没有可删除的项目。',
+    confirm_reset_all: '确定删除您全部 {n} 个项目（含研究问题与检索日志）？此操作不可撤销。\n\n注意：公共文献库（wb_research_records）不会被删除。',
+    reset_done: '已重置。创建新项目以开始。', project_deleted: '已删除。请选择或新建其他项目。',
+    confirm_delete_project: '确定删除此项目及其全部检索日志？',
+    coverage_label: '覆盖度：{state}', profile_meta_label: '类型：{p} · 策略版本 {v}', unmet_groups_label: '未满足的来源组：',
+    query_sent_label: '实际发送的检索词：', untranslated_label: '未能翻译（M4 阶段将由 LLM 处理）：',
+    evidence_manifest_summary: 'Evidence 覆盖清单',
+    manifest_col_source: '来源', manifest_col_status: '状态', manifest_col_count: '结果数', manifest_col_ms: '耗时(ms)', manifest_col_note: '备注',
+    results_after_dedup: '去重后（identity-graph）共 {n} 条结果。指纹 {fp}…',
+    not_persisted_hint: '未保存（数据库未配置）',
+  },
+  en: {
+    page_title: 'Research Workbench — Chimedis',
+    login_title: 'Research Workbench', login_desc: 'Sign in with your Chimedis account to create projects, search the literature, and keep a search log.',
+    login_google: 'Sign in with Google', login_apple: 'Sign in with Apple', login_facebook: 'Sign in with Facebook', login_or: 'or',
+    login_email_label: 'Email', login_pass_label: 'Password', login_pass_hint: '(at least 6 characters)',
+    login_submit: 'Sign in', login_submit_register: 'Register',
+    login_toggle_to_register: "Don't have an account? Register", login_toggle_to_login: 'Already have an account? Sign in',
+    login_forgot: 'Forgot password?', login_back_home: '← Back to Chimedis home',
+    err_invalid_response: 'Invalid server response', err_enter_email_pass: 'Enter your email and password.',
+    msg_account_created: 'Account created. A verification email was sent to {email} — click the link in the email to start creating projects.',
+    err_enter_email_for_reset: 'Enter your email above, then click "Forgot password?".',
+    msg_reset_sent: 'A password-reset email was sent to {email}.',
+    msg_verify_resent: 'Verification email resent. Check your inbox, then click "I\'ve verified".',
+    err_prefix: 'Error: ', err_recheck_prefix: 'Recheck failed: ',
+    err_operation_not_allowed: 'This sign-in method is not enabled on the server. Try another method.',
+    err_account_exists_diff_cred: 'This email is already registered with a different method. Sign in with the original method, then link this one from the Account page.',
+    err_unauthorized_domain: 'This domain is not authorized in Firebase (Authorized domains).',
+    verify_banner_prefix: '⚠️ Email', verify_banner_suffix: 'is not verified yet — you can browse/search, but cannot create projects yet.',
+    verify_recheck_link: "I've verified → recheck", verify_resend_link: 'Resend email',
+    app_title: 'Research Workbench', app_subtitle: 'Chimedis · Search + Library + Search Log',
+    nav_account: 'Account', nav_signout: 'Sign out',
+    side_my_projects: 'My projects', side_no_projects: 'No projects yet.', side_new_project: '+ New project',
+    side_reset_all: 'Reset — delete all my projects', side_search_runs_count: '{n} searches',
+    content_placeholder: 'Select or create a project to get started.', prompt_new_project_title: 'Research project name:',
+    project_hash: 'Project #{id}', project_meta: '{q} questions · {r} searches', delete_project_link: 'delete project',
+    card_questions_title: 'Research questions',
+    questions_hint: 'This is <b>not</b> a search box. Write <b>one complete sentence</b> describing what your project aims to answer, using the PICO framework: <i>In [population], does [intervention] compared with [comparator] improve [outcome]?</i><br>The <b>question profile</b> decides which source groups are <b>mandatory</b> for coverage to be <span class="cov complete">complete</span>; otherwise it stays <span class="cov partial">partial</span>.',
+    question_no_content: '(no content yet)', question_edit: 'edit', question_delete: 'delete', questions_empty: 'No questions yet.',
+    question_content_label: 'Question text (PICO summary)',
+    question_content_ph: 'e.g. In high-risk adults, does preventive acupuncture vs. no acupuncture reduce first-ever stroke incidence?',
+    question_profile_label: 'Question profile (sets minimum required sources)', question_save: 'Save question',
+    prompt_edit_question: 'Edit question text:', confirm_delete_question: 'Delete this question? Linked search runs will be unlinked (not deleted).',
+    alert_enter_question: 'Enter the question text (one complete sentence, not a search keyword).',
+    profile_general_label: 'General topic / unclassified',
+    profile_general_hint: 'Cannot be classified → coverage caps at partial. Choose a specific profile if possible.',
+    profile_tcm_clinical_label: 'TCM intervention / acupuncture / herbal (clinical)',
+    profile_tcm_clinical_hint: 'Requires: PubMed + 1 Chinese-language source + 1 trial registry. Chinese sources (Wanfang/CNKI) are not yet licensed → coverage is always partial for now (correct: a clinical topic that has not searched Chinese literature cannot be considered complete).',
+    profile_preclinical_label: 'In-vitro / animal (preclinical)',
+    profile_preclinical_hint: 'Requires: PubMed + Europe PMC/OpenAlex. No trial registry required. Can reach complete.',
+    profile_vn_context_label: 'Vietnam-context / population question',
+    profile_vn_context_hint: 'Requires: PubMed + Europe PMC/OpenAlex + a Vietnamese source. Chinese sources not mandatory.',
+    profile_tcm_literature_label: 'TCM literature / theory',
+    profile_tcm_literature_hint: 'Requires: Chinese source (not yet licensed) + Vietnamese source → usually partial for now.',
+    card_search_title: 'Search the literature',
+    search_hint: '<b>Discovery</b> = broad search to explore a topic (when the question is not yet clear).<br><b>Evidence</b> = an immutably logged search, used for the "search strategy" section of your thesis and (later) to verify research gaps. <b>Remember to set "Link to question"</b> — if left blank, the system uses the <i>general</i> profile and coverage can only reach <span class="cov partial">partial</span>.',
+    search_query_label: 'Query (Vietnamese / Chinese / English — TCM terms are translated automatically)',
+    search_query_ph: 'e.g. electroacupuncture for functional recovery after stroke',
+    search_mode_label: 'Mode', search_mode_discovery: 'Discovery (broad, fast)', search_mode_evidence: 'Evidence (reproducible, for verification)',
+    search_question_label: 'Link to question ⚠️', search_question_none: '— none (general profile) —',
+    search_year_from: 'From year', search_year_to: 'To year', search_submit: 'Search & log', search_running: 'Searching multiple sources…',
+    library_title: 'Project library ({n})', library_add_manual: '+ Add record manually',
+    library_desc: 'Records you saved from the search results below, or <b>entered by hand</b> (e.g. reading a paper on Wanfang/CNKI in a separate tab, then copying the title/authors/abstract/DOI here) — <b>this is the list you are managing</b> (not a downloaded file; Excel/Word files are only generated when you click Export, and are not stored on the server). * = automatically guessed study type (unconfirmed).',
+    library_export: 'Export:', export_excel: 'Excel', export_word: 'Word', export_csv: 'CSV',
+    library_empty: 'No records saved yet. Search the literature below, then click "Save to library" on a result.',
+    manual_title_label: 'Title *', manual_title_ph: 'Article/thesis title',
+    manual_authors_label: 'Authors (comma-separated)', manual_authors_ph: 'Jane Doe, John Smith',
+    manual_journal_label: 'Journal/Source', manual_journal_ph: 'e.g. Wanfang, CNKI, journal name', manual_year_label: 'Year',
+    manual_doi_label: 'DOI', manual_doi_ph: '10.xxxx/…', manual_pmid_label: 'PMID',
+    manual_keywords_label: 'Keywords (comma-separated)', manual_keywords_ph: 'acupuncture, stroke, rehabilitation',
+    manual_abstract_label: 'Abstract', manual_save: 'Save to library', manual_cancel: 'Cancel',
+    manual_err_title_required: 'Title is required.', manual_err_save_prefix: 'Save failed: ',
+    select_all: 'Select all', n_selected: '{n} selected', delete_selected: 'Delete selected', delete_all_library: 'Delete entire library',
+    col_title: 'Title', col_year: 'Year', col_source: 'Source', col_type: 'Type', col_status: 'Status', col_id: 'ID',
+    status_shortlisted: 'Shortlisted', status_included: 'Included', status_excluded: 'Excluded',
+    study_systematic_review: 'Systematic review', study_meta_analysis: 'Meta-analysis', study_rct: 'RCT',
+    study_case_control: 'Case-control', study_cohort: 'Cohort', study_cross_sectional: 'Cross-sectional', study_case_report: 'Case report',
+    study_protocol: 'Protocol', study_review: 'Review', study_preclinical: 'Preclinical', study_qualitative: 'Qualitative', study_unknown: 'Unknown',
+    note_prefix: 'Note: ', link_delete: 'delete', dash: '—',
+    confirm_delete_selected: 'Delete {n} selected item(s) from the project library?',
+    confirm_delete_all_library: 'Delete ALL {n} record(s) from this project library? This cannot be undone.',
+    confirm_remove_one: 'Delete this record from the project library?', err_delete_prefix: 'Delete failed: ',
+    err_export_http: 'Export failed: HTTP {code}',
+    btn_save_to_library: 'Save to library', btn_saving: 'Saving…', btn_saved: 'Saved ✓',
+    err_save_to_library_prefix: 'Failed to save to library: ', err_update_prefix: 'Update failed: ', no_id_hint: 'no identifier',
+    runs_title: 'Search log ({n})',
+    runs_legend: '<span class="cov complete">complete</span> = results found in every mandatory source group for the question profile · <span class="cov partial">partial</span> = a source group is missing or errored · <span class="cov incomplete">incomplete</span> = no source returned results.',
+    runs_export: 'Export:', export_markdown: 'Markdown', runs_empty: 'No searches yet.',
+    col_mode: 'Mode', col_query: 'Query', col_results: 'Results', col_coverage: 'Coverage', col_date: 'Date', col_num: '#',
+    mode_discovery_short: 'Discovery', mode_evidence_short: 'Evidence',
+    alert_no_projects_to_delete: 'No projects to delete.',
+    confirm_reset_all: 'Delete ALL {n} of your projects (including questions and search logs)? This cannot be undone.\n\nNote: the shared record library (wb_research_records) will NOT be deleted.',
+    reset_done: 'Reset done. Create a new project to get started.', project_deleted: 'Deleted. Select or create another project.',
+    confirm_delete_project: 'Delete this project and all of its search log entries?',
+    coverage_label: 'Coverage: {state}', profile_meta_label: 'profile: {p} · policy {v}', unmet_groups_label: 'Unmet source groups: ',
+    query_sent_label: 'Query sent: ', untranslated_label: 'Not translated yet (LLM in M4): ',
+    evidence_manifest_summary: 'Evidence Coverage Manifest',
+    manifest_col_source: 'Source', manifest_col_status: 'Status', manifest_col_count: 'Count', manifest_col_ms: 'ms', manifest_col_note: 'Note',
+    results_after_dedup: '{n} results after dedup (identity-graph). Fingerprint {fp}…',
+    not_persisted_hint: 'not saved (DB not configured)',
+  },
+};
+function t(key, vars) {
+  let s = (I18N[state.lang] && I18N[state.lang][key]) || I18N.vi[key] || key;
+  if (vars) for (const [k, v] of Object.entries(vars)) s = s.replaceAll(`{${k}}`, v);
+  return s;
+}
+function applyI18n() {
+  document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.getAttribute('data-i18n')); });
+  document.querySelectorAll('[data-i18n-html]').forEach((el) => { el.innerHTML = t(el.getAttribute('data-i18n-html')); });
+  document.querySelectorAll('[data-i18n-ph]').forEach((el) => { el.placeholder = t(el.getAttribute('data-i18n-ph')); });
+  document.documentElement.lang = state.lang;
+  $('pageTitle').textContent = t('page_title');
+  document.title = t('page_title');
+  $('authSubmit').textContent = registerMode ? t('login_submit_register') : t('login_submit');
+  $('toggleAuth').textContent = registerMode ? t('login_toggle_to_login') : t('login_toggle_to_register');
+  // nội dung do JS sinh động — vẽ lại theo ngôn ngữ hiện tại (không refetch API)
+  if (activeDetail) renderProject();
+  else if (!$('appView').hidden) $('content').innerHTML = `<p class="muted">${t('content_placeholder')}</p>`;
+  if (projects.length || $('projList').innerHTML) renderProjList();
+}
+window.toggleLangMenu = () => { document.querySelectorAll('.lang-menu').forEach((m) => m.classList.toggle('show')); };
+function closeLangMenu() { document.querySelectorAll('.lang-menu').forEach((m) => m.classList.remove('show')); }
+function syncLangMenu() {
+  document.querySelectorAll('.lang-opt').forEach((el) => { el.classList.toggle('active', el.dataset.l === state.lang); });
+  document.querySelectorAll('.lang-label').forEach((el) => { el.textContent = state.lang.toUpperCase() === 'ZH' ? '中' : state.lang.toUpperCase(); });
+}
+window.setLang = (l) => {
+  state.lang = l;
+  localStorage.setItem('chimedis_portal_lang', l);
+  applyI18n();
+  syncLangMenu();
+  closeLangMenu();
+};
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.lang-wrap')) closeLangMenu();
+});
+
 async function api(url, opts = {}) {
   const token = await auth.currentUser.getIdToken();
   const res = await fetch(url, {
     ...opts,
     headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token, ...(opts.headers || {}) },
   });
-  const data = await res.json().catch(() => ({ success: false, error: 'Phản hồi không hợp lệ' }));
+  const data = await res.json().catch(() => ({ success: false, error: t('err_invalid_response') }));
   if (!res.ok || data.success === false) throw new Error(data.error || ('HTTP ' + res.status));
   return data;
 }
@@ -176,8 +525,8 @@ const authOk = (m) => { $('loginMsg').innerHTML = `<div class="msg ok">${esc(m)}
 
 window.wbToggleAuth = () => {
   registerMode = !registerMode;
-  $('authSubmit').textContent = registerMode ? 'Đăng ký' : 'Đăng nhập';
-  $('toggleAuth').textContent = registerMode ? 'Đã có tài khoản? Đăng nhập' : 'Chưa có tài khoản? Đăng ký';
+  $('authSubmit').textContent = registerMode ? t('login_submit_register') : t('login_submit');
+  $('toggleAuth').textContent = registerMode ? t('login_toggle_to_login') : t('login_toggle_to_register');
   $('pwHint').hidden = !registerMode;
   $('loginMsg').innerHTML = '';
 };
@@ -195,10 +544,9 @@ const NEEDS_REDIRECT = new Set([
 ]);
 function socialErr(e) {
   const c = e.code || '';
-  if (c === 'auth/operation-not-allowed') return 'Phương thức này chưa được bật trên máy chủ. Thử cách khác.';
-  if (c === 'auth/account-exists-with-different-credential')
-    return 'Email này đã đăng ký bằng phương thức khác. Đăng nhập bằng phương thức cũ, rồi liên kết thêm trong trang Tài khoản.';
-  if (c === 'auth/unauthorized-domain') return 'Tên miền chưa được cho phép trong Firebase (Authorized domains).';
+  if (c === 'auth/operation-not-allowed') return t('err_operation_not_allowed');
+  if (c === 'auth/account-exists-with-different-credential') return t('err_account_exists_diff_cred');
+  if (c === 'auth/unauthorized-domain') return t('err_unauthorized_domain');
   if (c === 'auth/popup-closed-by-user') return '';
   return e.message;
 }
@@ -218,12 +566,12 @@ window.wbSignInGoogle = () => wbSocial('google'); // tương thích chỗ gọi 
 getRedirectResult(auth).catch((e) => { const m = socialErr(e); if (m) authErr(m); });
 window.wbAuthSubmit = async () => {
   const email = $('loginEmail').value.trim(), pass = $('loginPass').value;
-  if (!email || !pass) return authErr('Nhập email và mật khẩu.');
+  if (!email || !pass) return authErr(t('err_enter_email_pass'));
   try {
     if (registerMode) {
       const cred = await createUserWithEmailAndPassword(auth, email, pass);
       await sendEmailVerification(cred.user);
-      authOk('Đã tạo tài khoản. Đã gửi email xác thực tới ' + email + ' — bấm link trong email để bắt đầu tạo dự án.');
+      authOk(t('msg_account_created', { email }));
     } else {
       await signInWithEmailAndPassword(auth, email, pass);
     }
@@ -231,13 +579,13 @@ window.wbAuthSubmit = async () => {
 };
 window.wbResetPw = async () => {
   const email = $('loginEmail').value.trim();
-  if (!email) return authErr('Nhập email vào ô trên rồi bấm "Quên mật khẩu?".');
-  try { await sendPasswordResetEmail(auth, email); authOk('Đã gửi email đặt lại mật khẩu tới ' + email + '.'); }
+  if (!email) return authErr(t('err_enter_email_for_reset'));
+  try { await sendPasswordResetEmail(auth, email); authOk(t('msg_reset_sent', { email })); }
   catch (e) { authErr(e.message); }
 };
 window.wbResendVerify = async () => {
-  try { await sendEmailVerification(auth.currentUser); alert('Đã gửi lại email xác thực. Kiểm tra hộp thư rồi bấm "Đã xác thực".'); }
-  catch (e) { alert('Lỗi: ' + e.message); }
+  try { await sendEmailVerification(auth.currentUser); alert(t('msg_verify_resent')); }
+  catch (e) { alert(t('err_prefix') + e.message); }
 };
 // Token Firebase trong trình duyệt bị cache tới ~1h — sau khi bấm link xác thực trong email,
 // PHẢI ép làm mới token thì cờ email_verified mới cập nhật. reload() thường KHÔNG đủ.
@@ -246,7 +594,7 @@ window.wbRecheckVerify = async () => {
     await auth.currentUser.reload();
     await auth.currentUser.getIdToken(true); // ép phát hành token mới với claim mới
     location.reload();
-  } catch (e) { alert('Lỗi kiểm tra lại: ' + e.message); }
+  } catch (e) { alert(t('err_recheck_prefix') + e.message); }
 };
 window.wbSignOut = () => signOut(auth);
 
@@ -266,24 +614,27 @@ onAuthStateChanged(auth, async (user) => {
     if (banner) {
       banner.hidden = !!d.user.verified;
       if (!d.user.verified) banner.innerHTML =
-        `⚠️ Email <b>${esc(currentUser.email || '')}</b> chưa xác thực — bạn xem/tìm được nhưng chưa tạo được dự án. ` +
-        `<a href="#" onclick="wbRecheckVerify();return false"><b>Tôi đã xác thực → kiểm tra lại</b></a> · ` +
-        `<a href="#" onclick="wbResendVerify();return false">Gửi lại email</a>`;
+        `${t('verify_banner_prefix')} <b>${esc(currentUser.email || '')}</b> ${t('verify_banner_suffix')} ` +
+        `<a href="#" onclick="wbRecheckVerify();return false"><b>${t('verify_recheck_link')}</b></a> · ` +
+        `<a href="#" onclick="wbResendVerify();return false">${t('verify_resend_link')}</a>`;
     }
     await loadProjects();
   } catch (e) { $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
 });
 
+function renderProjList() {
+  $('projList').innerHTML = projects.length
+    ? projects.map((p) => `<div class="proj ${p.id === activeId ? 'on' : ''}" onclick="wbOpen(${p.id})">${esc(p.title)}<small>${t('side_search_runs_count', { n: p.search_run_count })}</small></div>`).join('')
+    : `<p class="hint">${t('side_no_projects')}</p>`;
+}
 async function loadProjects() {
   const d = await api('/api/workbench/projects');
   projects = d.projects || [];
-  $('projList').innerHTML = projects.length
-    ? projects.map((p) => `<div class="proj ${p.id === activeId ? 'on' : ''}" onclick="wbOpen(${p.id})">${esc(p.title)}<small>${p.search_run_count} lượt tìm</small></div>`).join('')
-    : '<p class="hint">Chưa có dự án nào.</p>';
+  renderProjList();
 }
 
 window.wbNewProject = async () => {
-  const title = prompt('Tên dự án nghiên cứu:');
+  const title = prompt(t('prompt_new_project_title'));
   if (!title || !title.trim()) return;
   const d = await api('/api/workbench/projects', { method: 'POST', body: JSON.stringify({ title: title.trim() }) });
   activeId = d.id;
@@ -301,11 +652,11 @@ window.wbOpen = async (id) => {
 };
 
 const PROFILES = [
-  ['general', 'Chủ đề chung / chưa phân loại', 'Không phân loại được → độ phủ trần là partial. Chọn hồ sơ cụ thể nếu có thể.'],
-  ['tcm-clinical', 'Can thiệp TCM / châm cứu / thảo dược (lâm sàng)', 'Cần: PubMed + 1 nguồn Trung văn + 1 trial registry. Nguồn Trung văn (Wanfang/CNKI) chưa cấp phép → hiện luôn partial (đúng: đề tài lâm sàng chưa tra y văn Trung Quốc thì chưa thể coi là đủ).'],
-  ['preclinical', 'In-vitro / animal (tiền lâm sàng)', 'Cần: PubMed + Europe PMC/OpenAlex. KHÔNG đòi trial registry. Có thể đạt complete.'],
-  ['vn-context', 'Câu hỏi bối cảnh / dân số Việt Nam', 'Cần: PubMed + Europe PMC/OpenAlex + nguồn Việt. Nguồn Trung văn không bắt buộc.'],
-  ['tcm-literature', 'Văn hiến / lý luận YHCT', 'Cần: nguồn Trung văn (chưa cấp phép) + nguồn Việt → hiện thường partial.'],
+  ['general', 'profile_general_label', 'profile_general_hint'],
+  ['tcm-clinical', 'profile_tcm_clinical_label', 'profile_tcm_clinical_hint'],
+  ['preclinical', 'profile_preclinical_label', 'profile_preclinical_hint'],
+  ['vn-context', 'profile_vn_context_label', 'profile_vn_context_hint'],
+  ['tcm-literature', 'profile_tcm_literature_label', 'profile_tcm_literature_hint'],
 ];
 
 function renderProject() {
@@ -315,49 +666,39 @@ function renderProject() {
   $('content').innerHTML = `
     <div class="card">
       <h3>${esc(p.title)}</h3>
-      <p class="muted">Dự án #${p.id} · ${qs.length} câu hỏi · ${runs.length} lượt tìm ·
-        <a href="#" onclick="wbDeleteProject();return false">xoá dự án</a></p>
+      <p class="muted">${t('project_hash', { id: p.id })} · ${t('project_meta', { q: qs.length, r: runs.length })} ·
+        <a href="#" onclick="wbDeleteProject();return false">${t('delete_project_link')}</a></p>
     </div>
 
     <div class="card">
-      <h3>Câu hỏi nghiên cứu</h3>
-      <p class="hint" style="margin-bottom:10px">
-        Đây <b>không phải</b> ô tìm kiếm. Viết <b>một câu hoàn chỉnh</b> mô tả điều bạn muốn trả lời bằng đề tài,
-        theo khung PICO: <i>Ở [đối tượng], [can thiệp] so với [đối chứng] có [kết cục] không?</i><br>
-        <b>Hồ sơ câu hỏi</b> quyết định những nhóm nguồn <b>bắt buộc</b> phải tìm thấy thì độ phủ mới là
-        <span class="cov complete">complete</span>, chưa đủ thì <span class="cov partial">partial</span>.
-      </p>
+      <h3>${t('card_questions_title')}</h3>
+      <p class="hint" style="margin-bottom:10px">${t('questions_hint')}</p>
       ${qs.map((q) => `<div style="margin-bottom:6px;display:flex;gap:6px;align-items:baseline">
         <span class="pill">${esc(q.question_profile)}</span>
-        <span style="flex:1">${esc(q.question_text || '(chưa nhập nội dung)')}</span>
-        <a href="#" class="hint" onclick="wbEditQuestion(${q.id});return false">sửa</a>
-        <a href="#" class="hint" onclick="wbDeleteQuestion(${q.id});return false">xoá</a>
-      </div>`).join('') || '<p class="hint">Chưa có câu hỏi.</p>'}
-      <label>Nội dung câu hỏi (PICO tóm tắt)</label>
-      <input id="qText" placeholder="vd: Ở người lớn nguy cơ cao, châm cứu dự phòng so với không châm có làm giảm tỷ lệ đột quỵ lần đầu không?" />
-      <label>Hồ sơ câu hỏi (quyết định nguồn tối thiểu)</label>
-      <select id="qProfile" onchange="wbProfileHint()">${PROFILES.map(([v, l]) => `<option value="${v}">${l}</option>`).join('')}</select>
+        <span style="flex:1">${esc(q.question_text) || t('question_no_content')}</span>
+        <a href="#" class="hint" onclick="wbEditQuestion(${q.id});return false">${t('question_edit')}</a>
+        <a href="#" class="hint" onclick="wbDeleteQuestion(${q.id});return false">${t('question_delete')}</a>
+      </div>`).join('') || `<p class="hint">${t('questions_empty')}</p>`}
+      <label>${t('question_content_label')}</label>
+      <input id="qText" placeholder="${esc(t('question_content_ph'))}" />
+      <label>${t('question_profile_label')}</label>
+      <select id="qProfile" onchange="wbProfileHint()">${PROFILES.map(([v, lk]) => `<option value="${v}">${esc(t(lk))}</option>`).join('')}</select>
       <p class="hint" id="qProfileHint" style="margin-top:4px"></p>
-      <button class="btn sm" style="margin-top:6px" onclick="wbAddQuestion()">Lưu câu hỏi</button>
+      <button class="btn sm" style="margin-top:6px" onclick="wbAddQuestion()">${t('question_save')}</button>
     </div>
 
     <div class="card">
-      <h3>Tìm y văn</h3>
-      <p class="hint" style="margin-bottom:10px">
-        <b>Discovery</b> = tìm rộng để khám phá chủ đề (khi chưa rõ câu hỏi).<br>
-        <b>Evidence</b> = lượt tìm được ghi nhật ký bất biến, để đưa vào phần "Chiến lược tìm kiếm" của luận án và
-        (về sau) xác minh khoảng trống. <b>Nhớ chọn "Gắn câu hỏi"</b> — nếu để trống, hệ thống dùng hồ sơ
-        <i>chung</i> và độ phủ luôn chỉ đạt <span class="cov partial">partial</span>.
-      </p>
-      <label>Truy vấn (Việt / Trung / Anh — thuật ngữ YHCT sẽ được dịch tự động)</label>
-      <input id="sQ" placeholder="vd: điện châm phục hồi chức năng sau đột quỵ" />
+      <h3>${t('card_search_title')}</h3>
+      <p class="hint" style="margin-bottom:10px">${t('search_hint')}</p>
+      <label>${t('search_query_label')}</label>
+      <input id="sQ" placeholder="${esc(t('search_query_ph'))}" />
       <div class="row" style="margin-top:8px">
-        <div><label>Chế độ</label><select id="sMode"><option value="discovery">Discovery (rộng, nhanh)</option><option value="evidence">Evidence (tái lập, cho verification)</option></select></div>
-        <div><label>Gắn câu hỏi ⚠️</label><select id="sQuestion"><option value="">— không (hồ sơ chung) —</option>${qs.map((q) => `<option value="${q.id}">[${esc(q.question_profile)}] ${esc((q.question_text || '').slice(0, 40))}</option>`).join('')}</select></div>
-        <div><label>Từ năm</label><input id="sYearFrom" type="number" min="1900" max="2100" /></div>
-        <div><label>Đến năm</label><input id="sYearTo" type="number" min="1900" max="2100" /></div>
+        <div><label>${t('search_mode_label')}</label><select id="sMode"><option value="discovery">${t('search_mode_discovery')}</option><option value="evidence">${t('search_mode_evidence')}</option></select></div>
+        <div><label>${t('search_question_label')}</label><select id="sQuestion"><option value="">${t('search_question_none')}</option>${qs.map((q) => `<option value="${q.id}">[${esc(q.question_profile)}] ${esc((q.question_text || '').slice(0, 40))}</option>`).join('')}</select></div>
+        <div><label>${t('search_year_from')}</label><input id="sYearFrom" type="number" min="1900" max="2100" /></div>
+        <div><label>${t('search_year_to')}</label><input id="sYearTo" type="number" min="1900" max="2100" /></div>
       </div>
-      <button class="btn" style="margin-top:12px" id="sBtn" onclick="wbRunSearch()">Tìm & ghi nhật ký</button>
+      <button class="btn" style="margin-top:12px" id="sBtn" onclick="wbRunSearch()">${t('search_submit')}</button>
       <div id="sResult"></div>
     </div>
 
@@ -371,70 +712,69 @@ function renderProject() {
   wbProfileHint();
 }
 
-const STUDY_TYPE_LABEL = {
-  systematic_review: 'Tổng quan hệ thống', meta_analysis: 'Phân tích gộp', rct: 'RCT',
-  case_control: 'Bệnh-chứng', cohort: 'Đoàn hệ', cross_sectional: 'Cắt ngang', case_report: 'Báo cáo ca',
-  protocol: 'Đề cương', review: 'Tổng quan', preclinical: 'Tiền lâm sàng', qualitative: 'Định tính', unknown: 'Chưa rõ',
+const STUDY_TYPE_KEY = {
+  systematic_review: 'study_systematic_review', meta_analysis: 'study_meta_analysis', rct: 'study_rct',
+  case_control: 'study_case_control', cohort: 'study_cohort', cross_sectional: 'study_cross_sectional', case_report: 'study_case_report',
+  protocol: 'study_protocol', review: 'study_review', preclinical: 'study_preclinical', qualitative: 'study_qualitative', unknown: 'study_unknown',
 };
+function studyTypeLabel(type) { return STUDY_TYPE_KEY[type] ? t(STUDY_TYPE_KEY[type]) : (type || t('study_unknown')); }
+
 function renderLibraryCard(records) {
-  const STATUS_LABEL = { shortlisted: 'Đã chọn lọc', included: 'Đưa vào bài', excluded: 'Loại' };
+  const STATUS_KEY = { shortlisted: 'status_shortlisted', included: 'status_included', excluded: 'status_excluded' };
   const rows = records.map((r) => {
-    const studyLabel = (STUDY_TYPE_LABEL[r.studyType] || r.studyType || 'Chưa rõ') + (r.studyTypeGuessed ? ' *' : '');
+    const studyLabel = studyTypeLabel(r.studyType) + (r.studyTypeGuessed ? ' *' : '');
     return `<tr>
       <td><input type="checkbox" class="lib-check" value="${r.recordId}" onchange="wbLibSelectionChanged()"></td>
       <td>${esc(r.title)}${r.abstract ? `<br><span class="hint">${esc(r.abstract.slice(0, 160))}…</span>` : ''}
-        ${r.note ? `<br><span class="hint">Ghi chú: ${esc(r.note)}</span>` : ''}</td>
-      <td>${r.year || '—'}</td>
-      <td>${(r.mergedFrom || []).join(', ') || '—'}</td>
+        ${r.note ? `<br><span class="hint">${t('note_prefix')}${esc(r.note)}</span>` : ''}</td>
+      <td>${r.year || t('dash')}</td>
+      <td>${(r.mergedFrom || []).join(', ') || t('dash')}</td>
       <td>${esc(studyLabel)}</td>
       <td><select onchange="wbSetLibraryStatus(${r.recordId}, this.value)">
-        ${Object.entries(STATUS_LABEL).map(([v, l]) => `<option value="${v}" ${r.status === v ? 'selected' : ''}>${l}</option>`).join('')}
+        ${Object.entries(STATUS_KEY).map(([v, lk]) => `<option value="${v}" ${r.status === v ? 'selected' : ''}>${esc(t(lk))}</option>`).join('')}
       </select></td>
-      <td><a href="#" onclick="wbRemoveFromLibrary(${r.recordId});return false">xoá</a></td>
+      <td><a href="#" onclick="wbRemoveFromLibrary(${r.recordId});return false">${t('link_delete')}</a></td>
     </tr>`;
   }).join('');
   return `
-    <h3>Thư viện dự án (${records.length}) <button type="button" class="btn sm sec" style="margin-left:8px" onclick="wbToggleManualForm()">+ Thêm bản ghi thủ công</button></h3>
-    <p class="hint">Bản ghi bạn đã lưu từ kết quả tìm kiếm bên dưới, hoặc <b>tự tay nhập</b> (VD: đọc bài trên Wanfang/CNKI
-      ở tab riêng rồi chép lại tiêu đề/tác giả/tóm tắt/DOI vào đây) — <b>đây là danh sách bạn đang quản lý</b>
-      (không phải file tải về máy; file Excel/Word chỉ sinh ra khi bấm Xuất, không lưu lại trên máy chủ).
-      * = loại nghiên cứu đoán tự động (chưa xác nhận).
-      ${records.length ? `Xuất: <a href="#" onclick="wbLibExport('xlsx');return false">Excel</a> ·
-        <a href="#" onclick="wbLibExport('docx');return false">Word</a> ·
-        <a href="#" onclick="wbLibExport('csv');return false">CSV</a>` : ''}</p>
+    <h3>${t('library_title', { n: records.length })} <button type="button" class="btn sm sec" style="margin-left:8px" onclick="wbToggleManualForm()">${t('library_add_manual')}</button></h3>
+    <p class="hint">${t('library_desc')}
+      ${records.length ? `${t('library_export')} <a href="#" onclick="wbLibExport('xlsx');return false">${t('export_excel')}</a> ·
+        <a href="#" onclick="wbLibExport('docx');return false">${t('export_word')}</a> ·
+        <a href="#" onclick="wbLibExport('csv');return false">${t('export_csv')}</a>` : ''}</p>
     <div id="wbManualForm" class="card" style="display:none;background:var(--bg);margin:0 0 12px">
-      <label>Tiêu đề *</label><input id="mfTitle" placeholder="Tên bài báo/luận văn">
+      <label>${t('manual_title_label')}</label><input id="mfTitle" placeholder="${esc(t('manual_title_ph'))}">
       <div class="row">
-        <div><label>Tác giả (phẩy giữa các tên)</label><input id="mfAuthors" placeholder="Nguyễn Văn A, Trần Thị B"></div>
-        <div><label>Tạp chí/Nguồn</label><input id="mfJournal" placeholder="VD: Wanfang, CNKI, tên tạp chí"></div>
-        <div><label>Năm</label><input id="mfYear" type="number" min="1900" max="2100"></div>
+        <div><label>${t('manual_authors_label')}</label><input id="mfAuthors" placeholder="${esc(t('manual_authors_ph'))}"></div>
+        <div><label>${t('manual_journal_label')}</label><input id="mfJournal" placeholder="${esc(t('manual_journal_ph'))}"></div>
+        <div><label>${t('manual_year_label')}</label><input id="mfYear" type="number" min="1900" max="2100"></div>
       </div>
       <div class="row">
-        <div><label>DOI</label><input id="mfDoi" placeholder="10.xxxx/…"></div>
-        <div><label>PMID</label><input id="mfPmid"></div>
-        <div><label>Từ khoá (phẩy giữa các từ)</label><input id="mfKeywords" placeholder="châm cứu, đột quỵ, phục hồi chức năng"></div>
+        <div><label>${t('manual_doi_label')}</label><input id="mfDoi" placeholder="${esc(t('manual_doi_ph'))}"></div>
+        <div><label>${t('manual_pmid_label')}</label><input id="mfPmid"></div>
+        <div><label>${t('manual_keywords_label')}</label><input id="mfKeywords" placeholder="${esc(t('manual_keywords_ph'))}"></div>
       </div>
-      <label>Tóm tắt</label><textarea id="mfAbstract" rows="3"></textarea>
-      <button class="btn sm" style="margin-top:6px" onclick="wbSaveManual()">Lưu vào thư viện</button>
-      <button class="btn sm sec" style="margin-top:6px" onclick="wbToggleManualForm(false)">Huỷ</button>
+      <label>${t('manual_abstract_label')}</label><textarea id="mfAbstract" rows="3"></textarea>
+      <button class="btn sm" style="margin-top:6px" onclick="wbSaveManual()">${t('manual_save')}</button>
+      <button class="btn sm sec" style="margin-top:6px" onclick="wbToggleManualForm(false)">${t('manual_cancel')}</button>
       <div id="mfMsg"></div>
     </div>
     ${records.length ? `
     <div class="row" style="align-items:center;margin-bottom:8px">
       <label style="flex:none;display:flex;align-items:center;gap:5px;margin:0">
-        <input type="checkbox" id="libCheckAll" onchange="wbLibToggleAll(this.checked)"> Chọn tất cả
+        <input type="checkbox" id="libCheckAll" onchange="wbLibToggleAll(this.checked)"> ${t('select_all')}
       </label>
-      <span id="libSelCount" class="hint" style="flex:none">0 đã chọn</span>
-      <button type="button" class="btn sm sec" id="libDelSelBtn" disabled onclick="wbLibDeleteSelected()">Xoá mục đã chọn</button>
-      <button type="button" class="btn sm sec" onclick="wbLibDeleteAll()" style="color:var(--bad);border-color:var(--bad)">Xoá toàn bộ thư viện</button>
+      <span id="libSelCount" class="hint" style="flex:none">${t('n_selected', { n: 0 })}</span>
+      <button type="button" class="btn sm sec" id="libDelSelBtn" disabled onclick="wbLibDeleteSelected()">${t('delete_selected')}</button>
+      <button type="button" class="btn sm sec" onclick="wbLibDeleteAll()" style="color:var(--bad);border-color:var(--bad)">${t('delete_all_library')}</button>
     </div>
-    <table><thead><tr><th style="width:22px"></th><th>Tiêu đề</th><th>Năm</th><th>Nguồn</th><th>Loại</th><th>Trạng thái</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
-      : '<p class="hint">Chưa lưu bản ghi nào. Tìm y văn bên dưới rồi bấm "Lưu vào thư viện" ở kết quả.</p>'}`;
+    <table><thead><tr><th style="width:22px"></th><th>${t('col_title')}</th><th>${t('col_year')}</th><th>${t('col_source')}</th><th>${t('col_type')}</th><th>${t('col_status')}</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+      : `<p class="hint">${t('library_empty')}</p>`}`;
 }
 window.wbLibSelectionChanged = () => {
   const boxes = [...document.querySelectorAll('.lib-check')];
   const n = boxes.filter((b) => b.checked).length;
-  const countEl = $('libSelCount'); if (countEl) countEl.textContent = n + ' đã chọn';
+  const countEl = $('libSelCount'); if (countEl) countEl.textContent = t('n_selected', { n });
   const delBtn = $('libDelSelBtn'); if (delBtn) delBtn.disabled = n === 0;
   const allBox = $('libCheckAll'); if (allBox) allBox.checked = boxes.length > 0 && n === boxes.length;
 };
@@ -445,19 +785,19 @@ window.wbLibToggleAll = (checked) => {
 window.wbLibDeleteSelected = async () => {
   const ids = [...document.querySelectorAll('.lib-check:checked')].map((b) => parseInt(b.value, 10));
   if (!ids.length) return;
-  if (!confirm(`Xoá ${ids.length} mục đã chọn khỏi thư viện dự án?`)) return;
+  if (!confirm(t('confirm_delete_selected', { n: ids.length }))) return;
   try {
     await api(`/api/workbench/projects/${activeId}/library`, { method: 'DELETE', body: JSON.stringify({ recordIds: ids }) });
     await wbRefreshLibrary();
-  } catch (e) { alert('Lỗi xoá: ' + e.message); }
+  } catch (e) { alert(t('err_delete_prefix') + e.message); }
 };
 window.wbLibDeleteAll = async () => {
   if (!activeDetail.library || !activeDetail.library.length) return;
-  if (!confirm(`Xoá TOÀN BỘ ${activeDetail.library.length} bản ghi khỏi thư viện dự án này? Không thể hoàn tác.`)) return;
+  if (!confirm(t('confirm_delete_all_library', { n: activeDetail.library.length }))) return;
   try {
     await api(`/api/workbench/projects/${activeId}/library`, { method: 'DELETE', body: JSON.stringify({ all: true }) });
     await wbRefreshLibrary();
-  } catch (e) { alert('Lỗi xoá: ' + e.message); }
+  } catch (e) { alert(t('err_delete_prefix') + e.message); }
 };
 async function wbRefreshLibrary() {
   activeDetail.library = (await api('/api/workbench/projects/' + activeId + '/library')).records;
@@ -473,7 +813,7 @@ window.wbToggleManualForm = (force) => {
 };
 window.wbSaveManual = async () => {
   const title = $('mfTitle').value.trim();
-  if (!title) { $('mfMsg').innerHTML = '<div class="msg err">Cần nhập tiêu đề.</div>'; return; }
+  if (!title) { $('mfMsg').innerHTML = `<div class="msg err">${t('manual_err_title_required')}</div>`; return; }
   const splitList = (s) => s.split(',').map((x) => x.trim()).filter(Boolean);
   const record = {
     title,
@@ -492,13 +832,13 @@ window.wbSaveManual = async () => {
     wbToggleManualForm(false);
     await wbRefreshLibrary();
   } catch (e) {
-    $('mfMsg').innerHTML = `<div class="msg err">Lỗi lưu: ${esc(e.message)}</div>`;
+    $('mfMsg').innerHTML = `<div class="msg err">${t('manual_err_save_prefix')}${esc(e.message)}</div>`;
   }
 };
 window.wbLibExport = async (fmt) => {
   const token = await auth.currentUser.getIdToken();
   const res = await fetch(`/api/workbench/projects/${activeId}/library/export?fmt=${fmt}`, { headers: { Authorization: 'Bearer ' + token } });
-  if (!res.ok) { alert('Lỗi xuất: HTTP ' + res.status); return; }
+  if (!res.ok) { alert(t('err_export_http', { code: res.status })); return; }
   const blob = await res.blob();
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -524,68 +864,67 @@ function bindLibraryButtons(root) {
 }
 
 async function wbSaveToLibrary(scheme, value, btn) {
-  if (btn) { btn.disabled = true; btn.textContent = 'Đang lưu…'; }
+  if (btn) { btn.disabled = true; btn.textContent = t('btn_saving'); }
   try {
     await api(`/api/workbench/projects/${activeId}/library`, { method: 'POST', body: JSON.stringify({ scheme, value }) });
     await wbRefreshLibrary();
-    if (btn) { btn.textContent = 'Đã lưu ✓'; }
+    if (btn) { btn.textContent = t('btn_saved'); }
   } catch (e) {
-    if (btn) { btn.disabled = false; btn.textContent = 'Lưu vào thư viện'; }
-    alert('Lỗi lưu vào thư viện: ' + e.message);
+    if (btn) { btn.disabled = false; btn.textContent = t('btn_save_to_library'); }
+    alert(t('err_save_to_library_prefix') + e.message);
   }
 }
 
 window.wbSetLibraryStatus = async (recordId, status) => {
   try {
     await api(`/api/workbench/projects/${activeId}/library/${recordId}`, { method: 'PATCH', body: JSON.stringify({ status }) });
-  } catch (e) { alert('Lỗi cập nhật: ' + e.message); }
+  } catch (e) { alert(t('err_update_prefix') + e.message); }
 };
 
 window.wbRemoveFromLibrary = async (recordId) => {
-  if (!confirm('Xoá bản ghi này khỏi thư viện dự án?')) return;
+  if (!confirm(t('confirm_remove_one'))) return;
   try {
     await api(`/api/workbench/projects/${activeId}/library/${recordId}`, { method: 'DELETE' });
     await wbRefreshLibrary();
-  } catch (e) { alert('Lỗi xoá: ' + e.message); }
+  } catch (e) { alert(t('err_delete_prefix') + e.message); }
 };
 
 function renderRunsCard(runs) {
   return `
-      <h3>Nhật ký tìm kiếm (${runs.length})</h3>
+      <h3>${t('runs_title', { n: runs.length })}</h3>
       <p class="hint">
-        <span class="cov complete">complete</span> = đã tìm thấy ở mọi nhóm nguồn bắt buộc của hồ sơ câu hỏi ·
-        <span class="cov partial">partial</span> = còn thiếu nhóm nguồn hoặc có nguồn lỗi ·
-        <span class="cov incomplete">incomplete</span> = không nguồn nào trả kết quả.<br>
-        Xuất: <a href="#" onclick="wbLog('md');return false">Markdown</a> ·
-        <a href="#" onclick="wbLog('csv');return false">CSV</a> ·
-        <a href="#" onclick="wbLog('docx');return false">Word</a>
+        ${t('runs_legend')}<br>
+        ${t('runs_export')} <a href="#" onclick="wbLog('md');return false">${t('export_markdown')}</a> ·
+        <a href="#" onclick="wbLog('csv');return false">${t('export_csv')}</a> ·
+        <a href="#" onclick="wbLog('docx');return false">${t('export_word')}</a>
       </p>
       ${renderRuns(runs)}`;
 }
 
 function renderRuns(runs) {
-  if (!runs.length) return '<p class="hint">Chưa có lượt tìm nào.</p>';
-  return `<table><thead><tr><th>#</th><th>Chế độ</th><th>Truy vấn</th><th>Kết quả</th><th>Độ phủ</th><th>Ngày</th></tr></thead><tbody>${
+  if (!runs.length) return `<p class="hint">${t('runs_empty')}</p>`;
+  const locale = state.lang === 'zh' ? 'zh-CN' : (state.lang === 'en' ? 'en-US' : 'vi-VN');
+  return `<table><thead><tr><th>${t('col_num')}</th><th>${t('col_mode')}</th><th>${t('col_query')}</th><th>${t('col_results')}</th><th>${t('col_coverage')}</th><th>${t('col_date')}</th></tr></thead><tbody>${
     runs.map((r, i) => `<tr>
       <td>${runs.length - i}</td>
-      <td>${r.mode}</td>
+      <td>${t(r.mode === 'evidence' ? 'mode_evidence_short' : 'mode_discovery_short')}</td>
       <td>${esc(r.query_original)}${r.query_translated ? `<br><span class="hint">→ ${esc(r.query_translated)}</span>` : ''}
         <br>${(r.sources || []).map((s) => `<span class="pill exec-${s.execution_status}">${s.connector_id}:${s.execution_status}(${s.retrieved_count})</span>`).join('')}</td>
       <td>${r.count_deduped}</td>
       <td><span class="cov ${r.coverage_state}">${r.coverage_state}</span></td>
-      <td class="hint">${new Date(r.search_date).toLocaleString('vi-VN')}</td>
+      <td class="hint">${new Date(r.search_date).toLocaleString(locale)}</td>
     </tr>`).join('')
   }</tbody></table>`;
 }
 
 window.wbResetAll = async () => {
-  if (!projects.length) { alert('Không có dự án nào để xoá.'); return; }
-  if (!confirm(`Xoá TẤT CẢ ${projects.length} dự án của bạn (kèm câu hỏi + nhật ký tìm kiếm)? Không hoàn tác được.\n\nLưu ý: kho bài báo dùng chung (wb_research_records) KHÔNG bị xoá.`)) return;
+  if (!projects.length) { alert(t('alert_no_projects_to_delete')); return; }
+  if (!confirm(t('confirm_reset_all', { n: projects.length }))) return;
   for (const p of [...projects]) {
     await api('/api/workbench/projects/' + p.id, { method: 'DELETE' });
   }
   activeId = null; activeDetail = null;
-  $('content').innerHTML = '<p class="muted">Đã đặt lại. Tạo dự án mới để bắt đầu.</p>';
+  $('content').innerHTML = `<p class="muted">${t('reset_done')}</p>`;
   await loadProjects();
 };
 
@@ -593,12 +932,12 @@ window.wbProfileHint = () => {
   const el = $('qProfileHint');
   if (!el) return;
   const row = PROFILES.find(([v]) => v === $('qProfile').value);
-  el.textContent = row ? row[2] : '';
+  el.textContent = row ? t(row[2]) : '';
 };
 
 window.wbAddQuestion = async () => {
   const text = $('qText').value.trim();
-  if (!text) { alert('Nhập nội dung câu hỏi (một câu hoàn chỉnh, không phải từ khoá tìm kiếm).'); return; }
+  if (!text) { alert(t('alert_enter_question')); return; }
   await api('/api/workbench/projects/' + activeId + '/questions', {
     method: 'POST',
     body: JSON.stringify({ question_text: text, question_profile: $('qProfile').value, framework: 'PICO' }),
@@ -609,23 +948,23 @@ window.wbAddQuestion = async () => {
 window.wbEditQuestion = async (qid) => {
   const q = (activeDetail.questions || []).find((x) => x.id === qid);
   if (!q) return;
-  const text = prompt('Sửa nội dung câu hỏi:', q.question_text || '');
+  const text = prompt(t('prompt_edit_question'), q.question_text || '');
   if (text == null) return;
   await api('/api/workbench/questions/' + qid, { method: 'PATCH', body: JSON.stringify({ question_text: text.trim() }) });
   await wbOpen(activeId);
 };
 
 window.wbDeleteQuestion = async (qid) => {
-  if (!confirm('Xoá câu hỏi này? Các lượt tìm đã gắn sẽ được gỡ liên kết (không bị xoá).')) return;
+  if (!confirm(t('confirm_delete_question'))) return;
   await api('/api/workbench/questions/' + qid, { method: 'DELETE' });
   await wbOpen(activeId);
 };
 
 window.wbDeleteProject = async () => {
-  if (!confirm('Xoá dự án này và toàn bộ nhật ký tìm kiếm của nó?')) return;
+  if (!confirm(t('confirm_delete_project'))) return;
   await api('/api/workbench/projects/' + activeId, { method: 'DELETE' });
   activeId = null; activeDetail = null;
-  $('content').innerHTML = '<p class="muted">Đã xoá. Chọn hoặc tạo dự án khác.</p>';
+  $('content').innerHTML = `<p class="muted">${t('project_deleted')}</p>`;
   await loadProjects();
 };
 
@@ -633,7 +972,7 @@ window.wbRunSearch = async () => {
   const q = $('sQ').value.trim();
   if (!q) return;
   $('sBtn').disabled = true;
-  $('sResult').innerHTML = '<p class="hint">Đang tìm ở nhiều nguồn…</p>';
+  $('sResult').innerHTML = `<p class="hint">${t('search_running')}</p>`;
   try {
     const d = await api('/api/workbench/projects/' + activeId + '/search', {
       method: 'POST',
@@ -664,7 +1003,7 @@ const PREF_SCHEME = ['doi', 'pmid', 'pmcid', 'trial_reg_id', 'openalex', 's2', '
 
 function renderSearchResult(d) {
   const cov = d.coverage || {};
-  const unmet = (cov.unmet_groups || []).map((g) => `<span class="pill">${g.join(' / ')}</span>`).join('') || '<span class="hint">—</span>';
+  const unmet = (cov.unmet_groups || []).map((g) => `<span class="pill">${g.join(' / ')}</span>`).join('') || `<span class="hint">${t('dash')}</span>`;
   const man = (d.manifest || []).map((m) => `<tr><td>${m.connector_id}</td><td class="exec-${m.execution_status}">${m.execution_status}</td><td>${m.retrieved_count}</td><td>${m.duration_ms}</td><td class="hint">${esc(m.error_detail || '')}</td></tr>`).join('');
   // Lưu records ra biến toàn cục thay vì nhúng scheme/value vào onclick — DOI/URL có thể
   // chứa ký tự phá vỡ escaping HTML attribute. Nút chỉ mang data-idx (số, an toàn tuyệt đối).
@@ -673,36 +1012,36 @@ function renderSearchResult(d) {
     const ids = r.identifiers || {};
     const scheme = PREF_SCHEME.find((s) => ids[s]) || Object.keys(ids)[0];
     const saveBtn = scheme
-      ? `<button class="btn sm sec save-lib-btn" data-idx="${idx}">Lưu vào thư viện</button>`
-      : '<span class="hint">không có ID</span>';
+      ? `<button class="btn sm sec save-lib-btn" data-idx="${idx}">${t('btn_save_to_library')}</button>`
+      : `<span class="hint">${t('no_id_hint')}</span>`;
     return `<tr>
       <td>${esc(r.title)}${r.abstract ? `<br><span class="hint">${esc(r.abstract.slice(0, 160))}…</span>` : ''}</td>
-      <td>${r.year || '—'}</td>
+      <td>${r.year || t('dash')}</td>
       <td>${(r.merged_from || [r.source]).join(', ')}</td>
-      <td>${r.study_type}</td>
+      <td>${studyTypeLabel(r.study_type)}</td>
       <td class="hint">${Object.entries(ids).map(([k, v]) => `${k}:${v}`).join('<br>')}</td>
       <td>${saveBtn}</td>
     </tr>`;
   }).join('');
   return `
     <div style="margin-top:14px">
-      <p><span class="cov ${cov.coverage_state}">Độ phủ: ${cov.coverage_state}</span>
-        <span class="muted"> · hồ sơ: ${esc(d.questionProfile)} · policy ${esc(cov.policy_version || '')}</span></p>
-      <p class="muted">Nhóm nguồn chưa đạt: ${unmet}</p>
-      ${d.queryExpanded && d.queryExpanded.effective !== d.queryExpanded.original ? `<p class="hint">Truy vấn gửi đi: <code>${esc(d.queryExpanded.effective)}</code></p>` : ''}
-      ${d.queryExpanded && (d.queryExpanded.untranslated || []).length ? `<p class="hint">Chưa dịch (cần LLM ở M4): ${d.queryExpanded.untranslated.map(esc).join(', ')}</p>` : ''}
-      <details style="margin:8px 0"><summary class="muted">Evidence Coverage Manifest</summary>
-        <table><thead><tr><th>Nguồn</th><th>Trạng thái</th><th>Số bản</th><th>ms</th><th>Ghi chú</th></tr></thead><tbody>${man}</tbody></table>
+      <p><span class="cov ${cov.coverage_state}">${t('coverage_label', { state: cov.coverage_state })}</span>
+        <span class="muted"> · ${t('profile_meta_label', { p: esc(d.questionProfile), v: esc(cov.policy_version || '') })}</span></p>
+      <p class="muted">${t('unmet_groups_label')}${unmet}</p>
+      ${d.queryExpanded && d.queryExpanded.effective !== d.queryExpanded.original ? `<p class="hint">${t('query_sent_label')}<code>${esc(d.queryExpanded.effective)}</code></p>` : ''}
+      ${d.queryExpanded && (d.queryExpanded.untranslated || []).length ? `<p class="hint">${t('untranslated_label')}${d.queryExpanded.untranslated.map(esc).join(', ')}</p>` : ''}
+      <details style="margin:8px 0"><summary class="muted">${t('evidence_manifest_summary')}</summary>
+        <table><thead><tr><th>${t('manifest_col_source')}</th><th>${t('manifest_col_status')}</th><th>${t('manifest_col_count')}</th><th>${t('manifest_col_ms')}</th><th>${t('manifest_col_note')}</th></tr></thead><tbody>${man}</tbody></table>
       </details>
-      <p class="muted">${d.count} kết quả sau khử trùng (identity-graph). Fingerprint <code>${esc((d.requestFingerprint || '').slice(0, 16))}…</code>${d.persisted ? '' : ' · <b>chưa lưu (DB chưa cấu hình)</b>'}</p>
-      <table><thead><tr><th>Tiêu đề</th><th>Năm</th><th>Nguồn</th><th>Loại</th><th>ID</th><th></th></tr></thead><tbody>${recs}</tbody></table>
+      <p class="muted">${t('results_after_dedup', { n: d.count, fp: esc((d.requestFingerprint || '').slice(0, 16)) })}${d.persisted ? '' : ` · <b>${t('not_persisted_hint')}</b>`}</p>
+      <table><thead><tr><th>${t('col_title')}</th><th>${t('col_year')}</th><th>${t('col_source')}</th><th>${t('col_type')}</th><th>${t('col_id')}</th><th></th></tr></thead><tbody>${recs}</tbody></table>
     </div>`;
 }
 
 window.wbLog = async (fmt) => {
   const token = await auth.currentUser.getIdToken();
   const res = await fetch(`/api/workbench/projects/${activeId}/search-log?fmt=${fmt}`, { headers: { Authorization: 'Bearer ' + token } });
-  if (!res.ok) { alert('Lỗi xuất: HTTP ' + res.status); return; }
+  if (!res.ok) { alert(t('err_export_http', { code: res.status })); return; }
   const blob = await res.blob();
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -710,6 +1049,11 @@ window.wbLog = async (fmt) => {
   a.click();
   URL.revokeObjectURL(a.href);
 };
+
+// Khởi tạo i18n SAU KHI mọi hàm/biến (registerMode, renderProject…) đã khai báo —
+// applyI18n() gọi ngược tới chúng.
+applyI18n();
+syncLangMenu();
 </script>
 </body>
 </html>
