@@ -6,58 +6,98 @@
 <title>Bàn làm việc nghiên cứu — Chimedis</title>
 <link rel="icon" href="/assets/logo.png" />
 <style>
-  :root { --bg:#f6f3ec; --card:#fff; --ink:#2b2b26; --muted:#6b6b60; --line:#e3ddcf; --accent:#3d6b4f; --accent-ink:#fff; --warn:#8a5a00; --bad:#9a2f2f; }
-  * { box-sizing:border-box; }
-  body { margin:0; font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
-  a { color:var(--accent); }
-  header { display:flex; align-items:center; gap:12px; padding:12px 20px; background:var(--card); border-bottom:1px solid var(--line); }
-  header h1 { font-size:16px; margin:0; font-weight:700; }
-  header .who { margin-left:auto; font-size:13px; color:var(--muted); }
-  .btn { border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink); border-radius:7px; padding:7px 13px; font-size:14px; cursor:pointer; }
-  .btn.sec { background:transparent; color:var(--accent); }
-  .btn.sm { padding:4px 9px; font-size:12.5px; }
-  .btn:disabled { opacity:.5; cursor:default; }
-  main { display:grid; grid-template-columns:260px 1fr; gap:0; min-height:calc(100vh - 53px); }
-  .side { background:var(--card); border-right:1px solid var(--line); padding:14px; }
-  .side h2 { font-size:12px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted); margin:0 0 8px; }
-  .proj { padding:8px 10px; border-radius:7px; cursor:pointer; font-size:14px; border:1px solid transparent; }
-  .proj:hover { background:var(--bg); }
-  .proj.on { background:var(--bg); border-color:var(--line); font-weight:600; }
-  .proj small { display:block; color:var(--muted); font-weight:400; }
-  .content { padding:20px 24px; max-width:1100px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-bottom:16px; }
-  .card h3 { margin:0 0 12px; font-size:15px; }
-  label { display:block; font-size:12.5px; color:var(--muted); margin:8px 0 3px; }
-  input, select, textarea { width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:6px; font:inherit; background:#fff; }
-  .row { display:flex; gap:10px; flex-wrap:wrap; }
-  .row > div { flex:1; min-width:130px; }
-  table { width:100%; border-collapse:collapse; font-size:13px; }
-  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
-  th { color:var(--muted); font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em; }
-  .cov { display:inline-block; padding:2px 9px; border-radius:20px; font-size:12px; font-weight:600; }
-  .cov.complete { background:#e2efe6; color:var(--accent); }
-  .cov.partial { background:#f6ecd6; color:var(--warn); }
-  .cov.incomplete { background:#f3dede; color:var(--bad); }
-  .pill { display:inline-block; padding:1px 7px; border-radius:5px; background:var(--bg); border:1px solid var(--line); font-size:11.5px; margin:1px 3px 1px 0; }
-  .muted { color:var(--muted); font-size:13px; }
-  .exec-success { color:var(--accent); } .exec-timeout,.exec-unavailable,.exec-partial { color:var(--warn); } .exec-not_licensed,.exec-not_searched { color:var(--muted); }
-  #loginView { max-width:360px; margin:60px auto; text-align:center; }
-  #loginView .card { text-align:left; }
-  .msg { padding:8px 10px; border-radius:6px; font-size:13px; margin-top:8px; }
-  .msg.err { background:#f3dede; color:var(--bad); } .msg.ok { background:#e2efe6; color:var(--accent); }
-  .hint { font-size:12px; color:var(--muted); margin:4px 0 0; }
+  /* Cùng hệ thống thiết kế với chimedis.vn (public/index.html) — token/màu/font giữ
+     NGUYÊN GIÁ TRỊ, chỉ đổi tên biến CSS khi cần map sang class cũ đã dùng trong JS
+     (proj/cov/pill/msg/hint/btn…) để KHÔNG phải sửa lại các hàm render*() phía dưới. */
+  :root{
+    --bg:#F5F0E6; --ink:#0E3A3A; --ink-2:#15514F; --accent:#B4472B; --accent-2:#9A3A22;
+    --fg:#241F19; --muted-fg:#6B6156; --card:#FFFFFF; --border:#E4DCCC; --border-strong:#D8CDB8;
+    --focus:#1E7A76; --radius:10px; --ok:#1F7A3D; --warn:#7A5A22; --bad:#9A3A22;
+    --font-serif:"Noto Serif","Songti SC","Noto Serif SC",serif;
+    --font-sans:"Noto Sans","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.55 var(--font-sans);background:var(--bg);color:var(--fg);-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  :focus-visible{outline:2.5px solid var(--focus);outline-offset:2px}
+
+  header{display:flex;align-items:center;gap:14px;padding:13px 22px;background:var(--ink);color:#F5F0E6;position:sticky;top:0;z-index:40}
+  header .brand{display:flex;align-items:center;gap:10px;min-width:0}
+  header .brand img{width:34px;height:34px;flex:0 0 auto;object-fit:contain}
+  header h1{font-family:var(--font-serif);font-size:17px;margin:0;font-weight:700;letter-spacing:.01em;white-space:nowrap}
+  header .sub{font-size:11.5px;color:#C9DAD8;letter-spacing:.02em;white-space:nowrap}
+  header .who{margin-left:auto;font-size:13px;color:#DCE7E5;white-space:nowrap}
+  header .who a{color:#F5F0E6;font-weight:600}
+  header .who a:hover{color:#fff}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:9px;
+    font-family:inherit;font-weight:700;font-size:13.5px;border:1.5px solid transparent;cursor:pointer;white-space:nowrap;
+    background:var(--accent);color:#fff;transition:background .16s,border-color .16s,color .16s}
+  .btn:hover{background:var(--accent-2)}
+  .btn.sec{background:var(--card);color:var(--ink);border-color:var(--border-strong)}
+  .btn.sec:hover{background:#EFE8D8;border-color:var(--ink)}
+  .btn.sm{height:32px;padding:0 12px;font-size:12.5px;border-radius:7px}
+  .btn:disabled{opacity:.5;cursor:default}
+
+  main{display:grid;grid-template-columns:270px 1fr;gap:0;min-height:calc(100vh - 61px)}
+  @media (max-width:860px){
+    main{grid-template-columns:1fr}
+    .side{border-right:none;border-bottom:1px solid var(--border)}
+    .content{padding:18px 16px}
+    header{flex-wrap:wrap;row-gap:6px}
+    header .who{margin-left:0;width:100%;font-size:12.5px}
+  }
+  .side{background:var(--card);border-right:1px solid var(--border);padding:16px}
+  .side h2{font-family:var(--font-serif);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-fg);margin:0 0 10px;font-weight:700}
+  .proj{padding:9px 11px;border-radius:8px;cursor:pointer;font-size:14px;border:1px solid transparent;margin-bottom:2px}
+  .proj:hover{background:var(--bg)}
+  .proj.on{background:var(--bg);border-color:var(--border-strong);font-weight:700;color:var(--ink)}
+  .proj small{display:block;color:var(--muted-fg);font-weight:400}
+  .content{padding:22px 26px;max-width:1120px}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px;overflow-x:auto}
+  .card h3{font-family:var(--font-serif);margin:0 0 12px;font-size:16px;color:var(--ink)}
+
+  label{display:block;font-size:12.5px;color:var(--muted-fg);margin:9px 0 4px;font-weight:600}
+  input,select,textarea{width:100%;height:38px;padding:0 11px;border:1px solid var(--border-strong);border-radius:8px;
+    font:inherit;font-size:13.5px;background:#FCFAF6;color:var(--fg)}
+  textarea{height:auto;padding:9px 11px}
+  input:focus,select:focus,textarea:focus{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row>div{flex:1;min-width:150px}
+
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  th{color:var(--muted-fg);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.03em;background:#FCFAF6}
+  tbody tr:hover td{background:#FCFAF6}
+
+  .cov{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
+  .cov.complete{background:#E7F3EA;color:var(--ok)}
+  .cov.partial{background:#FBF1E4;color:var(--warn)}
+  .cov.incomplete{background:#F7E7E3;color:var(--bad)}
+  .pill{display:inline-block;padding:2px 9px;border-radius:6px;background:var(--bg);border:1px solid var(--border);font-size:11.5px;margin:1px 4px 1px 0;color:var(--fg)}
+  .muted{color:var(--muted-fg);font-size:13px}
+  .exec-success{color:var(--ok)} .exec-timeout,.exec-unavailable,.exec-partial{color:var(--warn)} .exec-not_licensed,.exec-not_searched{color:var(--muted-fg)}
+
+  #loginView{max-width:380px;margin:64px auto;text-align:center;padding:0 16px}
+  #loginView h1{font-family:var(--font-serif);color:var(--ink)}
+  #loginView .card{text-align:left}
+  .msg{padding:9px 12px;border-radius:8px;font-size:13px;margin-top:9px}
+  .msg.err{background:#F7E7E3;color:var(--bad)} .msg.ok{background:#E7F3EA;color:var(--ok)}
+  .hint{font-size:12px;color:var(--muted-fg);margin:5px 0 0;line-height:1.5}
 </style>
 </head>
 <body>
 
 <div id="loginView" hidden>
-  <h1 style="font-size:18px">Bàn làm việc nghiên cứu</h1>
+  <img src="/assets/logo.png" alt="Chimedis" style="width:52px;height:52px;margin:0 auto 12px;display:block">
+  <h1 style="font-size:19px;margin:0 0 6px">Bàn làm việc nghiên cứu</h1>
   <p class="muted">Đăng nhập bằng tài khoản Chimedis để tạo dự án, tìm y văn và lưu nhật ký tìm kiếm.</p>
   <div class="card">
     <button class="btn" style="width:100%" onclick="wbSocial('google')">Đăng nhập với Google</button>
     <button class="btn sec" style="width:100%;margin-top:8px" onclick="wbSocial('apple')">Đăng nhập với Apple</button>
     <button class="btn sec" style="width:100%;margin-top:8px" onclick="wbSocial('facebook')">Đăng nhập với Facebook</button>
-    <div style="text-align:center;margin:10px 0;color:var(--muted);font-size:12px">hoặc</div>
+    <div style="text-align:center;margin:10px 0;color:var(--muted-fg);font-size:12px">hoặc</div>
     <label>Email</label><input id="loginEmail" type="email" />
     <label>Mật khẩu <span id="pwHint" class="hint" hidden>(tối thiểu 6 ký tự)</span></label>
     <input id="loginPass" type="password" />
@@ -73,11 +113,16 @@
 
 <div id="appView" hidden>
   <header>
-    <h1>Bàn làm việc nghiên cứu</h1>
-    <span class="muted" style="font-size:12px">M1 · Tìm kiếm + Nhật ký tìm kiếm</span>
+    <a href="/" class="brand" style="color:inherit">
+      <img src="/assets/logo-dark.png" alt="Chimedis">
+      <span>
+        <h1>Bàn làm việc nghiên cứu</h1>
+        <div class="sub">Chimedis · Tìm kiếm + Thư viện + Nhật ký tìm kiếm</div>
+      </span>
+    </a>
     <span class="who"><span id="whoLabel"></span> · <a href="/tai-khoan.html">Tài khoản</a> · <a href="#" onclick="wbSignOut();return false">Thoát</a></span>
   </header>
-  <div id="verifyBanner" class="msg" style="margin:0;border-radius:0;background:#f6ecd6;color:var(--warn)" hidden></div>
+  <div id="verifyBanner" class="msg" style="margin:0;border-radius:0;background:#FBF1E4;color:var(--warn)" hidden></div>
   <main>
     <div class="side">
       <h2>Dự án của tôi</h2>
