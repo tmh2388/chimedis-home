@@ -48,17 +48,25 @@ function setLang(l){ state.lang = l; localStorage.setItem('chimedis_portal_lang'
 
 ## 4. Hiện trạng (cập nhật 2026-09-12)
 
-| Trang | `data-i18n` | Trạng thái |
-|---|---|---|
-| `public/index.html` (trang tìm chính) | **122** | ✅ Đủ VI/ZH/EN |
-| `public/workbench.html` (Bàn làm việc nghiên cứu) | **176 khoá dịch** | ✅ Đủ VI/ZH/EN (xong 2026-09-12, commit `d246e11`) — đối chiếu 0 khoá thiếu ở cả 3 ngôn ngữ, xác nhận bằng render thực tế qua Browser tool |
-| `public/tai-khoan.html` (đăng nhập/tài khoản) | **0** | ❌ Chỉ tiếng Việt — **là trang ĐẦU TIÊN người dùng Trung/quốc tế gặp** — GAP CÒN LẠI DUY NHẤT |
+| Trang | Trạng thái |
+|---|---|
+| `public/index.html` (trang tìm chính) | ✅ Đủ VI/ZH/EN (161 khoá dịch — 122 khoá gốc + ~50 khoá bổ sung 2026-09-12 khi phát hiện panel "Nghiên cứu của tôi" và khung kết quả tìm kiếm bị bỏ sót) |
+| `public/workbench.html` (Bàn làm việc nghiên cứu) | ✅ Đủ VI/ZH/EN (176 khoá, xong 2026-09-12, commit `d246e11`) |
+| `public/tai-khoan.html` (đăng nhập/tài khoản) | ✅ Đủ VI/ZH/EN (xong 2026-09-12, commit `310a9c2`) |
 
-## 5. Việc cần làm (backlog ĐÃ CHỐT ƯU TIÊN — không phải "để sau tuỳ hứng")
+**Bài học rút ra (2026-09-12):** trang `index.html` tưởng đã "đủ i18n" (122 khoá, kiểm ngày
+2026-09-12 buổi sáng) nhưng panel "Nghiên cứu của tôi" (SciSpace-style, thêm SAU khi phần i18n
+gốc đã hoàn thành ở giai đoạn M3) không được bổ sung `data-i18n` — người dùng phát hiện qua nút
+"Nghiên cứu" ở header vẫn tiếng Việt khi đổi ngôn ngữ. ⇒ Khi thêm tính năng UI mới vào một trang
+ĐÃ có i18n, phải tự kiểm tra riêng phần mới thêm — không giả định "trang đã i18n thì mặc định
+tính năng mới cũng vậy".
 
-1. ~~`workbench.html`~~ — ✅ ĐÃ XONG 2026-09-12.
-2. **`tai-khoan.html`** — trang đăng nhập, ưu tiên cao nhất còn lại (điểm chạm đầu tiên).
-3. Mọi trang mới sau này (M4 gap analysis, M5/M6 viết bài…) — làm i18n **cùng lúc** lúc build, không tách pha riêng.
+## 5. Việc cần làm
+
+Không còn gap đã biết ở 3 trang chính (`index.html`, `workbench.html`, `tai-khoan.html`).
+Mọi trang/tính năng UI mới sau này (M4 gap analysis, M5/M6 viết bài…) — làm i18n **cùng lúc**
+lúc build, và khi thêm tính năng mới vào trang cũ, kiểm tra riêng phần mới thêm (xem bài học
+ở trên) — không tách pha riêng, không giả định.
 
 ## 6. Gate cho mọi PR/commit UI từ nay
 
