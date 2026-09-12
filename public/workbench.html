@@ -274,11 +274,12 @@ const I18N = {
     manual_abstract_label: 'Tóm tắt', manual_save: 'Lưu vào thư viện', manual_cancel: 'Huỷ',
     manual_err_title_required: 'Cần nhập tiêu đề.', manual_err_save_prefix: 'Lỗi lưu: ',
     select_all: 'Chọn tất cả', n_selected: '{n} đã chọn', delete_selected: 'Xoá mục đã chọn', delete_all_library: 'Xoá toàn bộ thư viện',
-    col_title: 'Tiêu đề', col_year: 'Năm', col_source: 'Nguồn', col_type: 'Loại', col_status: 'Trạng thái', col_id: 'ID',
+    col_title: 'Tiêu đề', col_year: 'Năm', col_source: 'Cách lưu', col_type: 'Loại', col_status: 'Trạng thái', col_id: 'ID',
     status_shortlisted: 'Đã chọn lọc', status_included: 'Đưa vào bài', status_excluded: 'Loại',
     study_systematic_review: 'Tổng quan hệ thống', study_meta_analysis: 'Phân tích gộp', study_rct: 'RCT',
     study_case_control: 'Bệnh-chứng', study_cohort: 'Đoàn hệ', study_cross_sectional: 'Cắt ngang', study_case_report: 'Báo cáo ca',
     study_protocol: 'Đề cương', study_review: 'Tổng quan', study_preclinical: 'Tiền lâm sàng', study_qualitative: 'Định tính', study_unknown: 'Chưa rõ',
+    study_thesis: 'Luận văn/Luận án', study_conference_paper: 'Báo cáo hội nghị', study_report: 'Báo cáo kỹ thuật', study_book: 'Sách',
     note_prefix: 'Ghi chú: ', link_delete: 'xoá', dash: '—',
     confirm_delete_selected: 'Xoá {n} mục đã chọn khỏi thư viện dự án?',
     confirm_delete_all_library: 'Xoá TOÀN BỘ {n} bản ghi khỏi thư viện dự án này? Không thể hoàn tác.',
@@ -311,9 +312,14 @@ const I18N = {
     import_result: 'Đã nhập {imported}/{total} bản ghi{skipped}.',
     import_result_skipped: ' ({skipped} bị bỏ qua — thiếu tiêu đề hoặc lỗi)',
     import_err_read_file: 'Không đọc được file.',
-    filter_source_label: 'Nguồn:', filter_type_label: 'Loại:', filter_all: 'Tất cả',
+    filter_source_label: 'Cách lưu:', filter_type_label: 'Loại:', filter_all: 'Tất cả',
+    source_manual: 'Nhập tay/RIS-BibTeX', source_public_search: 'Tìm kiếm công khai',
+    col_source_hint: 'Cột "Cách lưu" cho biết bản ghi được thêm vào bằng cách nào (nhập tay, tìm kiếm...) — tên tạp chí thật xem ở khung "Xem chi tiết".',
+    source_openalex: 'OpenAlex', source_europepmc: 'Europe PMC', source_core: 'CORE',
+    source_semanticscholar: 'Semantic Scholar', source_pubmed: 'PubMed', source_crossref: 'Crossref',
+    source_clinicaltrials: 'ClinicalTrials.gov',
     filter_showing: 'Hiển thị {n}/{total} sau lọc', filter_no_match: 'Không có bản ghi nào khớp bộ lọc.',
-    detail_authors: 'Tác giả', detail_journal: 'Tạp chí/Nguồn', detail_ids: 'Định danh',
+    detail_authors: 'Tác giả', detail_journal: 'Tạp chí', detail_ids: 'Định danh',
     detail_keywords: 'Từ khoá', detail_topics: 'Chủ đề', detail_abstract: 'Tóm tắt',
     detail_no_abstract: 'Không có tóm tắt.', detail_note_label: 'Ghi chú',
     detail_save_note: 'Lưu ghi chú', detail_close: 'Đóng',
@@ -380,11 +386,12 @@ const I18N = {
     manual_abstract_label: '摘要', manual_save: '保存到文献库', manual_cancel: '取消',
     manual_err_title_required: '请输入标题。', manual_err_save_prefix: '保存失败：',
     select_all: '全选', n_selected: '已选 {n} 项', delete_selected: '删除已选项', delete_all_library: '清空整个文献库',
-    col_title: '标题', col_year: '年份', col_source: '来源', col_type: '类型', col_status: '状态', col_id: 'ID',
+    col_title: '标题', col_year: '年份', col_source: '添加方式', col_type: '类型', col_status: '状态', col_id: 'ID',
     status_shortlisted: '已初筛', status_included: '纳入论文', status_excluded: '已排除',
     study_systematic_review: '系统综述', study_meta_analysis: 'Meta 分析', study_rct: '随机对照试验（RCT）',
     study_case_control: '病例对照', study_cohort: '队列研究', study_cross_sectional: '横断面研究', study_case_report: '病例报告',
     study_protocol: '研究方案', study_review: '综述', study_preclinical: '临床前研究', study_qualitative: '质性研究', study_unknown: '未知',
+    study_thesis: '学位论文', study_conference_paper: '会议论文', study_report: '技术报告', study_book: '图书',
     note_prefix: '备注：', link_delete: '删除', dash: '—',
     confirm_delete_selected: '确定从文献库中删除已选的 {n} 项？',
     confirm_delete_all_library: '确定清空本项目文献库中的全部 {n} 条记录？此操作不可撤销。',
@@ -417,9 +424,14 @@ const I18N = {
     import_result: '已导入 {imported}/{total} 条记录{skipped}。',
     import_result_skipped: '（{skipped} 条被跳过 — 缺少标题或出错）',
     import_err_read_file: '无法读取文件。',
-    filter_source_label: '来源：', filter_type_label: '类型：', filter_all: '全部',
+    filter_source_label: '添加方式：', filter_type_label: '类型：', filter_all: '全部',
+    source_manual: '手动录入/RIS-BibTeX', source_public_search: '公开搜索',
+    col_source_hint: '"添加方式"列表示该记录是如何加入的（手动录入、搜索等）——真正的期刊名称请查看"查看详情"面板。',
+    source_openalex: 'OpenAlex', source_europepmc: 'Europe PMC', source_core: 'CORE',
+    source_semanticscholar: 'Semantic Scholar', source_pubmed: 'PubMed', source_crossref: 'Crossref',
+    source_clinicaltrials: 'ClinicalTrials.gov',
     filter_showing: '筛选后显示 {n}/{total} 条', filter_no_match: '没有符合筛选条件的记录。',
-    detail_authors: '作者', detail_journal: '期刊/来源', detail_ids: '标识符',
+    detail_authors: '作者', detail_journal: '期刊', detail_ids: '标识符',
     detail_keywords: '关键词', detail_topics: '主题', detail_abstract: '摘要',
     detail_no_abstract: '暂无摘要。', detail_note_label: '备注',
     detail_save_note: '保存备注', detail_close: '关闭',
@@ -486,11 +498,12 @@ const I18N = {
     manual_abstract_label: 'Abstract', manual_save: 'Save to library', manual_cancel: 'Cancel',
     manual_err_title_required: 'Title is required.', manual_err_save_prefix: 'Save failed: ',
     select_all: 'Select all', n_selected: '{n} selected', delete_selected: 'Delete selected', delete_all_library: 'Delete entire library',
-    col_title: 'Title', col_year: 'Year', col_source: 'Source', col_type: 'Type', col_status: 'Status', col_id: 'ID',
+    col_title: 'Title', col_year: 'Year', col_source: 'Added via', col_type: 'Type', col_status: 'Status', col_id: 'ID',
     status_shortlisted: 'Shortlisted', status_included: 'Included', status_excluded: 'Excluded',
     study_systematic_review: 'Systematic review', study_meta_analysis: 'Meta-analysis', study_rct: 'RCT',
     study_case_control: 'Case-control', study_cohort: 'Cohort', study_cross_sectional: 'Cross-sectional', study_case_report: 'Case report',
     study_protocol: 'Protocol', study_review: 'Review', study_preclinical: 'Preclinical', study_qualitative: 'Qualitative', study_unknown: 'Unknown',
+    study_thesis: 'Thesis/Dissertation', study_conference_paper: 'Conference paper', study_report: 'Technical report', study_book: 'Book',
     note_prefix: 'Note: ', link_delete: 'delete', dash: '—',
     confirm_delete_selected: 'Delete {n} selected item(s) from the project library?',
     confirm_delete_all_library: 'Delete ALL {n} record(s) from this project library? This cannot be undone.',
@@ -523,9 +536,14 @@ const I18N = {
     import_result: 'Imported {imported}/{total} records{skipped}.',
     import_result_skipped: ' ({skipped} skipped — missing title or error)',
     import_err_read_file: 'Could not read the file.',
-    filter_source_label: 'Source:', filter_type_label: 'Type:', filter_all: 'All',
+    filter_source_label: 'Added via:', filter_type_label: 'Type:', filter_all: 'All',
+    source_manual: 'Manual entry/RIS-BibTeX', source_public_search: 'Public search',
+    col_source_hint: 'The "Added via" column shows how the record was added (manual entry, search...) — see the real journal name in "View details".',
+    source_openalex: 'OpenAlex', source_europepmc: 'Europe PMC', source_core: 'CORE',
+    source_semanticscholar: 'Semantic Scholar', source_pubmed: 'PubMed', source_crossref: 'Crossref',
+    source_clinicaltrials: 'ClinicalTrials.gov',
     filter_showing: 'Showing {n}/{total} after filter', filter_no_match: 'No records match the filter.',
-    detail_authors: 'Authors', detail_journal: 'Journal/Source', detail_ids: 'Identifiers',
+    detail_authors: 'Authors', detail_journal: 'Journal', detail_ids: 'Identifiers',
     detail_keywords: 'Keywords', detail_topics: 'Topics', detail_abstract: 'Abstract',
     detail_no_abstract: 'No abstract available.', detail_note_label: 'Note',
     detail_save_note: 'Save note', detail_close: 'Close',
@@ -777,8 +795,18 @@ const STUDY_TYPE_KEY = {
   systematic_review: 'study_systematic_review', meta_analysis: 'study_meta_analysis', rct: 'study_rct',
   case_control: 'study_case_control', cohort: 'study_cohort', cross_sectional: 'study_cross_sectional', case_report: 'study_case_report',
   protocol: 'study_protocol', review: 'study_review', preclinical: 'study_preclinical', qualitative: 'study_qualitative', unknown: 'study_unknown',
+  thesis: 'study_thesis', conference_paper: 'study_conference_paper', report: 'study_report', book: 'study_book',
 };
 function studyTypeLabel(type) { return STUDY_TYPE_KEY[type] ? t(STUDY_TYPE_KEY[type]) : (type || t('study_unknown')); }
+// "Cách lưu" (mergedFrom) — CÁCH bản ghi được thêm vào hệ thống (nhập tay/RIS-BibTeX,
+// tìm kiếm công khai, hoặc tên connector API), KHÔNG PHẢI tên tạp chí (xem "Tạp chí" ở
+// khung chi tiết) — 2 khái niệm khác nhau, tránh nhầm như trước (cả 2 từng dùng chữ "Nguồn").
+const SOURCE_KEY = {
+  manual: 'source_manual', 'public-search': 'source_public_search', openalex: 'source_openalex',
+  europepmc: 'source_europepmc', core: 'source_core', semanticscholar: 'source_semanticscholar',
+  pubmed: 'source_pubmed', crossref: 'source_crossref', clinicaltrials: 'source_clinicaltrials',
+};
+function sourceLabel(id) { return SOURCE_KEY[id] ? t(SOURCE_KEY[id]) : id; }
 
 function renderRecordDetail(r) {
   const idRows = Object.entries(r.identifiers || {}).filter(([k]) => k !== 'manual');
@@ -818,7 +846,7 @@ function renderLibraryCard(records) {
         ${authorsShort ? `<br><span class="hint">${esc(authorsShort)}</span>` : ''}
         ${r.note ? `<br><span class="hint">${t('note_prefix')}${esc(r.note)}</span>` : ''}</td>
       <td>${r.year || t('dash')}</td>
-      <td>${(r.mergedFrom || []).join(', ') || t('dash')}</td>
+      <td>${(r.mergedFrom || []).map(sourceLabel).join(', ') || t('dash')}</td>
       <td>${esc(studyLabel)}</td>
       <td><select onchange="wbSetLibraryStatus(${r.recordId}, this.value)">
         ${Object.entries(STATUS_KEY).map(([v, lk]) => `<option value="${v}" ${r.status === v ? 'selected' : ''}>${esc(t(lk))}</option>`).join('')}
@@ -831,7 +859,7 @@ function renderLibraryCard(records) {
       <label style="flex:none;margin:0">${t('filter_source_label')}
         <select onchange="wbLibFilterChange('source', this.value)">
           <option value="all" ${libraryFilters.source === 'all' ? 'selected' : ''}>${t('filter_all')}</option>
-          ${sources.map((s) => `<option value="${esc(s)}" ${libraryFilters.source === s ? 'selected' : ''}>${esc(s)}</option>`).join('')}
+          ${sources.map((s) => `<option value="${esc(s)}" ${libraryFilters.source === s ? 'selected' : ''}>${esc(sourceLabel(s))}</option>`).join('')}
         </select>
       </label>
       <label style="flex:none;margin:0">${t('filter_type_label')}
@@ -841,7 +869,8 @@ function renderLibraryCard(records) {
         </select>
       </label>
       ${filtered.length !== records.length ? `<span class="hint">${t('filter_showing', { n: filtered.length, total: records.length })}</span>` : ''}
-    </div>` : '';
+    </div>
+    <p class="hint" style="margin-top:-4px">${t('col_source_hint')}</p>` : '';
   return `
     <h3>${t('library_title', { n: records.length })}
       <button type="button" class="btn sm sec" style="margin-left:8px" onclick="wbToggleManualForm()">${t('library_add_manual')}</button>

@@ -431,8 +431,21 @@ async function tryRenderDocx(project, runs) {
 // chung xuyên project, M1 identity-graph); wb_project_records chỉ là "đã lưu vào thư viện
 // của DỰ ÁN NÀY". KHÔNG phải gap-analysis/accepted_for_project (đó là M4, chưa làm).
 
+// Map loại TÀI LIỆU (document type — do nguồn cung cấp SẴN, đáng tin cậy) sang nhãn hiển
+// thị ở cột "Loại". Áp dụng cho các loại KHÔNG tự thân nói lên thiết kế nghiên cứu (luận
+// văn/kỷ yếu/báo cáo/sách — một luận văn có thể chứa RCT, cohort, tổng quan... bên trong,
+// nhưng "Luận văn" vẫn là thông tin hữu ích hơn "Chưa rõ"). "Journal article"/"article"
+// KHÔNG map ở đây — để guessStudyType() thử đoán RCT/cohort/tổng quan... từ tóm tắt trước,
+// vì bài báo tạp chí đúng là có thể thuộc bất kỳ thiết kế nào.
 const STUDY_TYPE_FROM_DOCTYPE = {
   'systematic review': 'systematic_review', review: 'review', rct: 'rct', preprint: 'preprint',
+  // CNKI (EndNote-tag %0 / NoteExpress {Reference Type} dùng cụm đầy đủ tiếng Anh)
+  thesis: 'thesis', 'conference proceedings': 'conference_paper', report: 'report', book: 'book',
+  // RIS chuẩn (TY dùng mã viết tắt)
+  thes: 'thesis', conf: 'conference_paper', cpaper: 'conference_paper', rprt: 'report',
+  // BibTeX chuẩn (@type)
+  mastersthesis: 'thesis', phdthesis: 'thesis', conference: 'conference_paper',
+  inproceedings: 'conference_paper', techreport: 'report',
 };
 
 // Chuẩn hoá payload tối giản từ trang tìm công khai (public/index.html — field `r` của
@@ -546,7 +559,7 @@ router.post('/projects/:id/library/import', requireDb, requireUser, requireVerif
     let imported = 0;
     let skipped = 0;
     for (const raw of parsed.slice(0, 500)) { // chặn nhập quá lớn trong 1 lần (an toàn/hiệu năng)
-      const norm = normalizeInlineRecord({ ...raw, venue: raw.journal, landingUrl: raw.url, source: 'manual' });
+      const norm = normalizeInlineRecord({ ...raw, venue: raw.journal, landingUrl: raw.url, type: raw.docType, source: 'manual' });
       if (!norm) { skipped++; continue; }
       try {
         const recordId = await upsertStandaloneRecord(norm);
