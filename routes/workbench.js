@@ -13,6 +13,7 @@ import { buildSearchQuery } from '../lib/tcm-vocab.js';
 import { enrichUntranslated } from '../lib/dict-learn.js';
 import { QUESTION_PROFILES, isValidProfile, evaluateCoverage } from '../lib/source-policy.js';
 import { guessStudyType, STUDY_TYPE_LABEL_VI } from '../lib/study-type.js';
+import { parseReferences } from '../lib/ref-import.js';
 import {
   writeSearchRun, listSearchRuns, renderSearchLogMarkdown, renderSearchLogCsv,
   upsertStandaloneRecord,
@@ -515,6 +516,55 @@ router.post('/projects/:id/library', requireDb, requireUser, requireVerified, rl
   } catch (err) {
     console.error('POST /workbench/projects/:id/library:', err.message);
     res.status(500).json({ success: false, error: 'Lỗi khi lưu vào thư viện' });
+  }
+});
+
+// POST /api/workbench/projects/:id/library/import — nhập hàng loạt từ RIS/BibTeX (M3).
+// { format: 'ris'|'bibtex', text: string } — text dán trực tiếp hoặc đọc từ file phía client
+// (không cần multer: file .ris/.bib là text thuần, browser đọc bằng FileReader rồi gửi lên).
+// Dùng lại đúng normalizeInlineRecord()/upsertStandaloneRecord() của đường lưu thủ công —
+// mỗi bản ghi phân tích được coi như một "record nhập tay", định danh tổng hợp nếu thiếu DOI.
+router.post('/projects/:id/library/import', requireDb, requireUser, requireVerified, rlWrite, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const format = String(req.body?.format || '').toLowerCase();
+    const text = String(req.body?.text || '');
+    if (!['ris', 'bibtex'].includes(format)) {
+      return res.status(400).json({ success: false, error: 'format phải là "ris" hoặc "bibtex"' });
+    }
+    if (!text.trim()) return res.status(400).json({ success: false, error: 'Thiếu nội dung file' });
+
+    let parsed;
+    try { parsed = parseReferences(format, text); }
+    catch (e) { return res.status(400).json({ success: false, error: 'Lỗi phân tích file: ' + e.message }); }
+    if (!parsed.length) {
+      return res.status(400).json({ success: false, error: 'Không tìm thấy bản ghi hợp lệ nào trong file (thiếu tiêu đề?)' });
+    }
+
+    const pool = getPool();
+    let imported = 0;
+    let skipped = 0;
+    for (const raw of parsed.slice(0, 500)) { // chặn nhập quá lớn trong 1 lần (an toàn/hiệu năng)
+      const norm = normalizeInlineRecord({ ...raw, venue: raw.journal, landingUrl: raw.url, source: 'manual' });
+      if (!norm) { skipped++; continue; }
+      try {
+        const recordId = await upsertStandaloneRecord(norm);
+        await pool.query(
+          `INSERT INTO wb_project_records (project_id, record_id) VALUES (?, ?)
+           ON DUPLICATE KEY UPDATE updated_at = CURRENT_TIMESTAMP`,
+          [project.id, recordId]
+        );
+        imported++;
+      } catch (e) {
+        console.error('import record failed:', e.message);
+        skipped++;
+      }
+    }
+    res.json({ success: true, total: parsed.length, imported, skipped });
+  } catch (err) {
+    console.error('POST /workbench/projects/:id/library/import:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi nhập file' });
   }
 });
 

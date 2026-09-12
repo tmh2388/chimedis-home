@@ -290,6 +290,17 @@ const I18N = {
     manifest_col_source: 'Nguồn', manifest_col_status: 'Trạng thái', manifest_col_count: 'Số bản', manifest_col_ms: 'ms', manifest_col_note: 'Ghi chú',
     results_after_dedup: '{n} kết quả sau khử trùng (identity-graph). Fingerprint {fp}…',
     not_persisted_hint: 'chưa lưu (DB chưa cấu hình)',
+    library_import_btn: 'Nhập RIS/BibTeX', import_title: 'Nhập hàng loạt từ RIS/BibTeX',
+    import_hint: 'Xuất danh sách bài từ Zotero, EndNote, Wanfang, CNKI… ra định dạng RIS hoặc BibTeX, rồi dán nội dung hoặc chọn file (.ris/.bib) vào đây.',
+    import_format_label: 'Định dạng', import_format_ris: 'RIS (.ris)', import_format_bibtex: 'BibTeX (.bib)',
+    import_file_label: 'Chọn file (tuỳ chọn)', import_or_paste: 'hoặc dán nội dung:',
+    import_textarea_ph: 'Dán nội dung RIS/BibTeX vào đây…',
+    import_submit: 'Nhập vào thư viện', import_cancel: 'Huỷ',
+    import_err_empty: 'Chưa có nội dung để nhập (dán văn bản hoặc chọn file).',
+    import_err_prefix: 'Lỗi nhập: ', import_importing: 'Đang nhập…',
+    import_result: 'Đã nhập {imported}/{total} bản ghi{skipped}.',
+    import_result_skipped: ' ({skipped} bị bỏ qua — thiếu tiêu đề hoặc lỗi)',
+    import_err_read_file: 'Không đọc được file.',
   },
   zh: {
     page_title: '研究工作台 — Chimedis',
@@ -380,6 +391,17 @@ const I18N = {
     manifest_col_source: '来源', manifest_col_status: '状态', manifest_col_count: '结果数', manifest_col_ms: '耗时(ms)', manifest_col_note: '备注',
     results_after_dedup: '去重后（identity-graph）共 {n} 条结果。指纹 {fp}…',
     not_persisted_hint: '未保存（数据库未配置）',
+    library_import_btn: '导入 RIS/BibTeX', import_title: '批量导入 RIS/BibTeX',
+    import_hint: '从 Zotero、EndNote、万方、知网等工具导出 RIS 或 BibTeX 格式的文献列表，然后粘贴内容或选择文件（.ris/.bib）。',
+    import_format_label: '格式', import_format_ris: 'RIS (.ris)', import_format_bibtex: 'BibTeX (.bib)',
+    import_file_label: '选择文件（可选）', import_or_paste: '或粘贴内容：',
+    import_textarea_ph: '将 RIS/BibTeX 内容粘贴在此…',
+    import_submit: '导入到文献库', import_cancel: '取消',
+    import_err_empty: '暂无可导入的内容（请粘贴文本或选择文件）。',
+    import_err_prefix: '导入出错：', import_importing: '导入中…',
+    import_result: '已导入 {imported}/{total} 条记录{skipped}。',
+    import_result_skipped: '（{skipped} 条被跳过 — 缺少标题或出错）',
+    import_err_read_file: '无法读取文件。',
   },
   en: {
     page_title: 'Research Workbench — Chimedis',
@@ -470,6 +492,17 @@ const I18N = {
     manifest_col_source: 'Source', manifest_col_status: 'Status', manifest_col_count: 'Count', manifest_col_ms: 'ms', manifest_col_note: 'Note',
     results_after_dedup: '{n} results after dedup (identity-graph). Fingerprint {fp}…',
     not_persisted_hint: 'not saved (DB not configured)',
+    library_import_btn: 'Import RIS/BibTeX', import_title: 'Bulk import from RIS/BibTeX',
+    import_hint: 'Export your reading list from Zotero, EndNote, Wanfang, CNKI, etc. as RIS or BibTeX, then paste the content or choose a file (.ris/.bib) here.',
+    import_format_label: 'Format', import_format_ris: 'RIS (.ris)', import_format_bibtex: 'BibTeX (.bib)',
+    import_file_label: 'Choose file (optional)', import_or_paste: 'or paste content:',
+    import_textarea_ph: 'Paste RIS/BibTeX content here…',
+    import_submit: 'Import to library', import_cancel: 'Cancel',
+    import_err_empty: 'Nothing to import yet (paste text or choose a file).',
+    import_err_prefix: 'Import error: ', import_importing: 'Importing…',
+    import_result: 'Imported {imported}/{total} records{skipped}.',
+    import_result_skipped: ' ({skipped} skipped — missing title or error)',
+    import_err_read_file: 'Could not read the file.',
   },
 };
 function t(key, vars) {
@@ -737,11 +770,29 @@ function renderLibraryCard(records) {
     </tr>`;
   }).join('');
   return `
-    <h3>${t('library_title', { n: records.length })} <button type="button" class="btn sm sec" style="margin-left:8px" onclick="wbToggleManualForm()">${t('library_add_manual')}</button></h3>
+    <h3>${t('library_title', { n: records.length })}
+      <button type="button" class="btn sm sec" style="margin-left:8px" onclick="wbToggleManualForm()">${t('library_add_manual')}</button>
+      <button type="button" class="btn sm sec" onclick="wbToggleImportForm()">${t('library_import_btn')}</button></h3>
     <p class="hint">${t('library_desc')}
       ${records.length ? `${t('library_export')} <a href="#" onclick="wbLibExport('xlsx');return false">${t('export_excel')}</a> ·
         <a href="#" onclick="wbLibExport('docx');return false">${t('export_word')}</a> ·
         <a href="#" onclick="wbLibExport('csv');return false">${t('export_csv')}</a>` : ''}</p>
+    <div id="wbImportForm" class="card" style="display:none;background:var(--bg);margin:0 0 12px">
+      <h4 style="margin:0 0 6px">${t('import_title')}</h4>
+      <p class="hint">${t('import_hint')}</p>
+      <label>${t('import_format_label')}</label>
+      <select id="impFormat">
+        <option value="ris">${t('import_format_ris')}</option>
+        <option value="bibtex">${t('import_format_bibtex')}</option>
+      </select>
+      <label>${t('import_file_label')}</label>
+      <input id="impFile" type="file" accept=".ris,.bib,.bibtex,text/plain">
+      <label>${t('import_or_paste')}</label>
+      <textarea id="impText" rows="6" placeholder="${esc(t('import_textarea_ph'))}"></textarea>
+      <button class="btn sm" style="margin-top:6px" onclick="wbImportRefs()">${t('import_submit')}</button>
+      <button class="btn sm sec" style="margin-top:6px" onclick="wbToggleImportForm(false)">${t('import_cancel')}</button>
+      <div id="impMsg"></div>
+    </div>
     <div id="wbManualForm" class="card" style="display:none;background:var(--bg);margin:0 0 12px">
       <label>${t('manual_title_label')}</label><input id="mfTitle" placeholder="${esc(t('manual_title_ph'))}">
       <div class="row">
@@ -833,6 +884,34 @@ window.wbSaveManual = async () => {
     await wbRefreshLibrary();
   } catch (e) {
     $('mfMsg').innerHTML = `<div class="msg err">${t('manual_err_save_prefix')}${esc(e.message)}</div>`;
+  }
+};
+window.wbToggleImportForm = (force) => {
+  const el = $('wbImportForm');
+  if (!el) return;
+  const show = force !== undefined ? force : el.style.display === 'none';
+  el.style.display = show ? 'block' : 'none';
+};
+window.wbImportRefs = async () => {
+  const format = $('impFormat').value;
+  const file = $('impFile').files[0];
+  const msgEl = $('impMsg');
+  let text = $('impText').value;
+  if (file) {
+    try { text = await file.text(); }
+    catch (e) { msgEl.innerHTML = `<div class="msg err">${t('import_err_read_file')}</div>`; return; }
+  }
+  if (!text || !text.trim()) { msgEl.innerHTML = `<div class="msg err">${t('import_err_empty')}</div>`; return; }
+  msgEl.innerHTML = `<div class="hint">${t('import_importing')}</div>`;
+  try {
+    const r = await api(`/api/workbench/projects/${activeId}/library/import`, { method: 'POST', body: JSON.stringify({ format, text }) });
+    const skipped = r.skipped ? t('import_result_skipped', { skipped: r.skipped }) : '';
+    msgEl.innerHTML = `<div class="msg ok">${t('import_result', { imported: r.imported, total: r.total, skipped })}</div>`;
+    $('impText').value = '';
+    $('impFile').value = '';
+    await wbRefreshLibrary();
+  } catch (e) {
+    msgEl.innerHTML = `<div class="msg err">${t('import_err_prefix')}${esc(e.message)}</div>`;
   }
 };
 window.wbLibExport = async (fmt) => {
