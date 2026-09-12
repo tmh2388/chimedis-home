@@ -312,6 +312,8 @@ tr.lit-detail .lk a:hover{text-decoration:underline}
 .lib-pick{position:absolute;z-index:50;background:#fff;border:1px solid var(--border-strong,#ddd);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.12);padding:10px;min-width:220px;font-size:13px}
 .lib-pick select{width:100%;margin-bottom:8px;padding:5px}
 .lib-pick .row{display:flex;gap:6px;justify-content:flex-end}
+.wb-panel-backdrop{position:fixed;inset:0;background:rgba(20,18,12,.28);z-index:89}
+.wb-panel-backdrop[hidden]{display:none}
 .wb-panel{position:fixed;top:0;right:0;height:100vh;width:380px;max-width:92vw;background:#fff;border-left:1px solid var(--border-strong,#ddd);box-shadow:-10px 0 28px rgba(0,0,0,.10);z-index:90;display:flex;flex-direction:column}
 .wb-panel[hidden]{display:none}
 .wb-panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border-strong,#eee);font-size:14px}
@@ -322,7 +324,7 @@ tr.lit-detail .lk a:hover{text-decoration:underline}
 .wb-lib-item{padding:9px 0;border-bottom:1px solid #f0ede4}
 .wb-lib-item .t{font-weight:600;font-size:12.5px;line-height:1.4}
 .wb-lib-item .m{color:var(--muted-fg,#888);font-size:11.5px;margin-top:2px}
-.wb-panel-open-link{display:block;margin-top:14px;font-size:12px}
+.wb-panel-open-link{display:block;width:100%;text-align:center;margin-top:16px;box-sizing:border-box}
 </style>
 </head>
 <body>
@@ -390,6 +392,7 @@ if (auth) {
      (kiểu SciSpace) thay vì phải mở /workbench.html riêng cho việc thường ngày: chọn dự án
      + xem thư viện. Việc nâng cao (câu hỏi nghiên cứu, nhật ký tìm kiếm, xuất file) vẫn ở
      /workbench.html qua link "Mở đầy đủ" — chưa port toàn bộ trong v1 này. -->
+<div id="wbPanelBackdrop" class="wb-panel-backdrop" hidden onclick="toggleWbPanel(false)"></div>
 <aside id="wbPanel" class="wb-panel" hidden>
   <div class="wb-panel-head">
     <strong>📚 Nghiên cứu của tôi</strong>
@@ -1143,10 +1146,15 @@ document.addEventListener('click', (e)=>{
   // /workbench.html riêng để làm việc thường ngày (chọn dự án, xem thư viện). =====
   window.toggleWbPanel = async (force) => {
     const panel = document.getElementById('wbPanel');
+    const backdrop = document.getElementById('wbPanelBackdrop');
     const show = force !== undefined ? force : panel.hidden;
     panel.hidden = !show;
+    if (backdrop) backdrop.hidden = !show; // bấm ra ngoài (nền mờ) cũng đóng panel — không chỉ nút ✕
     if (show) await renderWbPanel();
   };
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { const p = document.getElementById('wbPanel'); if (p && !p.hidden) toggleWbPanel(false); }
+  });
   document.addEventListener('wb-auth-changed', () => {
     const panel = document.getElementById('wbPanel');
     if (panel && !panel.hidden) renderWbPanel();
@@ -1187,7 +1195,8 @@ document.addEventListener('click', (e)=>{
           <div class="t">${esc(r.title)}</div>
           <div class="m">${r.year||'—'} · ${esc(r.studyType||'unknown')}${r.status && r.status!=='shortlisted' ? ' · '+esc(r.status) : ''}</div>
         </div>`).join('') : '<p class="hint">Chưa lưu bài nào.</p>'}
-      <a class="wb-panel-open-link" href="/workbench.html" target="_blank">Mở đầy đủ trong Bàn làm việc (câu hỏi nghiên cứu, nhật ký tìm kiếm, xuất file) ↗</a>`;
+      <a class="btn btn-sm wb-panel-open-link" href="/workbench.html" target="_blank">↗ Mở Bàn làm việc đầy đủ</a>
+      <p class="hint" style="margin-top:6px">Câu hỏi nghiên cứu, nhật ký tìm kiếm, xuất Word/CSV — chưa có trong panel này.</p>`;
   }
   window.wbSwitchProject = (val) => {
     if(val === '__new__'){
