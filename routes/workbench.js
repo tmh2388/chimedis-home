@@ -432,19 +432,23 @@ async function tryRenderDocx(project, runs) {
 // của DỰ ÁN NÀY". KHÔNG phải gap-analysis/accepted_for_project (đó là M4, chưa làm).
 
 // Map loại TÀI LIỆU (document type — do nguồn cung cấp SẴN, đáng tin cậy) sang nhãn hiển
-// thị ở cột "Loại". Áp dụng cho các loại KHÔNG tự thân nói lên thiết kế nghiên cứu (luận
-// văn/kỷ yếu/báo cáo/sách — một luận văn có thể chứa RCT, cohort, tổng quan... bên trong,
-// nhưng "Luận văn" vẫn là thông tin hữu ích hơn "Chưa rõ"). "Journal article"/"article"
-// KHÔNG map ở đây — để guessStudyType() thử đoán RCT/cohort/tổng quan... từ tóm tắt trước,
-// vì bài báo tạp chí đúng là có thể thuộc bất kỳ thiết kế nào.
+// thị ở cột "Loại". NGUYÊN TẮC: nguồn đã cho biết rõ loại tài liệu thì LUÔN hiển thị trực
+// tiếp giá trị đó — KHÔNG tự ý đoán thay bằng heuristic (kể cả Journal Article). Trước đây
+// Journal Article bị loại khỏi bảng này để guessStudyType() "đoán" RCT/cohort/tổng quan từ
+// tóm tắt — gây khó hiểu vì cùng 1 cột nhưng hành xử khác nhau tuỳ loại tài liệu, và bỏ phí
+// đúng dữ liệu {Reference Type} rất đáng tin mà CNKI/RIS/EndNote/BibTeX đều cho sẵn (phản
+// hồi user 2026-09-12: "không phải để lấy nội dung từ trường reference type thì để làm
+// gì?"). guessStudyType() (đoán qua từ khoá tóm tắt) giờ CHỈ còn dùng khi record HOÀN TOÀN
+// không có type nào từ nguồn (nhập tay không điền loại, hoặc public-search thiếu type).
 const STUDY_TYPE_FROM_DOCTYPE = {
   'systematic review': 'systematic_review', review: 'review', rct: 'rct', preprint: 'preprint',
   // CNKI (EndNote-tag %0 / NoteExpress {Reference Type} dùng cụm đầy đủ tiếng Anh)
   thesis: 'thesis', 'conference proceedings': 'conference_paper', report: 'report', book: 'book',
+  'journal article': 'journal_article',
   // RIS chuẩn (TY dùng mã viết tắt)
-  thes: 'thesis', conf: 'conference_paper', cpaper: 'conference_paper', rprt: 'report',
+  thes: 'thesis', conf: 'conference_paper', cpaper: 'conference_paper', rprt: 'report', jour: 'journal_article',
   // BibTeX chuẩn (@type)
-  mastersthesis: 'thesis', phdthesis: 'thesis', conference: 'conference_paper',
+  article: 'journal_article', mastersthesis: 'thesis', phdthesis: 'thesis', conference: 'conference_paper',
   inproceedings: 'conference_paper', techreport: 'report',
 };
 

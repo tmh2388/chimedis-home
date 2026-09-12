@@ -280,6 +280,7 @@ const I18N = {
     study_case_control: 'Bệnh-chứng', study_cohort: 'Đoàn hệ', study_cross_sectional: 'Cắt ngang', study_case_report: 'Báo cáo ca',
     study_protocol: 'Đề cương', study_review: 'Tổng quan', study_preclinical: 'Tiền lâm sàng', study_qualitative: 'Định tính', study_unknown: 'Chưa rõ',
     study_thesis: 'Luận văn/Luận án', study_conference_paper: 'Báo cáo hội nghị', study_report: 'Báo cáo kỹ thuật', study_book: 'Sách',
+    study_journal_article: 'Bài báo tạp chí',
     note_prefix: 'Ghi chú: ', link_delete: 'xoá', dash: '—',
     confirm_delete_selected: 'Xoá {n} mục đã chọn khỏi thư viện dự án?',
     confirm_delete_all_library: 'Xoá TOÀN BỘ {n} bản ghi khỏi thư viện dự án này? Không thể hoàn tác.',
@@ -392,6 +393,7 @@ const I18N = {
     study_case_control: '病例对照', study_cohort: '队列研究', study_cross_sectional: '横断面研究', study_case_report: '病例报告',
     study_protocol: '研究方案', study_review: '综述', study_preclinical: '临床前研究', study_qualitative: '质性研究', study_unknown: '未知',
     study_thesis: '学位论文', study_conference_paper: '会议论文', study_report: '技术报告', study_book: '图书',
+    study_journal_article: '期刊论文',
     note_prefix: '备注：', link_delete: '删除', dash: '—',
     confirm_delete_selected: '确定从文献库中删除已选的 {n} 项？',
     confirm_delete_all_library: '确定清空本项目文献库中的全部 {n} 条记录？此操作不可撤销。',
@@ -504,6 +506,7 @@ const I18N = {
     study_case_control: 'Case-control', study_cohort: 'Cohort', study_cross_sectional: 'Cross-sectional', study_case_report: 'Case report',
     study_protocol: 'Protocol', study_review: 'Review', study_preclinical: 'Preclinical', study_qualitative: 'Qualitative', study_unknown: 'Unknown',
     study_thesis: 'Thesis/Dissertation', study_conference_paper: 'Conference paper', study_report: 'Technical report', study_book: 'Book',
+    study_journal_article: 'Journal article',
     note_prefix: 'Note: ', link_delete: 'delete', dash: '—',
     confirm_delete_selected: 'Delete {n} selected item(s) from the project library?',
     confirm_delete_all_library: 'Delete ALL {n} record(s) from this project library? This cannot be undone.',
@@ -796,6 +799,7 @@ const STUDY_TYPE_KEY = {
   case_control: 'study_case_control', cohort: 'study_cohort', cross_sectional: 'study_cross_sectional', case_report: 'study_case_report',
   protocol: 'study_protocol', review: 'study_review', preclinical: 'study_preclinical', qualitative: 'study_qualitative', unknown: 'study_unknown',
   thesis: 'study_thesis', conference_paper: 'study_conference_paper', report: 'study_report', book: 'study_book',
+  journal_article: 'study_journal_article',
 };
 function studyTypeLabel(type) { return STUDY_TYPE_KEY[type] ? t(STUDY_TYPE_KEY[type]) : (type || t('study_unknown')); }
 // "Cách lưu" (mergedFrom) — CÁCH bản ghi được thêm vào hệ thống (nhập tay/RIS-BibTeX,
