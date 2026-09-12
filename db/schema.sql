@@ -208,6 +208,20 @@ CREATE TABLE IF NOT EXISTS wb_record_identifiers (
   FOREIGN KEY (record_id) REFERENCES wb_research_records(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ===== M3 (slice 1) — Project Library / shortlist. Xem db/m3-workbench.sql. =====
+CREATE TABLE IF NOT EXISTS wb_project_records (
+  project_id  BIGINT NOT NULL,
+  record_id   BIGINT NOT NULL,
+  status      ENUM('shortlisted','included','excluded') NOT NULL DEFAULT 'shortlisted',
+  note        TEXT NULL,
+  added_at    TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (project_id, record_id),
+  FOREIGN KEY (project_id) REFERENCES wb_projects(id) ON DELETE CASCADE,
+  FOREIGN KEY (record_id) REFERENCES wb_research_records(id),
+  INDEX idx_project_status (project_id, status, added_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- =====================================================================================
 -- ===== Milestone H1a — Auth Foundation ===============================================
 -- docs/milestone-H-homepage-integration.md §3.3. Idempotent. FK tới users(id) đã có.

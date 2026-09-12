@@ -422,6 +422,137 @@ async function tryRenderDocx(project, runs) {
   return Packer.toBuffer(doc);
 }
 
+// ===== M3 (slice 1) — Project Library / shortlist =====================================
+// docs/research-workbench-plan.md M3. Bản ghi canonical vẫn ở wb_research_records (dùng
+// chung xuyên project, M1 identity-graph); wb_project_records chỉ là "đã lưu vào thư viện
+// của DỰ ÁN NÀY". KHÔNG phải gap-analysis/accepted_for_project (đó là M4, chưa làm).
+
+// POST /api/workbench/projects/:id/library  { scheme, value, note? }
+// scheme/value = 1 định danh bất kỳ của bản ghi (doi/pmid/pmcid/openalex/s2/core/...),
+// lấy từ `identifiers` mà chính kết quả tìm kiếm đã trả về (bản ghi đó đã được
+// writeSearchRun() upsert vào wb_research_records lúc chạy tìm kiếm).
+router.post('/projects/:id/library', requireDb, requireUser, requireVerified, rlWrite, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const scheme = String(req.body?.scheme || '').trim();
+    const value = String(req.body?.value || '').trim();
+    if (!scheme || !value) return res.status(400).json({ success: false, error: 'Thiếu định danh bản ghi (scheme/value)' });
+
+    const pool = getPool();
+    const [idRows] = await pool.query(
+      'SELECT record_id FROM wb_record_identifiers WHERE scheme=? AND value=? LIMIT 1',
+      [scheme, value]
+    );
+    if (!idRows.length) {
+      return res.status(404).json({ success: false, error: 'Không tìm thấy bản ghi (chưa từng xuất hiện trong kết quả tìm kiếm của bạn)' });
+    }
+    const recordId = idRows[0].record_id;
+    const note = req.body?.note != null ? String(req.body.note).slice(0, 4000) : null;
+    await pool.query(
+      `INSERT INTO wb_project_records (project_id, record_id, note)
+         VALUES (?, ?, ?)
+       ON DUPLICATE KEY UPDATE note = COALESCE(VALUES(note), note), updated_at = CURRENT_TIMESTAMP`,
+      [project.id, recordId, note]
+    );
+    const [[rec]] = await pool.query('SELECT * FROM wb_research_records WHERE id=?', [recordId]);
+    res.json({ success: true, recordId, record: rec });
+  } catch (err) {
+    console.error('POST /workbench/projects/:id/library:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi khi lưu vào thư viện' });
+  }
+});
+
+// GET /api/workbench/projects/:id/library — danh sách bản ghi đã lưu (khởi đầu evidence matrix)
+router.get('/projects/:id/library', requireDb, requireUser, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const pool = getPool();
+    const [rows] = await pool.query(
+      `SELECT pr.record_id, pr.status, pr.note, pr.added_at, pr.updated_at, r.*
+         FROM wb_project_records pr
+         JOIN wb_research_records r ON r.id = pr.record_id
+        WHERE pr.project_id = ?
+        ORDER BY pr.added_at DESC`,
+      [project.id]
+    );
+    if (!rows.length) return res.json({ success: true, records: [] });
+    const ids = rows.map((r) => r.record_id);
+    const [idRows] = await pool.query(
+      `SELECT record_id, scheme, value FROM wb_record_identifiers WHERE record_id IN (?)`,
+      [ids]
+    );
+    const idsByRecord = new Map();
+    for (const r of idRows) {
+      if (!idsByRecord.has(r.record_id)) idsByRecord.set(r.record_id, {});
+      idsByRecord.get(r.record_id)[r.scheme] = r.value;
+    }
+    const records = rows.map((r) => ({
+      recordId: r.record_id, status: r.status, note: r.note,
+      addedAt: r.added_at, updatedAt: r.updated_at,
+      title: r.title, abstract: r.abstract, authors: safeJson(r.authors_json, []),
+      journal: r.journal, year: r.year, studyType: r.study_type,
+      mergedFrom: safeJson(r.merged_from_json, []),
+      identifiers: idsByRecord.get(r.record_id) || {},
+    }));
+    res.json({ success: true, records });
+  } catch (err) {
+    console.error('GET /workbench/projects/:id/library:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi truy vấn thư viện' });
+  }
+});
+
+// PATCH /api/workbench/projects/:id/library/:recordId  { status?, note? }
+router.patch('/projects/:id/library/:recordId', requireDb, requireUser, requireVerified, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const recordId = parseInt(req.params.recordId, 10);
+    if (!Number.isInteger(recordId)) return res.status(400).json({ success: false, error: 'recordId không hợp lệ' });
+    const STATUSES = ['shortlisted', 'included', 'excluded'];
+    const sets = [];
+    const vals = [];
+    if (req.body?.status != null) {
+      if (!STATUSES.includes(req.body.status)) return res.status(400).json({ success: false, error: 'status không hợp lệ' });
+      sets.push('status=?'); vals.push(req.body.status);
+    }
+    if (req.body?.note !== undefined) { sets.push('note=?'); vals.push(req.body.note ? String(req.body.note).slice(0, 4000) : null); }
+    if (!sets.length) return res.status(400).json({ success: false, error: 'Không có gì để cập nhật' });
+    vals.push(project.id, recordId);
+    const [r] = await getPool().query(
+      `UPDATE wb_project_records SET ${sets.join(', ')}, updated_at=CURRENT_TIMESTAMP WHERE project_id=? AND record_id=?`,
+      vals
+    );
+    if (!r.affectedRows) return res.status(404).json({ success: false, error: 'Không tìm thấy mục thư viện' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('PATCH /workbench/projects/:id/library/:recordId:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi cập nhật thư viện' });
+  }
+});
+
+// DELETE /api/workbench/projects/:id/library/:recordId
+router.delete('/projects/:id/library/:recordId', requireDb, requireUser, requireVerified, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const recordId = parseInt(req.params.recordId, 10);
+    if (!Number.isInteger(recordId)) return res.status(400).json({ success: false, error: 'recordId không hợp lệ' });
+    await getPool().query('DELETE FROM wb_project_records WHERE project_id=? AND record_id=?', [project.id, recordId]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /workbench/projects/:id/library/:recordId:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi xoá khỏi thư viện' });
+  }
+});
+
+function safeJson(s, fallback) {
+  if (s == null) return fallback;
+  if (typeof s !== 'string') return s;
+  try { return JSON.parse(s); } catch { return fallback; }
+}
+
 function intOrNull(v) {
   const n = parseInt(v, 10);
   return Number.isFinite(n) ? n : null;
