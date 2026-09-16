@@ -38,6 +38,25 @@ function requireDb(req, res, next) {
   next();
 }
 
+// M4 v1: chỉ dùng thử 1 mình chủ dự án (single-user testing, xem [[feedback_chimedis_llm_
+// credit_model]] bộ nhớ dự án) — nhưng Chimedis cho ĐĂNG KÝ CÔNG KHAI, nên nếu không chặn,
+// BẤT KỲ tài khoản nào cũng gọi được route tốn LLM này và ăn vào cùng 1 ngân sách API key
+// chung. `WORKBENCH_GAP_ALLOWED_EMAILS` = danh sách email được phép (phẩy ngăn cách, không
+// phân biệt hoa/thường) — CHƯA cấu hình → mặc định TỪ CHỐI TẤT CẢ (an toàn hơn mặc định mở),
+// báo lỗi rõ để biết cần set biến môi trường này trên hPanel.
+function requireLlmAllowed(req, res, next) {
+  const allow = String(process.env.WORKBENCH_GAP_ALLOWED_EMAILS || '')
+    .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
+  const email = String(req.user?.email || '').toLowerCase();
+  if (!allow.length) {
+    return res.status(403).json({ success: false, error: 'Tính năng phân tích khoảng trống chưa mở cho tài khoản nào — cần set WORKBENCH_GAP_ALLOWED_EMAILS trên server' });
+  }
+  if (!email || !allow.includes(email)) {
+    return res.status(403).json({ success: false, error: 'Tài khoản này chưa được cấp quyền dùng tính năng phân tích khoảng trống (đang trong giai đoạn thử nghiệm 1 người dùng)' });
+  }
+  next();
+}
+
 async function ownedProject(req, res) {
   const [rows] = await getPool().query(
     'SELECT * FROM wb_projects WHERE id=? AND user_id=? LIMIT 1',
@@ -468,7 +487,7 @@ async function fetchSearchRunRecords(pool, projectId, runId) {
 
 // POST /api/workbench/projects/:id/search-runs/:runId/gap-analysis
 // Phân tích LLM (Sonnet) trên đúng tập bài của 1 lượt tìm — trả về gợi ý CHƯA LƯU (preview).
-router.post('/projects/:id/search-runs/:runId/gap-analysis', requireDb, requireUser, requireVerified, rlGapAnalysis, async (req, res) => {
+router.post('/projects/:id/search-runs/:runId/gap-analysis', requireDb, requireUser, requireVerified, requireLlmAllowed, rlGapAnalysis, async (req, res) => {
   try {
     if (!isGapLlmConfigured()) {
       return res.status(503).json({ success: false, error: 'Chưa cấu hình LLM trên server (ANTHROPIC_API_KEY)' });
