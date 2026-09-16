@@ -122,38 +122,52 @@
   .wb-workspace{display:flex;align-items:flex-start;gap:16px}
   @media (max-width:860px){ .wb-workspace{flex-direction:column} }
 
-  .wb-tree{flex:0 0 220px;max-width:220px;background:var(--card);border:1px solid var(--border);
-    border-radius:var(--radius);padding:8px;align-self:stretch;overflow:auto;max-height:calc(100vh - 140px)}
+  .wb-tree{flex:0 0 230px;max-width:230px;background:var(--card);border:1px solid var(--border);
+    border-radius:14px;box-shadow:0 2px 10px rgba(14,58,58,.06);padding:10px;align-self:stretch;
+    overflow:auto;max-height:calc(100vh - 140px)}
   @media (max-width:860px){ .wb-tree{flex:1 1 auto;max-width:none;max-height:none} }
   .tsection-label{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-fg);
-    padding:6px 8px 4px;font-weight:700}
-  .tnode{display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:7px;font-size:12.5px;
-    color:var(--fg);cursor:pointer;white-space:normal;word-break:break-word}
+    padding:8px 8px 5px;font-weight:700}
+  .tnode{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:8px;font-size:12.5px;
+    color:var(--fg);cursor:pointer;white-space:normal;word-break:break-word;transition:background .14s}
   .tnode:hover{background:var(--bg)}
-  .tnode.on{background:var(--accent);color:#fff;font-weight:700}
+  .tnode.on{background:var(--accent);color:#fff;font-weight:700;box-shadow:0 2px 8px rgba(180,71,43,.28)}
   .tnode.add{color:var(--muted-fg)}
-  .tnode.child{padding-left:22px;font-size:12px}
+  .tnode.child{padding-left:24px;font-size:12px}
   .tnode.child.on{background:var(--accent);color:#fff}
   .tnode .arrow{flex:0 0 auto;width:14px;text-align:center;color:var(--muted-fg);font-size:10px}
   .tnode.on .arrow{color:#fff}
+  .tnode .ic{flex:0 0 auto;width:15px;height:15px;color:var(--accent)}
+  .tnode.on .ic{color:#fff}
+  .tnode.child .ic{width:13px;height:13px;color:var(--muted-fg)}
   .tnode .dot{flex:0 0 auto;width:8px;height:8px;border-radius:50%;background:var(--border-strong)}
   .tnode .dot.done{background:var(--ok)}
   .tnode .badge{margin-left:auto;flex:0 0 auto;font-size:10px;color:var(--muted-fg)}
   .tnode.on .badge{color:#F5EDE3}
-  .track-progress{font-size:10px;color:var(--muted-fg);margin-left:auto;flex:0 0 auto}
+  .track-progress{font-size:10px;color:var(--muted-fg);margin-left:auto;flex:0 0 auto;
+    background:var(--bg);border-radius:10px;padding:2px 7px}
+  .tnode.on .track-progress{background:rgba(255,255,255,.2);color:#fff}
 
   .wb-main{flex:1 1 0;min-width:0}
+  .wb-main .card{border-radius:14px;box-shadow:0 2px 10px rgba(14,58,58,.06)}
+  .gate-eyebrow{display:flex;align-items:center;gap:8px;margin:0 0 4px}
+  .gate-eyebrow .ic{flex:0 0 auto;width:26px;height:26px;border-radius:8px;background:#F5EDE3;
+    color:var(--accent);display:flex;align-items:center;justify-content:center}
+  .gate-eyebrow .ic svg{width:15px;height:15px}
   .gate-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
-  .gate-checklist{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:6px}
-  .gate-checklist li{font-size:13px;line-height:1.5;padding-left:20px;position:relative}
-  .gate-checklist li::before{content:"–";position:absolute;left:0;color:var(--muted-fg)}
-  .gate-deliverable{background:var(--bg);border:1px solid var(--border);border-radius:8px;
-    padding:9px 12px;font-size:12.5px;color:var(--muted-fg);margin-bottom:6px}
+  .gate-checklist{list-style:none;margin:0 0 14px;padding:0;display:flex;flex-direction:column;gap:7px}
+  .gate-checklist li{font-size:13px;line-height:1.5;padding-left:22px;position:relative}
+  .gate-checklist li::before{content:"";position:absolute;left:2px;top:7px;width:6px;height:6px;
+    border-radius:50%;background:var(--border-strong)}
+  .gate-deliverable{background:var(--bg);border:1px solid var(--border);border-radius:10px;
+    padding:10px 13px;font-size:12.5px;color:var(--muted-fg);margin-bottom:6px;display:flex;align-items:center;gap:7px}
+  .gate-deliverable svg{flex:0 0 auto;width:14px;height:14px;color:var(--accent)}
   .gate-done-toggle{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--fg);cursor:pointer;user-select:none}
   .gate-done-toggle input{width:auto;height:auto}
 
   .panel3{flex:0 0 340px;max-width:340px;background:var(--card);border:1px solid var(--border);
-    border-radius:var(--radius);padding:16px;align-self:flex-start;max-height:calc(100vh - 140px);overflow:auto}
+    border-radius:14px;box-shadow:0 2px 10px rgba(14,58,58,.06);padding:16px;align-self:flex-start;
+    max-height:calc(100vh - 140px);overflow:auto}
   @media (max-width:860px){ .panel3{flex:1 1 auto;max-width:none} }
   .panel3-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
   .panel3-close{flex:0 0 auto;border:none;background:transparent;color:var(--muted-fg);cursor:pointer;font-size:16px;padding:2px 6px}
@@ -918,6 +932,20 @@ function renderProject() {
 
 // ===== M5 — cây "Công cụ" (thường trực) + "Hạng mục nghiên cứu" (cha-con, theo Gate) =====
 
+// Icon SVG nhỏ (16x16, stroke currentColor) — cùng style feather-outline với public/index.html,
+// KHÔNG dùng icon font ngoài để tránh thêm phụ thuộc CDN.
+const ICONS = {
+  questions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.7-1.2c.5 1-.2 1.7-1 2.3-.7.5-1.2 1-1.2 1.9"/><path d="M12 16.5h.01"/></svg>',
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+  runs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>',
+  msc_thesis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 12v4.5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5V12"/><path d="M21 9.5v6"/></svg>',
+  phd_thesis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 12v4.5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5V12"/><path d="M21 9.5v6"/></svg>',
+  intl_paper: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14.5 3v4.5H19"/><path d="M8 12.5h8M8 15.5h8M8 9.5h4"/></svg>',
+  report: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="1.6"/><path d="M9 2.8h6a1 1 0 0 1 1 1v1.4H8V3.8a1 1 0 0 1 1-1Z"/><path d="M8.5 12h7M8.5 15.3h7M8.5 8.7h4"/></svg>',
+  gate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V3l14 5.2L5 13"/></svg>',
+  deliverable: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>',
+};
+
 const TOOLS = [
   ['questions', 'tool_questions'],
   ['search', 'tool_search'],
@@ -927,7 +955,7 @@ const TOOLS = [
 function renderTree() {
   const toolsHtml = TOOLS.map(([id, lk]) => {
     const on = activeSection.type === 'tool' && activeSection.tool === id;
-    return `<div class="tnode ${on ? 'on' : ''}" onclick="wbSelectTool('${id}')">${esc(t(lk))}</div>`;
+    return `<div class="tnode ${on ? 'on' : ''}" onclick="wbSelectTool('${id}')"><span class="ic">${ICONS[id]}</span>${esc(t(lk))}</div>`;
   }).join('');
   const tracks = activeDetail.tracks || [];
   const tracksHtml = tracks.map(renderTrackNode).join('') || `<p class="hint" style="padding:4px 8px">${t('tracks_empty')}</p>`;
@@ -970,6 +998,7 @@ function renderTrackNode(tr) {
   return `
     <div class="tnode" onclick="wbToggleTrack(${tr.id})" style="cursor:pointer">
       <span class="arrow">${open ? '▾' : '▸'}</span>
+      <span class="ic">${ICONS[tr.trackType] || ''}</span>
       <span style="flex:1">${trackLabel(tr)}</span>
       <span class="track-progress">${doneSet.size}/${gateNos.length}</span>
     </div>
@@ -1106,12 +1135,12 @@ function renderGateDetail(trackId, gateNo) {
   const uniqueActions = [...new Set(actions)].join('');
   return `
     <div class="card">
-      <p class="hint" style="margin:0 0 2px;text-transform:uppercase;letter-spacing:.04em;font-size:10.5px">${trackLabel(tr)} · Gate ${gateNo}</p>
-      <h3 style="margin-top:2px">${langOf(g.title)}</h3>
+      <p class="hint" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;font-size:10.5px">${trackLabel(tr)} · Gate ${gateNo}</p>
+      <div class="gate-eyebrow"><span class="ic">${ICONS.gate}</span><h3 style="margin:0">${langOf(g.title)}</h3></div>
       <p style="font-size:13.5px;color:var(--fg);line-height:1.6">${langOf(g.goal)}</p>
       <p class="hint" style="margin:12px 0 6px;font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.04em">${t('gate_checklist_label')}</p>
       <ul class="gate-checklist">${(g.checklist[state.lang] || g.checklist.vi).map((item) => `<li>${esc(item)}</li>`).join('')}</ul>
-      <div class="gate-deliverable">${t('gate_deliverable_label')}: ${langOf(g.deliverable)}</div>
+      <div class="gate-deliverable">${ICONS.deliverable}<span>${t('gate_deliverable_label')}: ${langOf(g.deliverable)}</span></div>
       <label class="gate-done-toggle" style="margin-top:10px">
         <input type="checkbox" ${done ? 'checked' : ''} onchange="wbGateToggleDone(${trackId},${gateNo},this.checked)">
         ${t('gate_mark_done')}
