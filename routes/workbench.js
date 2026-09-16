@@ -16,6 +16,7 @@ import { guessStudyType, STUDY_TYPE_LABEL_VI } from '../lib/study-type.js';
 import { parseReferences } from '../lib/ref-import.js';
 import { generateGapCandidates, isGapLlmConfigured } from '../lib/gap-candidates.js';
 import { logAiRun } from '../lib/ai-runs.js';
+import { GATES, TRACK_TYPES } from '../lib/research-gates.js';
 import {
   writeSearchRun, listSearchRuns, renderSearchLogMarkdown, renderSearchLogCsv,
   upsertStandaloneRecord,
@@ -82,6 +83,28 @@ router.get('/question-profiles', requireUser, (req, res) => {
   });
 });
 
+// GET /api/workbench/research-gates — dữ liệu tĩnh khung 25 Gate + định nghĩa hạng mục
+// (lib/research-gates.js). Không cần requireUser — thuần nội dung tĩnh, không gắn dự án.
+router.get('/research-gates', (req, res) => {
+  res.json({ success: true, gates: GATES, trackTypes: TRACK_TYPES });
+});
+
+// GET /api/workbench/ai-usage — số lượt AI đã dùng tháng này, dữ liệu THẬT từ wb_ai_runs
+// (KHÔNG có hạn mức credit — vẫn giai đoạn 1 single-user testing, xem project memory
+// "Quyết định mô hình credit/quota AI"). Chỉ hiển thị, không dùng để chặn.
+router.get('/ai-usage', requireDb, requireUser, async (req, res) => {
+  try {
+    const [[row]] = await getPool().query(
+      `SELECT COUNT(*) n FROM wb_ai_runs WHERE user_id=? AND created_at >= DATE_FORMAT(NOW(),'%Y-%m-01')`,
+      [req.user.id]
+    );
+    res.json({ success: true, runsThisMonth: row.n });
+  } catch (err) {
+    console.error('GET /workbench/ai-usage:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi truy vấn mức dùng AI' });
+  }
+});
+
 // ===== Dự án =====
 
 router.get('/projects', requireDb, requireUser, async (req, res) => {
@@ -120,12 +143,25 @@ router.get('/projects/:id', requireDb, requireUser, async (req, res) => {
   try {
     const project = await ownedProject(req, res);
     if (!project) return;
-    const [questions] = await getPool().query(
+    const pool = getPool();
+    const [questions] = await pool.query(
       'SELECT * FROM wb_research_questions WHERE project_id=? ORDER BY created_at',
       [project.id]
     );
     const runs = await listSearchRuns(project.id);
-    res.json({ success: true, project, questions, searchRuns: runs });
+    const [tracks] = await pool.query(
+      'SELECT * FROM wb_research_tracks WHERE project_id=? ORDER BY created_at', [project.id]
+    );
+    const [progress] = tracks.length
+      ? await pool.query('SELECT track_id, gate_no, status FROM wb_gate_progress WHERE track_id IN (?)', [tracks.map((t) => t.id)])
+      : [[]];
+    const byTrack = {};
+    for (const p of progress) (byTrack[p.track_id] ||= []).push({ gateNo: p.gate_no, status: p.status });
+    const tracksOut = tracks.map((t) => ({
+      id: t.id, trackType: t.track_type, studyDesign: t.study_design, title: t.title,
+      createdAt: t.created_at, progress: byTrack[t.id] || [],
+    }));
+    res.json({ success: true, project, questions, searchRuns: runs, tracks: tracksOut });
   } catch (err) {
     console.error('GET /workbench/projects/:id:', err.message);
     res.status(500).json({ success: false, error: 'Lỗi truy vấn dự án' });
@@ -599,6 +635,130 @@ router.delete('/projects/:id/gap-candidates/:cid', requireDb, requireUser, requi
   } catch (err) {
     console.error('DELETE /workbench/projects/:id/gap-candidates/:cid:', err.message);
     res.status(500).json({ success: false, error: 'Lỗi xoá khoảng trống' });
+  }
+});
+
+// ===== M5 — Hạng mục nghiên cứu (tracks) + tiến độ Gate =================================
+// Nội dung từng Gate (tiêu đề/việc cần làm/deliverable, VI/ZH/EN) sống hẳn ở
+// lib/research-gates.js — KHÔNG lưu trong DB. DB chỉ lưu track (hạng mục cha user tạo trong
+// dự án) + trạng thái pending/done người dùng TỰ đánh dấu cho từng gate_no. Không có suy luận
+// tự động "gate nào coi là xong" từ M1-M4 — giữ đơn giản đúng tinh thần M0.
+
+router.get('/projects/:id/tracks', requireDb, requireUser, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const pool = getPool();
+    const [tracks] = await pool.query(
+      'SELECT * FROM wb_research_tracks WHERE project_id=? ORDER BY created_at', [project.id]
+    );
+    const [progress] = tracks.length
+      ? await pool.query(
+          'SELECT track_id, gate_no, status FROM wb_gate_progress WHERE track_id IN (?)',
+          [tracks.map((t) => t.id)]
+        )
+      : [[]];
+    const byTrack = {};
+    for (const p of progress) (byTrack[p.track_id] ||= []).push({ gateNo: p.gate_no, status: p.status });
+    res.json({
+      success: true,
+      tracks: tracks.map((t) => ({
+        id: t.id, trackType: t.track_type, studyDesign: t.study_design, title: t.title,
+        createdAt: t.created_at, progress: byTrack[t.id] || [],
+      })),
+    });
+  } catch (err) {
+    console.error('GET /workbench/projects/:id/tracks:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi truy vấn hạng mục nghiên cứu' });
+  }
+});
+
+const TRACK_TYPES_VALID = ['msc_thesis', 'phd_thesis', 'intl_paper', 'report'];
+
+router.post('/projects/:id/tracks', requireDb, requireUser, requireVerified, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const { trackType, studyDesign, title } = req.body || {};
+    if (!TRACK_TYPES_VALID.includes(trackType)) {
+      return res.status(400).json({ success: false, error: 'trackType không hợp lệ' });
+    }
+    if (trackType === 'intl_paper' && !studyDesign) {
+      return res.status(400).json({ success: false, error: 'Bài báo quốc tế cần chọn loại nghiên cứu (studyDesign)' });
+    }
+    const [r] = await getPool().query(
+      'INSERT INTO wb_research_tracks (project_id, track_type, study_design, title) VALUES (?,?,?,?)',
+      [project.id, trackType, trackType === 'intl_paper' ? String(studyDesign).slice(0, 40) : null, title ? String(title).trim().slice(0, 300) : null]
+    );
+    res.json({ success: true, id: r.insertId });
+  } catch (err) {
+    console.error('POST /workbench/projects/:id/tracks:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi tạo hạng mục nghiên cứu' });
+  }
+});
+
+async function ownedTrack(req, res, project) {
+  const [rows] = await getPool().query(
+    'SELECT * FROM wb_research_tracks WHERE id=? AND project_id=? LIMIT 1',
+    [req.params.trackId, project.id]
+  );
+  if (!rows.length) {
+    res.status(404).json({ success: false, error: 'Không tìm thấy hạng mục' });
+    return null;
+  }
+  return rows[0];
+}
+
+router.patch('/projects/:id/tracks/:trackId', requireDb, requireUser, requireVerified, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const track = await ownedTrack(req, res, project);
+    if (!track) return;
+    const { title } = req.body || {};
+    await getPool().query('UPDATE wb_research_tracks SET title=? WHERE id=?', [title != null ? String(title).slice(0, 300) : track.title, track.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('PATCH /workbench/projects/:id/tracks/:trackId:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi cập nhật hạng mục' });
+  }
+});
+
+router.delete('/projects/:id/tracks/:trackId', requireDb, requireUser, requireVerified, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const track = await ownedTrack(req, res, project);
+    if (!track) return;
+    await getPool().query('DELETE FROM wb_research_tracks WHERE id=?', [track.id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /workbench/projects/:id/tracks/:trackId:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi xoá hạng mục' });
+  }
+});
+
+// PUT vì idempotent — đánh dấu 1 gate là pending/done trong 1 track (upsert).
+router.put('/projects/:id/tracks/:trackId/gates/:gateNo', requireDb, requireUser, requireVerified, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const track = await ownedTrack(req, res, project);
+    if (!track) return;
+    const gateNo = parseInt(req.params.gateNo, 10);
+    if (!Number.isInteger(gateNo) || gateNo < 0 || gateNo > 24) {
+      return res.status(400).json({ success: false, error: 'gateNo không hợp lệ' });
+    }
+    const status = req.body?.status === 'done' ? 'done' : 'pending';
+    await getPool().query(
+      `INSERT INTO wb_gate_progress (track_id, gate_no, status) VALUES (?,?,?)
+       ON DUPLICATE KEY UPDATE status=VALUES(status)`,
+      [track.id, gateNo, status]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('PUT /workbench/projects/:id/tracks/:trackId/gates/:gateNo:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi cập nhật tiến độ Gate' });
   }
 });
 

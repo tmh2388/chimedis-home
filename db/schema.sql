@@ -256,6 +256,31 @@ CREATE TABLE IF NOT EXISTS wb_ai_runs (
   INDEX idx_feature_time (feature, created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ===== Milestone M5 — Hạng mục nghiên cứu (tracks) + tiến độ Gate. Xem db/m5-workbench.sql
+-- và lib/research-gates.js (nội dung từng Gate sống ở code, DB chỉ lưu trạng thái). =====
+
+CREATE TABLE IF NOT EXISTS wb_research_tracks (
+  id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+  project_id    BIGINT NOT NULL,
+  track_type    ENUM('msc_thesis','phd_thesis','intl_paper','report') NOT NULL,
+  study_design  VARCHAR(40) NULL,
+  title         VARCHAR(300) NULL,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES wb_projects(id) ON DELETE CASCADE,
+  INDEX idx_project (project_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS wb_gate_progress (
+  id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+  track_id    BIGINT NOT NULL,
+  gate_no     TINYINT UNSIGNED NOT NULL,
+  status      ENUM('pending','done') NOT NULL DEFAULT 'pending',
+  updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (track_id) REFERENCES wb_research_tracks(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_track_gate (track_id, gate_no)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- =====================================================================================
 -- ===== Milestone H1a — Auth Foundation ===============================================
 -- docs/milestone-H-homepage-integration.md §3.3. Idempotent. FK tới users(id) đã có.

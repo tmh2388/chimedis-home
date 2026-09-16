@@ -38,14 +38,20 @@ button{font:inherit;cursor:pointer}
 .wrap{max-width:1180px;margin:0 auto;padding:0 24px}
 @media (max-width:640px){.wrap{padding:0 16px}}
 
-/* ===== HEADER ===== */
+/* ===== HEADER =====
+   .hdr-right bọc nav.main + .hdr-actions làm 1 khối — trên desktop hiển thị nội tuyến bình
+   thường; dưới 640px sụp thành khung sổ xuống (position:absolute, ẩn mặc định) do .burger
+   bật/tắt qua toggleMobileNav(). Việc này thay cho cách cũ (chỉ ẩn nav.main, các nút còn lại
+   vẫn nằm 1 hàng với logo) — cách cũ tràn/đè chữ trên màn hình hẹp vì logo+phụ đề+toàn bộ nút
+   hành động không đủ chỗ trên 1 dòng ở khổ điện thoại (đã có ảnh chụp lỗi từ user). */
 header.site{background:var(--ink);color:#F5F0E6;position:sticky;top:0;z-index:40}
 .site-top{display:flex;align-items:center;gap:16px;padding:14px 0}
-.brand{display:flex;align-items:center;gap:11px;margin-right:auto;min-width:0}
+.brand{display:flex;align-items:center;gap:11px;margin-right:auto;min-width:0;overflow:hidden}
 .brand img{width:48px;height:48px;flex:0 0 auto;object-fit:contain}
-.brand-text{min-width:0;display:flex;flex-direction:column;gap:1px}
-.brand-text .bn{font-family:var(--font-serif);font-size:19px;font-weight:700;letter-spacing:.02em;white-space:nowrap;line-height:1.1}
-.brand-text .bs{font-size:10px;color:#C9DAD8;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;line-height:1.1}
+.brand-text{min-width:0;display:flex;flex-direction:column;gap:1px;overflow:hidden}
+.brand-text .bn{font-family:var(--font-serif);font-size:19px;font-weight:700;letter-spacing:.02em;white-space:nowrap;line-height:1.1;overflow:hidden;text-overflow:ellipsis}
+.brand-text .bs{font-size:10px;color:#C9DAD8;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;line-height:1.1;overflow:hidden;text-overflow:ellipsis}
+.hdr-right{display:flex;align-items:center;gap:16px;flex:0 1 auto;min-width:0}
 nav.main{display:flex;gap:4px;align-items:center}
 nav.main a{padding:8px 12px;border-radius:8px;font-size:14px;font-weight:500;white-space:nowrap;transition:background .18s}
 nav.main a:hover{background:rgba(255,255,255,.1)}
@@ -62,11 +68,22 @@ nav.main a:hover{background:rgba(255,255,255,.1)}
 .lang-opt.active .ck{display:block}
 .dict-cta{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;background:var(--accent);color:#fff;font-size:13.5px;font-weight:600;white-space:nowrap;transition:background .18s}
 .dict-cta:hover{background:var(--accent-2)}
-.burger{display:none;background:none;border:none;color:#fff;padding:8px}
+.burger{display:none;flex:0 0 auto;background:none;border:none;color:#fff;padding:8px;cursor:pointer}
 .burger svg{width:22px;height:22px}
-@media (max-width:900px){
-  nav.main{display:none}
+@media (max-width:640px){
+  .brand-text .bs{display:none}
   .burger{display:block}
+  .hdr-right{display:none;position:absolute;top:100%;left:0;right:0;flex-direction:column;
+    align-items:stretch;gap:0;background:var(--ink);padding:6px 16px 16px;
+    border-top:1px solid rgba(255,255,255,.15);box-shadow:0 12px 24px rgba(0,0,0,.22)}
+  .hdr-right.show{display:flex}
+  .hdr-right nav.main{flex-direction:column;align-items:stretch;gap:2px;padding:8px 0}
+  .hdr-right nav.main a{padding:10px 8px}
+  .hdr-right .hdr-actions{flex-direction:column;align-items:stretch;gap:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.15)}
+  .hdr-right .lang-wrap{width:100%}
+  .hdr-right .lang-btn{width:100%;justify-content:center}
+  .hdr-right .lang-menu{position:static;box-shadow:none;border:none;margin-top:4px;padding:0;width:100%}
+  .hdr-right .dict-cta,.hdr-right #wbPanelBtn{width:100%}
 }
 
 /* ===== HERO / SEARCH ===== */
@@ -360,31 +377,27 @@ if (auth) {
         <span class="bs">Chinese Medicine Discovery</span>
       </span>
     </a>
-    <nav class="main">
-      <a href="#heroSearch" id="navDiscover" data-i18n="nav_discover">Khám phá y văn</a>
-      <a href="#" data-i18n="nav_journal">Tạp chí</a>
-      <a href="#" data-i18n="nav_report">Báo cáo</a>
-      <a href="#" data-i18n="nav_article">Bài viết</a>
-      <a href="#" data-i18n="nav_book">Thư viện sách</a>
-      <a href="#" data-i18n="nav_video">Video</a>
-      <a href="#" data-i18n="nav_about">Giới thiệu</a>
-    </nav>
-    <div class="hdr-actions">
-      <div class="lang-wrap">
-        <button class="lang-btn" id="langBtn" aria-label="Chọn ngôn ngữ" onclick="toggleLangMenu()"><span id="langLabel">VI</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M6 9l6 6 6-6"/></svg></button>
-        <div class="lang-menu" id="langMenu">
-          <div class="lang-opt" data-l="vi" onclick="setLang('vi')">Tiếng Việt<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
-          <div class="lang-opt" data-l="zh" onclick="setLang('zh')">中文<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
-          <div class="lang-opt" data-l="en" onclick="setLang('en')">English<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+    <div class="hdr-right" id="hdrRight">
+      <nav class="main">
+        <a href="#" data-i18n="nav_about">Giới thiệu</a>
+      </nav>
+      <div class="hdr-actions">
+        <div class="lang-wrap">
+          <button class="lang-btn" id="langBtn" aria-label="Chọn ngôn ngữ" onclick="toggleLangMenu()"><span id="langLabel">VI</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12"><path d="M6 9l6 6 6-6"/></svg></button>
+          <div class="lang-menu" id="langMenu">
+            <div class="lang-opt" data-l="vi" onclick="setLang('vi')">Tiếng Việt<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+            <div class="lang-opt" data-l="zh" onclick="setLang('zh')">中文<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+            <div class="lang-opt" data-l="en" onclick="setLang('en')">English<svg class="ck" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5L20 7"/></svg></div>
+          </div>
         </div>
+        <a class="btn btn-primary btn-sm" href="https://dict.chimedis.vn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          <span data-i18n="dict_cta">Tra từ điển</span>
+        </a>
+        <button class="btn btn-sm" id="wbPanelBtn" onclick="toggleWbPanel()" data-i18n-title="wb_btn_title">📚 <span id="wbPanelBtnLabel" data-i18n="wb_btn_label">Nghiên cứu</span></button>
       </div>
-      <a class="btn btn-primary btn-sm" href="https://dict.chimedis.vn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
-        <span data-i18n="dict_cta">Tra từ điển</span>
-      </a>
-      <button class="btn btn-sm" id="wbPanelBtn" onclick="toggleWbPanel()" data-i18n-title="wb_btn_title">📚 <span id="wbPanelBtnLabel" data-i18n="wb_btn_label">Nghiên cứu</span></button>
-      <button class="burger" aria-label="Menu"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
     </div>
+    <button class="burger" id="burgerBtn" aria-label="Menu" aria-expanded="false" onclick="toggleMobileNav()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
   </div>
 </header>
 
@@ -751,6 +764,8 @@ document.addEventListener('click', (e)=>{
   const btn = e.target.closest('.builder-row button[aria-label="Xoá dòng"]');
   if(btn && btn.style.visibility !== 'hidden') btn.closest('.builder-row').remove();
   if(!e.target.closest('.lang-wrap')) closeLangMenu();
+  if(!e.target.closest('#hdrRight') && !e.target.closest('#burgerBtn')) closeMobileNav();
+  else if(e.target.closest('#hdrRight nav.main a')) closeMobileNav();
 });
 
 // ===== KHÁM PHÁ Y VĂN — tra cứu OpenAlex + Europe PMC ngay tại trang chủ =====
@@ -1526,16 +1541,6 @@ document.addEventListener('click', (e)=>{
   // quả từ dữ liệu gốc để khôi phục tô màu.
   const advT = document.getElementById('advToggle');
   if(advT) advT.addEventListener('click', ()=>{ setTimeout(()=>{ if(lastData && lastData.results && lastData.results.length) applyRefine(); }, 0); });
-  const navDiscover = document.getElementById('navDiscover');
-  if(navDiscover){
-    navDiscover.addEventListener('click',(e)=>{
-      e.preventDefault();
-      if(!panel.hidden) hidePanel();
-      const hq = document.getElementById('heroQ');
-      window.scrollTo({ top:0, behavior:'smooth' });
-      if(hq) setTimeout(()=> hq.focus(), 300);
-    });
-  }
   document.getElementById('lf-sort').addEventListener('change', (e)=>{ if(lastReq) applySort(e.target.value); });
   ['lf-docType','lf-yearFrom','lf-yearTo','lf-openAccess','lf-pubmedOnly','lf-pmcOnly','lf-perPage'].forEach(id=>{
     document.getElementById(id).addEventListener('change', ()=>{ if(lastReq) runLit(lastReq, 1); });
@@ -1552,7 +1557,7 @@ document.addEventListener('click', (e)=>{
 // ===== ĐA NGÔN NGỮ (VI/中/EN) =====
 const I18N = {
   vi: {
-    nav_discover:"Khám phá y văn", nav_journal:"Tạp chí", nav_report:"Báo cáo", nav_article:"Bài viết", nav_book:"Thư viện sách", nav_video:"Video", nav_about:"Giới thiệu",
+    nav_journal:"Tạp chí", nav_report:"Báo cáo", nav_article:"Bài viết", nav_book:"Thư viện sách", nav_video:"Video", nav_about:"Giới thiệu",
     lit_back:"Quay lại", lit_oa:"Chỉ bài đọc miễn phí (Open Access)", lit_pubmed:"Chỉ bài có trong PubMed/MEDLINE",
     lit_pmc:"Có toàn văn trên PubMed Central", lit_doctype:"Loại tài liệu", lit_dt_all:"Tất cả", lit_dt_sr:"Tổng quan hệ thống & phân tích gộp", lit_dt_rct:"Thử nghiệm lâm sàng (RCT)", lit_dt_review:"Bài tổng quan", lit_dt_preprint:"Tiền ấn phẩm (preprint)",
     lit_year:"Năm", lit_from:"Từ năm", lit_to:"Đến năm", lit_sort:"Sắp xếp", lit_sort_rel:"Liên quan nhất", lit_sort_new:"Mới nhất", lit_sort_old:"Cũ nhất", lit_sort_cite:"Trích dẫn nhiều nhất", lit_pagesize:"Hiển thị",
@@ -1614,7 +1619,7 @@ const I18N = {
     alert_need_condition:"Nhập từ khoá cho ít nhất một điều kiện.", lit_refine_field_aria:"Trường lọc"
   },
   zh: {
-    nav_discover:"文献检索", nav_journal:"期刊", nav_report:"报告", nav_article:"文章", nav_book:"书库", nav_video:"视频", nav_about:"关于我们",
+    nav_journal:"期刊", nav_report:"报告", nav_article:"文章", nav_book:"书库", nav_video:"视频", nav_about:"关于我们",
     lit_back:"返回", lit_oa:"仅开放获取（Open Access）", lit_pubmed:"仅 PubMed/MEDLINE 收录",
     lit_pmc:"PubMed Central 有全文", lit_doctype:"文献类型", lit_dt_all:"全部", lit_dt_sr:"系统评价与荟萃分析", lit_dt_rct:"随机对照试验（RCT）", lit_dt_review:"综述", lit_dt_preprint:"预印本",
     lit_year:"年份", lit_from:"起始年", lit_to:"截止年", lit_sort:"排序", lit_sort_rel:"相关度", lit_sort_new:"最新", lit_sort_old:"最早", lit_sort_cite:"被引最多", lit_pagesize:"每页显示",
@@ -1676,7 +1681,7 @@ const I18N = {
     alert_need_condition:"请至少为一个条件输入关键词。", lit_refine_field_aria:"筛选字段"
   },
   en: {
-    nav_discover:"Discover literature", nav_journal:"Journals", nav_report:"Reports", nav_article:"Articles", nav_book:"Book Library", nav_video:"Video", nav_about:"About",
+    nav_journal:"Journals", nav_report:"Reports", nav_article:"Articles", nav_book:"Book Library", nav_video:"Video", nav_about:"About",
     lit_back:"Back", lit_oa:"Open Access only", lit_pubmed:"In PubMed/MEDLINE only",
     lit_pmc:"Full text in PubMed Central", lit_doctype:"Document type", lit_dt_all:"All", lit_dt_sr:"Systematic review & meta-analysis", lit_dt_rct:"Randomized controlled trial (RCT)", lit_dt_review:"Review", lit_dt_preprint:"Preprint",
     lit_year:"Year", lit_from:"From year", lit_to:"To year", lit_sort:"Sort by", lit_sort_rel:"Most relevant", lit_sort_new:"Newest", lit_sort_old:"Oldest", lit_sort_cite:"Most cited", lit_pagesize:"Show",
@@ -1766,6 +1771,16 @@ function toggleLangMenu(){
 }
 function closeLangMenu(){
   document.getElementById('langMenu').classList.remove('show');
+}
+function toggleMobileNav(){
+  const el = document.getElementById('hdrRight');
+  const btn = document.getElementById('burgerBtn');
+  const open = el.classList.toggle('show');
+  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+function closeMobileNav(){
+  document.getElementById('hdrRight').classList.remove('show');
+  document.getElementById('burgerBtn').setAttribute('aria-expanded', 'false');
 }
 function syncLangMenu(){
   document.querySelectorAll('.lang-opt').forEach(el=>{
