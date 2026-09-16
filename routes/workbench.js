@@ -14,6 +14,8 @@ import { enrichUntranslated } from '../lib/dict-learn.js';
 import { QUESTION_PROFILES, isValidProfile, evaluateCoverage } from '../lib/source-policy.js';
 import { guessStudyType, STUDY_TYPE_LABEL_VI } from '../lib/study-type.js';
 import { parseReferences } from '../lib/ref-import.js';
+import { generateGapCandidates, isGapLlmConfigured } from '../lib/gap-candidates.js';
+import { logAiRun } from '../lib/ai-runs.js';
 import {
   writeSearchRun, listSearchRuns, renderSearchLogMarkdown, renderSearchLogCsv,
   upsertStandaloneRecord,
@@ -24,6 +26,10 @@ const QUERY_VERSION = 'wb-m1-1';
 const uidKey = (r) => 'u' + (r.user?.id || r.firebaseUser?.uid || 'anon');
 const rlWrite = rateLimit({ max: 40, windowMs: 60_000, keyFn: uidKey });
 const rlSearch = rateLimit({ max: 20, windowMs: 60_000, keyFn: uidKey });
+// M4: gọi LLM Sonnet phân tích nhiều bài — đắt hơn hẳn các route khác, chỉ chặn spam bấm
+// nhầm liên tục (KHÔNG phải trần chi phí — v1 single-user testing, xem [[feedback_chimedis_
+// llm_credit_model]]). Trần chi phí thật nằm ở ai_runs (ghi log, không chặn).
+const rlGapAnalysis = rateLimit({ max: 10, windowMs: 60_000, keyFn: uidKey });
 
 function requireDb(req, res, next) {
   if (!isDbConfigured()) {
@@ -425,6 +431,161 @@ async function tryRenderDocx(project, runs) {
   const doc = new Document({ sections: [{ children }] });
   return Packer.toBuffer(doc);
 }
+
+// ===== M4 v1 — Gap Candidate ===========================================================
+// docs/research-workbench-plan.md mục 6/7; docs/research-workbench-M0-architecture-freeze.md
+// §A5 (MVP v1 chỉ đi tới trạng thái "candidate"). Mọi candidate BẮT BUỘC nối đất vào 1
+// search_run thật (origin_search_run_id) — không có API "phân tích khoảng trống từ toàn bộ
+// dự án" ở v1, tránh mất provenance.
+
+// Lấy lại đúng tập bài (title/abstract/năm/tác giả) của 1 search_run — wb_search_runs chỉ lưu
+// retrieved_ids_json (DOI/PMID/trial_reg_id thô, KHÔNG có scheme kèm theo vì B10 chỉ cần audit
+// re-run, không cần map ngược). Value DOI/PMID/trial-id KHÔNG trùng nhau giữa các scheme trong
+// thực tế nên tra thẳng theo `value` là đủ, không cần biết trước scheme nào.
+async function fetchSearchRunRecords(pool, projectId, runId) {
+  const [[run]] = await pool.query(
+    'SELECT id, retrieved_ids_json FROM wb_search_runs WHERE id=? AND project_id=?',
+    [runId, projectId]
+  );
+  if (!run) return null;
+  const ids = safeJson(run.retrieved_ids_json, []);
+  if (!ids.length) return [];
+  const [idRows] = await pool.query(
+    'SELECT DISTINCT record_id FROM wb_record_identifiers WHERE value IN (?)',
+    [ids]
+  );
+  if (!idRows.length) return [];
+  const recordIds = idRows.map((r) => r.record_id);
+  const [records] = await pool.query(
+    'SELECT id, title, abstract, year, authors_json FROM wb_research_records WHERE id IN (?)',
+    [recordIds]
+  );
+  return records.map((r) => ({
+    id: r.id, title: r.title, abstract: r.abstract, year: r.year,
+    authors: safeJson(r.authors_json, []),
+  }));
+}
+
+// POST /api/workbench/projects/:id/search-runs/:runId/gap-analysis
+// Phân tích LLM (Sonnet) trên đúng tập bài của 1 lượt tìm — trả về gợi ý CHƯA LƯU (preview).
+router.post('/projects/:id/search-runs/:runId/gap-analysis', requireDb, requireUser, requireVerified, rlGapAnalysis, async (req, res) => {
+  try {
+    if (!isGapLlmConfigured()) {
+      return res.status(503).json({ success: false, error: 'Chưa cấu hình LLM trên server (ANTHROPIC_API_KEY)' });
+    }
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const runId = parseInt(req.params.runId, 10);
+    if (!Number.isInteger(runId)) return res.status(400).json({ success: false, error: 'runId không hợp lệ' });
+    const pool = getPool();
+    const records = await fetchSearchRunRecords(pool, project.id, runId);
+    if (records === null) return res.status(404).json({ success: false, error: 'Không tìm thấy lượt tìm này trong dự án' });
+    if (records.length < 2) {
+      return res.status(400).json({ success: false, error: 'Lượt tìm này có dưới 2 bài xác định được — không đủ để phân tích khoảng trống' });
+    }
+    let questionText = null;
+    if (req.body?.questionId) {
+      const [[q]] = await pool.query('SELECT question_text FROM wb_research_questions WHERE id=? AND project_id=?', [req.body.questionId, project.id]);
+      questionText = q?.question_text || null;
+    }
+    const { candidates, model, tokensIn, tokensOut } = await generateGapCandidates(records, project.title, questionText);
+    await logAiRun({ userId: req.user.id, projectId: project.id, feature: 'gap_candidate', model, tokensIn, tokensOut });
+    res.json({ success: true, runId, candidates, model });
+  } catch (err) {
+    console.error('POST /workbench/.../gap-analysis:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi phân tích khoảng trống: ' + err.message });
+  }
+});
+
+// POST /api/workbench/projects/:id/gap-candidates — lưu 1 candidate (từ kết quả preview ở trên)
+router.post('/projects/:id/gap-candidates', requireDb, requireUser, requireVerified, rlWrite, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const { originSearchRunId, title, gapType, evidenceHave, whatsMissing, whyItMatters, feasibilityNote, questionId, llmModel } = req.body || {};
+    if (!originSearchRunId || !title || !Array.isArray(evidenceHave) || evidenceHave.length < 2) {
+      return res.status(400).json({ success: false, error: 'Thiếu title/originSearchRunId hoặc dưới 2 dẫn chứng' });
+    }
+    const pool = getPool();
+    const [[run]] = await pool.query('SELECT id FROM wb_search_runs WHERE id=? AND project_id=?', [originSearchRunId, project.id]);
+    if (!run) return res.status(400).json({ success: false, error: 'originSearchRunId không thuộc dự án này' });
+    const bodyJson = JSON.stringify({ evidenceHave, whatsMissing: whatsMissing || '', whyItMatters: whyItMatters || '', feasibilityNote: feasibilityNote || '' });
+    const [r] = await pool.query(
+      `INSERT INTO wb_gap_candidates (project_id, question_id, origin_search_run_id, title, gap_type, body_json, llm_model)
+       VALUES (?,?,?,?,?,?,?)`,
+      [project.id, questionId || null, originSearchRunId, String(title).slice(0, 500), gapType || null, bodyJson, llmModel || null]
+    );
+    res.json({ success: true, id: r.insertId });
+  } catch (err) {
+    console.error('POST /workbench/projects/:id/gap-candidates:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi lưu khoảng trống' });
+  }
+});
+
+// GET /api/workbench/projects/:id/gap-candidates — danh sách đã lưu
+router.get('/projects/:id/gap-candidates', requireDb, requireUser, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const [rows] = await getPool().query(
+      `SELECT id, question_id, origin_search_run_id, title, gap_type, body_json, state, tags, user_note, llm_model, created_at
+       FROM wb_gap_candidates WHERE project_id=? ORDER BY created_at DESC`,
+      [project.id]
+    );
+    res.json({
+      success: true,
+      candidates: rows.map((r) => ({
+        id: r.id, questionId: r.question_id, originSearchRunId: r.origin_search_run_id,
+        title: r.title, gapType: r.gap_type, state: r.state, tags: r.tags, userNote: r.user_note,
+        llmModel: r.llm_model, createdAt: r.created_at, ...safeJson(r.body_json, {}),
+      })),
+    });
+  } catch (err) {
+    console.error('GET /workbench/projects/:id/gap-candidates:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi truy vấn khoảng trống' });
+  }
+});
+
+// PATCH /api/workbench/projects/:id/gap-candidates/:cid — sửa tag/ghi chú/trạng thái
+router.patch('/projects/:id/gap-candidates/:cid', requireDb, requireUser, requireVerified, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const cid = parseInt(req.params.cid, 10);
+    if (!Number.isInteger(cid)) return res.status(400).json({ success: false, error: 'cid không hợp lệ' });
+    const sets = []; const vals = [];
+    if (req.body?.state != null) {
+      if (!['candidate', 'rejected'].includes(req.body.state)) return res.status(400).json({ success: false, error: 'state không hợp lệ' });
+      sets.push('state=?'); vals.push(req.body.state);
+    }
+    if (req.body?.tags != null) { sets.push('tags=?'); vals.push(String(req.body.tags).slice(0, 300)); }
+    if (req.body?.userNote != null) { sets.push('user_note=?'); vals.push(String(req.body.userNote).slice(0, 4000)); }
+    if (!sets.length) return res.status(400).json({ success: false, error: 'Không có gì để cập nhật' });
+    vals.push(project.id, cid);
+    const [r] = await getPool().query(`UPDATE wb_gap_candidates SET ${sets.join(', ')} WHERE project_id=? AND id=?`, vals);
+    if (!r.affectedRows) return res.status(404).json({ success: false, error: 'Không tìm thấy khoảng trống' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('PATCH /workbench/projects/:id/gap-candidates/:cid:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi cập nhật khoảng trống' });
+  }
+});
+
+// DELETE /api/workbench/projects/:id/gap-candidates/:cid
+router.delete('/projects/:id/gap-candidates/:cid', requireDb, requireUser, requireVerified, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const cid = parseInt(req.params.cid, 10);
+    if (!Number.isInteger(cid)) return res.status(400).json({ success: false, error: 'cid không hợp lệ' });
+    const [r] = await getPool().query('DELETE FROM wb_gap_candidates WHERE project_id=? AND id=?', [project.id, cid]);
+    if (!r.affectedRows) return res.status(404).json({ success: false, error: 'Không tìm thấy khoảng trống' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /workbench/projects/:id/gap-candidates/:cid:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi xoá khoảng trống' });
+  }
+});
 
 // ===== M3 (slice 1) — Project Library / shortlist =====================================
 // docs/research-workbench-plan.md M3. Bản ghi canonical vẫn ở wb_research_records (dùng

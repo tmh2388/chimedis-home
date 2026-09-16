@@ -222,6 +222,39 @@ CREATE TABLE IF NOT EXISTS wb_project_records (
   INDEX idx_project_status (project_id, status, added_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ===== M4 v1 — Gap Candidate (chỉ tới trạng thái "candidate"). Xem db/m4-workbench.sql. =====
+CREATE TABLE IF NOT EXISTS wb_gap_candidates (
+  id                   BIGINT AUTO_INCREMENT PRIMARY KEY,
+  project_id           BIGINT NOT NULL,
+  question_id          BIGINT NULL,
+  origin_search_run_id BIGINT NOT NULL,
+  title                VARCHAR(500) NOT NULL,
+  gap_type             ENUM('evidence','population','intervention','outcome','method','mechanism','theory') NULL,
+  body_json            JSON NOT NULL,
+  state                ENUM('candidate','rejected') NOT NULL DEFAULT 'candidate',
+  tags                 VARCHAR(300) NULL,
+  user_note            TEXT NULL,
+  llm_model            VARCHAR(64) NULL,
+  created_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at           TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id) REFERENCES wb_projects(id) ON DELETE CASCADE,
+  FOREIGN KEY (origin_search_run_id) REFERENCES wb_search_runs(id),
+  INDEX idx_project_state (project_id, state)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS wb_ai_runs (
+  id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id      INT NOT NULL,
+  project_id   BIGINT NULL,
+  feature      VARCHAR(40) NOT NULL,
+  model        VARCHAR(64) NOT NULL,
+  tokens_in    INT NOT NULL DEFAULT 0,
+  tokens_out   INT NOT NULL DEFAULT 0,
+  created_at   TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX idx_user_time (user_id, created_at),
+  INDEX idx_feature_time (feature, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- =====================================================================================
 -- ===== Milestone H1a — Auth Foundation ===============================================
 -- docs/milestone-H-homepage-integration.md §3.3. Idempotent. FK tới users(id) đã có.

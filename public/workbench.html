@@ -198,6 +198,7 @@ const FIREBASE_CONFIG = {
 };
 let auth = null, currentUser = null, projects = [], activeId = null, activeDetail = null;
 let libraryFilters = { source: 'all', type: 'all' }, openRecordId = null;
+let gapPreview = null; // { runId, candidates: [...] } — kết quả LLM CHƯA lưu, chỉ ở client
 try { auth = getAuth(initializeApp(FIREBASE_CONFIG)); } catch (e) { console.error(e); }
 
 const $ = (id) => document.getElementById(id);
@@ -316,6 +317,19 @@ const I18N = {
     filter_source_label: 'Cách lưu:', filter_type_label: 'Loại:', filter_all: 'Tất cả',
     source_manual: 'Nhập tay/RIS-BibTeX', source_public_search: 'Tìm kiếm công khai',
     col_source_hint: 'Cột "Cách lưu" cho biết bản ghi được thêm vào bằng cách nào (nhập tay, tìm kiếm...) — tên tạp chí thật xem ở khung "Xem chi tiết".',
+    gap_analyze_link: 'Phân tích khoảng trống', gap_analyzing: 'Đang phân tích (có thể mất 10-30 giây)…',
+    gap_analyze_err_prefix: 'Lỗi phân tích: ', gap_none_found: 'Không tìm thấy khoảng trống nào đủ căn cứ trong tập bài này.',
+    gap_preview_hint: 'Khoảng trống ứng viên — chỉ là gợi ý để bạn đọc và tự đánh giá, mỗi gợi ý có dẫn chứng cụ thể từ tập bài đã tìm. Đọc xong hãy tự quyết định lưu hay bỏ qua.',
+    gap_col_have: 'Đã biết', gap_col_missing: 'Chưa biết', gap_col_why: 'Vì sao quan trọng', gap_col_feasibility: 'Có khả thi không',
+    gap_saved_badge: 'Đã lưu ✓', gap_save_btn: 'Lưu vào dự án', gap_dismiss_btn: 'Bỏ qua',
+    gap_save_err_prefix: 'Lỗi lưu: ',
+    gap_card_title: 'Khoảng trống nghiên cứu ({n})',
+    gap_card_hint: 'Các khoảng trống ứng viên bạn đã lưu — mỗi cái đều có dẫn chứng cụ thể từ 1 lượt tìm kiếm thật. Đây là gợi ý ban đầu, chưa phải kết luận đã xác minh.',
+    gap_card_empty: 'Chưa lưu khoảng trống nào. Vào "Nhật ký tìm kiếm" bên dưới, bấm "Phân tích khoảng trống" ở 1 lượt tìm.',
+    gap_col_type: 'Loại khoảng trống', gap_state_candidate: 'Ứng viên', gap_state_rejected: 'Đã loại',
+    gap_tags_label: 'Thẻ (phẩy giữa các từ)', gap_confirm_delete: 'Xoá khoảng trống này khỏi dự án?',
+    gap_type_evidence: 'Thiếu bằng chứng', gap_type_population: 'Đối tượng nghiên cứu', gap_type_intervention: 'Can thiệp',
+    gap_type_outcome: 'Kết cục', gap_type_method: 'Phương pháp', gap_type_mechanism: 'Cơ chế', gap_type_theory: 'Lý luận',
     source_openalex: 'OpenAlex', source_europepmc: 'Europe PMC', source_core: 'CORE',
     source_semanticscholar: 'Semantic Scholar', source_pubmed: 'PubMed', source_crossref: 'Crossref',
     source_clinicaltrials: 'ClinicalTrials.gov',
@@ -429,6 +443,19 @@ const I18N = {
     filter_source_label: '添加方式：', filter_type_label: '类型：', filter_all: '全部',
     source_manual: '手动录入/RIS-BibTeX', source_public_search: '公开搜索',
     col_source_hint: '"添加方式"列表示该记录是如何加入的（手动录入、搜索等）——真正的期刊名称请查看"查看详情"面板。',
+    gap_analyze_link: '分析研究空白', gap_analyzing: '正在分析中（可能需要 10-30 秒）…',
+    gap_analyze_err_prefix: '分析出错：', gap_none_found: '在这批文献中未找到有足够依据的研究空白。',
+    gap_preview_hint: '候选研究空白 — 仅供参考，请自行判断，每条建议都附有来自本次检索文献的具体依据。阅读后请自行决定保存或忽略。',
+    gap_col_have: '已知内容', gap_col_missing: '尚未知内容', gap_col_why: '为什么重要', gap_col_feasibility: '是否可行',
+    gap_saved_badge: '已保存 ✓', gap_save_btn: '保存到项目', gap_dismiss_btn: '忽略',
+    gap_save_err_prefix: '保存出错：',
+    gap_card_title: '研究空白（{n}）',
+    gap_card_hint: '你已保存的候选研究空白 — 每一条都有来自某次真实检索的具体依据。这只是初步建议，尚未经过验证确认。',
+    gap_card_empty: '尚未保存任何研究空白。到下方"检索日志"中，对某次检索点击"分析研究空白"。',
+    gap_col_type: '空白类型', gap_state_candidate: '候选', gap_state_rejected: '已排除',
+    gap_tags_label: '标签（用逗号分隔）', gap_confirm_delete: '从项目中删除此研究空白？',
+    gap_type_evidence: '证据不足', gap_type_population: '研究人群', gap_type_intervention: '干预措施',
+    gap_type_outcome: '结局指标', gap_type_method: '研究方法', gap_type_mechanism: '机制', gap_type_theory: '理论',
     source_openalex: 'OpenAlex', source_europepmc: 'Europe PMC', source_core: 'CORE',
     source_semanticscholar: 'Semantic Scholar', source_pubmed: 'PubMed', source_crossref: 'Crossref',
     source_clinicaltrials: 'ClinicalTrials.gov',
@@ -542,6 +569,19 @@ const I18N = {
     filter_source_label: 'Added via:', filter_type_label: 'Type:', filter_all: 'All',
     source_manual: 'Manual entry/RIS-BibTeX', source_public_search: 'Public search',
     col_source_hint: 'The "Added via" column shows how the record was added (manual entry, search...) — see the real journal name in "View details".',
+    gap_analyze_link: 'Analyze gap', gap_analyzing: 'Analyzing (may take 10-30s)…',
+    gap_analyze_err_prefix: 'Analysis error: ', gap_none_found: 'No well-grounded research gaps found in this set of papers.',
+    gap_preview_hint: 'Candidate gaps — suggestions only, for you to read and judge. Each one cites specific papers from this search. Decide yourself whether to save or skip.',
+    gap_col_have: 'What is known', gap_col_missing: 'What is unknown', gap_col_why: 'Why it matters', gap_col_feasibility: 'Feasibility',
+    gap_saved_badge: 'Saved ✓', gap_save_btn: 'Save to project', gap_dismiss_btn: 'Dismiss',
+    gap_save_err_prefix: 'Save error: ',
+    gap_card_title: 'Research gaps ({n})',
+    gap_card_hint: 'Candidate gaps you have saved — each cites a specific real search. These are initial suggestions, not verified conclusions.',
+    gap_card_empty: 'No gaps saved yet. In "Search log" below, click "Analyze gap" on a search run.',
+    gap_col_type: 'Gap type', gap_state_candidate: 'Candidate', gap_state_rejected: 'Rejected',
+    gap_tags_label: 'Tags (comma-separated)', gap_confirm_delete: 'Remove this gap from the project?',
+    gap_type_evidence: 'Evidence gap', gap_type_population: 'Population', gap_type_intervention: 'Intervention',
+    gap_type_outcome: 'Outcome', gap_type_method: 'Method', gap_type_mechanism: 'Mechanism', gap_type_theory: 'Theory',
     source_openalex: 'OpenAlex', source_europepmc: 'Europe PMC', source_core: 'CORE',
     source_semanticscholar: 'Semantic Scholar', source_pubmed: 'PubMed', source_crossref: 'Crossref',
     source_clinicaltrials: 'ClinicalTrials.gov',
@@ -730,6 +770,9 @@ window.wbOpen = async (id) => {
   activeDetail = await api('/api/workbench/projects/' + id);
   try { activeDetail.library = (await api('/api/workbench/projects/' + id + '/library')).records; }
   catch (e) { activeDetail.library = []; }
+  try { activeDetail.gapCandidates = (await api('/api/workbench/projects/' + id + '/gap-candidates')).candidates; }
+  catch (e) { activeDetail.gapCandidates = []; }
+  gapPreview = null;
   renderProject();
 };
 
@@ -790,6 +833,10 @@ function renderProject() {
 
     <div class="card" id="runsCard">
       ${renderRunsCard(runs)}
+    </div>
+
+    <div class="card" id="gapCard">
+      ${renderGapCard(activeDetail.gapCandidates || [])}
     </div>`;
   wbProfileHint();
 }
@@ -1102,13 +1149,14 @@ function renderRunsCard(runs) {
         <a href="#" onclick="wbLog('csv');return false">${t('export_csv')}</a> ·
         <a href="#" onclick="wbLog('docx');return false">${t('export_word')}</a>
       </p>
-      ${renderRuns(runs)}`;
+      ${renderRuns(runs)}
+      <div id="gapPreviewBox">${renderGapPreview()}</div>`;
 }
 
 function renderRuns(runs) {
   if (!runs.length) return `<p class="hint">${t('runs_empty')}</p>`;
   const locale = state.lang === 'zh' ? 'zh-CN' : (state.lang === 'en' ? 'en-US' : 'vi-VN');
-  return `<table><thead><tr><th>${t('col_num')}</th><th>${t('col_mode')}</th><th>${t('col_query')}</th><th>${t('col_results')}</th><th>${t('col_coverage')}</th><th>${t('col_date')}</th></tr></thead><tbody>${
+  return `<table><thead><tr><th>${t('col_num')}</th><th>${t('col_mode')}</th><th>${t('col_query')}</th><th>${t('col_results')}</th><th>${t('col_coverage')}</th><th>${t('col_date')}</th><th></th></tr></thead><tbody>${
     runs.map((r, i) => `<tr>
       <td>${runs.length - i}</td>
       <td>${t(r.mode === 'evidence' ? 'mode_evidence_short' : 'mode_discovery_short')}</td>
@@ -1117,9 +1165,149 @@ function renderRuns(runs) {
       <td>${r.count_deduped}</td>
       <td><span class="cov ${r.coverage_state}">${r.coverage_state}</span></td>
       <td class="hint">${new Date(r.search_date).toLocaleString(locale)}</td>
+      <td><a href="#" onclick="wbGapAnalyze(${r.id});return false">${t('gap_analyze_link')}</a></td>
     </tr>`).join('')
   }</tbody></table>`;
 }
+
+// ===== M4 v1 — Gap Candidate (xem chi tiết + lý do trong docs/research-workbench-plan.md) =====
+const GAP_TYPE_KEY = {
+  evidence: 'gap_type_evidence', population: 'gap_type_population', intervention: 'gap_type_intervention',
+  outcome: 'gap_type_outcome', method: 'gap_type_method', mechanism: 'gap_type_mechanism', theory: 'gap_type_theory',
+};
+function gapTypeLabel(ty) { return GAP_TYPE_KEY[ty] ? t(GAP_TYPE_KEY[ty]) : t('dash'); }
+
+window.wbGapAnalyze = async (runId) => {
+  gapPreview = { runId, loading: true, candidates: [] };
+  const box = $('gapPreviewBox');
+  if (box) box.innerHTML = renderGapPreview();
+  try {
+    const r = await api(`/api/workbench/projects/${activeId}/search-runs/${runId}/gap-analysis`, { method: 'POST', body: JSON.stringify({}) });
+    gapPreview = { runId, loading: false, candidates: r.candidates, model: r.model, saved: new Set() };
+  } catch (e) {
+    gapPreview = { runId, loading: false, candidates: [], error: e.message };
+  }
+  const box2 = $('gapPreviewBox');
+  if (box2) box2.innerHTML = renderGapPreview();
+};
+
+function renderGapPreview() {
+  if (!gapPreview) return '';
+  if (gapPreview.loading) return `<p class="hint" style="margin-top:10px"><span class="lit-spin" style="display:inline-block;vertical-align:-3px;margin-right:6px"></span>${t('gap_analyzing')}</p>`;
+  if (gapPreview.error) return `<div class="msg err" style="margin-top:10px">${t('gap_analyze_err_prefix')}${esc(gapPreview.error)}</div>`;
+  if (!gapPreview.candidates.length) return `<p class="hint" style="margin-top:10px">${t('gap_none_found')}</p>`;
+  return `
+    <div style="margin-top:12px;border-top:0.5px solid var(--border);padding-top:12px">
+      <p class="hint" style="margin:0 0 8px">${t('gap_preview_hint')}</p>
+      ${gapPreview.candidates.map((c, i) => {
+        const saved = gapPreview.saved && gapPreview.saved.has(i);
+        return `<div class="card" style="background:var(--bg);margin:0 0 10px">
+          <p style="font-weight:600;margin:0 0 8px">${esc(c.title)}</p>
+          <table style="width:100%;font-size:13px;border-collapse:collapse">
+            <tr><td style="color:var(--muted-fg);padding:2px 8px 2px 0;white-space:nowrap;vertical-align:top">${t('gap_col_have')}</td>
+              <td style="padding:2px 0">${c.evidenceHave.map((e) => `${esc(e.note)} <span class="hint">(${esc(e.title)})</span>`).join('; ')}</td></tr>
+            <tr><td style="color:var(--muted-fg);padding:2px 8px 2px 0;white-space:nowrap;vertical-align:top">${t('gap_col_missing')}</td><td style="padding:2px 0">${esc(c.whatsMissing)}</td></tr>
+            <tr><td style="color:var(--muted-fg);padding:2px 8px 2px 0;white-space:nowrap;vertical-align:top">${t('gap_col_why')}</td><td style="padding:2px 0">${esc(c.whyItMatters)}</td></tr>
+            <tr><td style="color:var(--muted-fg);padding:2px 8px 2px 0;white-space:nowrap;vertical-align:top">${t('gap_col_feasibility')}</td><td style="padding:2px 0">${esc(c.feasibilityNote)}</td></tr>
+          </table>
+          <div style="display:flex;gap:6px;margin-top:10px">
+            ${saved
+              ? `<span class="hint">${t('gap_saved_badge')}</span>`
+              : `<button type="button" class="btn sm" onclick="wbGapSave(${i})">${t('gap_save_btn')}</button>
+                 <button type="button" class="btn sm sec" onclick="wbGapDismiss(${i})">${t('gap_dismiss_btn')}</button>`}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+window.wbGapSave = async (i) => {
+  const c = gapPreview.candidates[i];
+  try {
+    await api(`/api/workbench/projects/${activeId}/gap-candidates`, {
+      method: 'POST',
+      body: JSON.stringify({
+        originSearchRunId: gapPreview.runId, title: c.title, gapType: c.gapType,
+        evidenceHave: c.evidenceHave, whatsMissing: c.whatsMissing, whyItMatters: c.whyItMatters,
+        feasibilityNote: c.feasibilityNote, llmModel: gapPreview.model,
+      }),
+    });
+    gapPreview.saved.add(i);
+    activeDetail.gapCandidates = (await api('/api/workbench/projects/' + activeId + '/gap-candidates')).candidates;
+    $('gapPreviewBox').innerHTML = renderGapPreview();
+    const gc = $('gapCard'); if (gc) gc.innerHTML = renderGapCard(activeDetail.gapCandidates);
+  } catch (e) { alert(t('gap_save_err_prefix') + e.message); }
+};
+window.wbGapDismiss = (i) => {
+  gapPreview.candidates.splice(i, 1);
+  $('gapPreviewBox').innerHTML = renderGapPreview();
+};
+
+function renderGapCard(candidates) {
+  return `
+    <h3>${t('gap_card_title', { n: candidates.length })}</h3>
+    <p class="hint">${t('gap_card_hint')}</p>
+    ${!candidates.length ? `<p class="hint">${t('gap_card_empty')}</p>` : `
+    <table><thead><tr><th>${t('col_title')}</th><th>${t('gap_col_type')}</th><th>${t('col_status')}</th><th></th></tr></thead><tbody>
+      ${candidates.map((c) => `<tr>
+        <td><a href="#" class="lib-title-link" onclick="wbGapToggleDetail(${c.id});return false">${esc(c.title)}</a>
+          ${c.tags ? `<br><span class="hint">${esc(c.tags)}</span>` : ''}</td>
+        <td>${gapTypeLabel(c.gapType)}</td>
+        <td><select onchange="wbGapSetState(${c.id}, this.value)">
+          <option value="candidate" ${c.state === 'candidate' ? 'selected' : ''}>${t('gap_state_candidate')}</option>
+          <option value="rejected" ${c.state === 'rejected' ? 'selected' : ''}>${t('gap_state_rejected')}</option>
+        </select></td>
+        <td><a href="#" onclick="wbGapDelete(${c.id});return false">${t('link_delete')}</a></td>
+      </tr>
+      ${openGapId === c.id ? `<tr><td></td><td colspan="3">${renderGapDetail(c)}</td></tr>` : ''}`).join('')}
+    </tbody></table>`}`;
+}
+
+let openGapId = null;
+function renderGapDetail(c) {
+  return `<div class="lib-detail">
+    <p><b>${t('gap_col_have')}:</b> ${(c.evidenceHave || []).map((e) => `${esc(e.note)} <span class="hint">(${esc(e.title)})</span>`).join('; ')}</p>
+    <p><b>${t('gap_col_missing')}:</b> ${esc(c.whatsMissing)}</p>
+    <p><b>${t('gap_col_why')}:</b> ${esc(c.whyItMatters)}</p>
+    <p><b>${t('gap_col_feasibility')}:</b> ${esc(c.feasibilityNote)}</p>
+    <label>${t('gap_tags_label')}</label>
+    <input id="gapTags_${c.id}" value="${esc(c.tags || '')}">
+    <label>${t('detail_note_label')}</label>
+    <textarea id="gapNote_${c.id}" rows="2">${esc(c.userNote || '')}</textarea>
+    <div style="display:flex;gap:6px;margin-top:4px">
+      <button type="button" class="btn sm" onclick="wbGapSaveMeta(${c.id})">${t('detail_save_note')}</button>
+      <button type="button" class="btn sm sec" onclick="wbGapToggleDetail(${c.id})">${t('detail_close')}</button>
+    </div>
+  </div>`;
+}
+window.wbGapToggleDetail = (id) => {
+  openGapId = openGapId === id ? null : id;
+  const gc = $('gapCard'); if (gc) gc.innerHTML = renderGapCard(activeDetail.gapCandidates);
+};
+window.wbGapSetState = async (id, stateVal) => {
+  try {
+    await api(`/api/workbench/projects/${activeId}/gap-candidates/${id}`, { method: 'PATCH', body: JSON.stringify({ state: stateVal }) });
+    activeDetail.gapCandidates = (await api('/api/workbench/projects/' + activeId + '/gap-candidates')).candidates;
+    const gc = $('gapCard'); if (gc) gc.innerHTML = renderGapCard(activeDetail.gapCandidates);
+  } catch (e) { alert(t('err_update_prefix') + e.message); }
+};
+window.wbGapSaveMeta = async (id) => {
+  const tags = $('gapTags_' + id)?.value || '';
+  const userNote = $('gapNote_' + id)?.value || '';
+  try {
+    await api(`/api/workbench/projects/${activeId}/gap-candidates/${id}`, { method: 'PATCH', body: JSON.stringify({ tags, userNote }) });
+    activeDetail.gapCandidates = (await api('/api/workbench/projects/' + activeId + '/gap-candidates')).candidates;
+    const gc = $('gapCard'); if (gc) gc.innerHTML = renderGapCard(activeDetail.gapCandidates);
+  } catch (e) { alert(t('err_update_prefix') + e.message); }
+};
+window.wbGapDelete = async (id) => {
+  if (!confirm(t('gap_confirm_delete'))) return;
+  try {
+    await api(`/api/workbench/projects/${activeId}/gap-candidates/${id}`, { method: 'DELETE' });
+    activeDetail.gapCandidates = (await api('/api/workbench/projects/' + activeId + '/gap-candidates')).candidates;
+    const gc = $('gapCard'); if (gc) gc.innerHTML = renderGapCard(activeDetail.gapCandidates);
+  } catch (e) { alert(t('err_delete_prefix') + e.message); }
+};
 
 window.wbResetAll = async () => {
   if (!projects.length) { alert(t('alert_no_projects_to_delete')); return; }
