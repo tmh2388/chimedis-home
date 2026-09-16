@@ -48,7 +48,7 @@ router.post('/sync', rateLimit({ max: 20, windowMs: 60_000 }), verifyFirebaseTok
       [fb.uid, fb.email, fb.name, fb.picture]
     );
     const [rows] = await pool.query(
-      'SELECT id, email, display_name, photo_url, role, orcid_id, orcid_verified FROM users WHERE firebase_uid = ? LIMIT 1',
+      'SELECT id, email, display_name, photo_url, role, orcid_id, orcid_verified, plan FROM users WHERE firebase_uid = ? LIMIT 1',
       [fb.uid]
     );
     const user = rows[0];

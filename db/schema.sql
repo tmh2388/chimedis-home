@@ -11,7 +11,8 @@
 ALTER TABLE users
   ADD COLUMN IF NOT EXISTS role ENUM('reader','author','editor','admin') NOT NULL DEFAULT 'reader',
   ADD COLUMN IF NOT EXISTS orcid_id VARCHAR(32) NULL COMMENT 'Định dạng 0000-0000-0000-000X',
-  ADD COLUMN IF NOT EXISTS orcid_verified TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1 nếu đã xác thực qua ORCID OAuth (không phải tự nhập tay)';
+  ADD COLUMN IF NOT EXISTS orcid_verified TINYINT(1) NOT NULL DEFAULT 0 COMMENT '1 nếu đã xác thực qua ORCID OAuth (không phải tự nhập tay)',
+  ADD COLUMN IF NOT EXISTS plan ENUM('free','pro') NOT NULL DEFAULT 'free' COMMENT 'M4: free=tìm kiếm miễn phí, pro=thêm tính năng AI tốn phí. Xem db/m4-workbench.sql';
 
 -- ===== Tài liệu (Tạp chí/Báo cáo/Bài viết/Sách) trên chimedis.vn =====
 CREATE TABLE IF NOT EXISTS portal_documents (

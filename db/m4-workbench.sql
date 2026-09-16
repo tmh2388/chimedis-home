@@ -4,6 +4,14 @@
 -- Xem docs/research-workbench-plan.md mục 6/7, docs/research-workbench-M0-architecture-freeze.md §A5.
 -- Chạy 1 lần trên MySQL production, an toàn chạy lại nhiều lần (IF NOT EXISTS).
 
+-- ===== Mở rộng bảng users có sẵn: gói dùng (free/pro) =====
+-- Tìm kiếm (Discovery/Evidence Search) LUÔN MIỄN PHÍ cho mọi tài khoản, không đụng cột này.
+-- Chỉ tính năng TỐN LLM (Phân tích khoảng trống, Sonnet) mới kiểm tra plan='pro' — xem
+-- routes/workbench.js requireLlmAllowed(). CHƯA có cổng thanh toán (giai đoạn 3, làm sau) —
+-- hiện tại chủ dự án tự UPDATE cột này bằng tay cho tài khoản muốn cấp quyền thử.
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS plan ENUM('free','pro') NOT NULL DEFAULT 'free' COMMENT 'free=tìm kiếm miễn phí, pro=thêm tính năng AI tốn phí (gap candidate...)';
+
 CREATE TABLE IF NOT EXISTS wb_gap_candidates (
   id                   BIGINT AUTO_INCREMENT PRIMARY KEY,
   project_id           BIGINT NOT NULL,

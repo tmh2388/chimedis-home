@@ -38,23 +38,19 @@ function requireDb(req, res, next) {
   next();
 }
 
-// M4 v1: chỉ dùng thử 1 mình chủ dự án (single-user testing, xem [[feedback_chimedis_llm_
-// credit_model]] bộ nhớ dự án) — nhưng Chimedis cho ĐĂNG KÝ CÔNG KHAI, nên nếu không chặn,
-// BẤT KỲ tài khoản nào cũng gọi được route tốn LLM này và ăn vào cùng 1 ngân sách API key
-// chung. `WORKBENCH_GAP_ALLOWED_EMAILS` = danh sách email được phép (phẩy ngăn cách, không
-// phân biệt hoa/thường) — CHƯA cấu hình → mặc định TỪ CHỐI TẤT CẢ (an toàn hơn mặc định mở),
-// báo lỗi rõ để biết cần set biến môi trường này trên hPanel.
+// M4 v1: tìm kiếm (Discovery/Evidence Search, thư viện, RIS/BibTeX...) LUÔN MIỄN PHÍ cho MỌI
+// tài khoản đã đăng ký — route này KHÔNG áp dụng ở đó. Chỉ tính năng TỐN LLM (Phân tích khoảng
+// trống, Sonnet) mới cần plan='pro' trên bảng users (cột mới, xem db/m4-workbench.sql). CHƯA
+// có cổng thanh toán (giai đoạn sau) — hiện tại chủ dự án tự UPDATE cột `plan` bằng tay cho
+// tài khoản muốn cấp quyền thử; sau này gắn thanh toán thật chỉ cần đổi chỗ SET plan='pro',
+// không phải sửa lại middleware này. role='admin' luôn qua được (hỗ trợ/kiểm thử).
 function requireLlmAllowed(req, res, next) {
-  const allow = String(process.env.WORKBENCH_GAP_ALLOWED_EMAILS || '')
-    .split(',').map((s) => s.trim().toLowerCase()).filter(Boolean);
-  const email = String(req.user?.email || '').toLowerCase();
-  if (!allow.length) {
-    return res.status(403).json({ success: false, error: 'Tính năng phân tích khoảng trống chưa mở cho tài khoản nào — cần set WORKBENCH_GAP_ALLOWED_EMAILS trên server' });
-  }
-  if (!email || !allow.includes(email)) {
-    return res.status(403).json({ success: false, error: 'Tài khoản này chưa được cấp quyền dùng tính năng phân tích khoảng trống (đang trong giai đoạn thử nghiệm 1 người dùng)' });
-  }
-  next();
+  if (req.user?.role === 'admin' || req.user?.plan === 'pro') return next();
+  return res.status(403).json({
+    success: false,
+    error: 'Tính năng "Phân tích khoảng trống" thuộc gói Pro — tài khoản của bạn đang ở gói miễn phí (vẫn tìm kiếm/lưu thư viện không giới hạn).',
+    code: 'plan_required',
+  });
 }
 
 async function ownedProject(req, res) {
