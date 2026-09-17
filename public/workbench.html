@@ -22,15 +22,6 @@
   a:hover{text-decoration:underline}
   :focus-visible{outline:2.5px solid var(--focus);outline-offset:2px}
 
-  header{display:flex;align-items:center;gap:14px;padding:13px 22px;background:var(--ink);color:#F5F0E6;position:sticky;top:0;z-index:40}
-  header .brand{display:flex;align-items:center;gap:10px;min-width:0}
-  header .brand img{width:34px;height:34px;flex:0 0 auto;object-fit:contain}
-  header h1{font-family:var(--font-serif);font-size:17px;margin:0;font-weight:700;letter-spacing:.01em;white-space:nowrap}
-  header .sub{font-size:11.5px;color:#C9DAD8;letter-spacing:.02em;white-space:nowrap}
-  header .who{margin-left:auto;font-size:13px;color:#DCE7E5;display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;row-gap:4px}
-  header .who a{color:#F5F0E6;font-weight:600}
-  header .who a:hover{color:#fff}
-
   .lang-wrap{position:relative}
   .lang-btn{display:flex;align-items:center;gap:5px;padding:7px 10px;border:1px solid rgba(255,255,255,.25);border-radius:8px;background:transparent;color:inherit;font-size:13px;font-weight:600;font-family:inherit;cursor:pointer}
   .lang-btn:hover{background:rgba(255,255,255,.1)}
@@ -54,21 +45,56 @@
   .btn.sm{height:32px;padding:0 12px;font-size:12.5px;border-radius:7px}
   .btn:disabled{opacity:.5;cursor:default}
 
-  main{display:grid;grid-template-columns:270px 1fr;gap:0;min-height:calc(100vh - 61px)}
-  @media (max-width:860px){
-    main{grid-template-columns:1fr}
-    .side{border-right:none;border-bottom:1px solid var(--border)}
-    .content{padding:18px 16px}
-    header{flex-wrap:wrap;row-gap:6px}
-    header .who{margin-left:0;width:100%;font-size:12.5px}
-  }
-  .side{background:var(--card);border-right:1px solid var(--border);padding:16px}
-  .side h2{font-family:var(--font-serif);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted-fg);margin:0 0 10px;font-weight:700}
-  .proj{padding:9px 11px;border-radius:8px;cursor:pointer;font-size:14px;border:1px solid transparent;margin-bottom:2px}
+  /* ===== Bố cục 3 phần kiểu Claude/SciSpace: 1 sidebar duy nhất (trên = đổi dự án, giữa =
+     Công cụ/Hạng mục nghiên cứu, dưới = tài khoản neo cố định) + khung nội dung chính. ===== */
+  .app-shell{display:flex;min-height:100vh}
+  @media (max-width:860px){ .app-shell{flex-direction:column;min-height:0} }
+
+  .app-sidebar{width:252px;flex:0 0 252px;background:var(--card);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden}
+  @media (max-width:860px){ .app-sidebar{width:auto;flex:none;position:static;height:auto;max-height:70vh;border-right:none;border-bottom:1px solid var(--border)} }
+
+  .app-brand{display:flex;align-items:center;gap:8px;padding:14px 14px 10px;flex:0 0 auto}
+  .app-brand img{width:26px;height:26px;object-fit:contain;flex:0 0 auto}
+  .app-brand span{font-family:var(--font-serif);font-size:15.5px;font-weight:700;color:var(--ink)}
+
+  .proj-switch-wrap{position:relative;padding:0 10px 10px;flex:0 0 auto}
+  .proj-switch-btn{width:100%;display:flex;align-items:center;gap:7px;padding:8px 9px;border-radius:8px;
+    border:1px solid var(--border-strong);background:var(--bg);color:var(--ink);font-size:12.5px;font-weight:700;
+    cursor:pointer;text-align:left;font-family:inherit}
+  .proj-switch-btn:hover{background:#EFE8D8}
+  .proj-switch-btn .lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .proj-switch-btn .arrow{flex:0 0 auto;font-size:10px;color:var(--muted-fg)}
+  .proj-switch-menu{display:none;position:absolute;top:calc(100% + 4px);left:10px;right:10px;background:#fff;
+    border-radius:11px;box-shadow:0 8px 24px rgba(14,58,58,.2);border:1px solid var(--border);padding:8px;
+    z-index:60;max-height:60vh;overflow:auto}
+  .proj-switch-menu.show{display:block}
+  .proj{padding:9px 11px;border-radius:8px;cursor:pointer;font-size:13.5px;border:1px solid transparent;margin-bottom:2px}
   .proj:hover{background:var(--bg)}
   .proj.on{background:var(--bg);border-color:var(--border-strong);font-weight:700;color:var(--ink)}
   .proj small{display:block;color:var(--muted-fg);font-weight:400}
-  .content{padding:22px 26px;max-width:1120px}
+
+  .app-sidebar-bottom{flex:0 0 auto;border-top:1px solid var(--border);position:relative}
+  .account-chip{width:100%;display:flex;align-items:center;gap:9px;padding:10px;border:none;background:transparent;
+    cursor:pointer;text-align:left;font-family:inherit}
+  .account-chip:hover{background:var(--bg)}
+  .account-avatar{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:#F5EDE3;color:var(--accent-2);
+    font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .account-info{flex:1;min-width:0}
+  .account-info .name{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .account-info .usage{font-size:10.5px;color:var(--muted-fg)}
+  .account-chip .arrow{flex:0 0 auto;font-size:11px;color:var(--muted-fg)}
+  .account-menu{display:none;position:absolute;bottom:calc(100% + 4px);left:10px;right:10px;background:#fff;
+    border-radius:11px;box-shadow:0 8px 24px rgba(14,58,58,.2);border:1px solid var(--border);padding:6px;z-index:60}
+  .account-menu.show{display:block}
+  .account-menu a,.account-menu .lang-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:7px;
+    font-size:13px;color:var(--fg);cursor:pointer}
+  .account-menu a:hover,.account-menu .lang-row:hover{background:var(--bg)}
+  .account-menu .lang-row select{width:auto;height:auto;border:none;background:transparent;font:inherit;color:inherit;
+    padding:0;margin-left:auto}
+
+  .content{padding:22px 26px;max-width:1120px;flex:1 1 auto;min-width:0}
+  @media (max-width:860px){ .content{padding:18px 16px} }
   .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px;overflow-x:auto}
   .card h3{font-family:var(--font-serif);margin:0 0 12px;font-size:16px;color:var(--ink)}
 
@@ -120,12 +146,10 @@
     background:#F5EDE3;color:var(--accent-2);font-size:11.5px;font-weight:700;white-space:nowrap}
 
   .wb-workspace{display:flex;align-items:flex-start;gap:16px}
-  @media (max-width:860px){ .wb-workspace{flex-direction:column} }
+  @media (max-width:1100px){ .wb-workspace{flex-direction:column;align-items:stretch} }
 
-  .wb-tree{flex:0 0 230px;max-width:230px;background:var(--card);border:1px solid var(--border);
-    border-radius:14px;box-shadow:0 2px 10px rgba(14,58,58,.06);padding:10px;align-self:stretch;
-    overflow:auto;max-height:calc(100vh - 140px)}
-  @media (max-width:860px){ .wb-tree{flex:1 1 auto;max-width:none;max-height:none} }
+  /* #wbTree giờ sống bên trong .app-sidebar (đã có nền/viền riêng) — chỉ còn spacing + scroll. */
+  .wb-tree{flex:1 1 auto;overflow:auto;padding:6px 8px 12px;min-height:0}
   .tsection-label{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-fg);
     padding:8px 8px 5px;font-weight:700}
   .tnode{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:8px;font-size:12.5px;
@@ -148,8 +172,9 @@
     background:var(--bg);border-radius:10px;padding:2px 7px}
   .tnode.on .track-progress{background:rgba(255,255,255,.2);color:#fff}
 
-  .wb-main{flex:1 1 0;min-width:0}
-  .wb-main .card{border-radius:14px;box-shadow:0 2px 10px rgba(14,58,58,.06)}
+  .wb-mid{flex:1 1 0;min-width:0}
+  .wb-side{flex:1 1 0;min-width:0}
+  .wb-mid .card,.wb-side .card{border-radius:14px;box-shadow:0 2px 10px rgba(14,58,58,.06)}
   .gate-eyebrow{display:flex;align-items:center;gap:8px;margin:0 0 4px}
   .gate-eyebrow .ic{flex:0 0 auto;width:26px;height:26px;border-radius:8px;background:#F5EDE3;
     color:var(--accent);display:flex;align-items:center;justify-content:center}
@@ -165,10 +190,6 @@
   .gate-done-toggle{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;color:var(--fg);cursor:pointer;user-select:none}
   .gate-done-toggle input{width:auto;height:auto}
 
-  .panel3{flex:0 0 340px;max-width:340px;background:var(--card);border:1px solid var(--border);
-    border-radius:14px;box-shadow:0 2px 10px rgba(14,58,58,.06);padding:16px;align-self:flex-start;
-    max-height:calc(100vh - 140px);overflow:auto}
-  @media (max-width:860px){ .panel3{flex:1 1 auto;max-width:none} }
   .panel3-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
   .panel3-close{flex:0 0 auto;border:none;background:transparent;color:var(--muted-fg);cursor:pointer;font-size:16px;padding:2px 6px}
   .panel3-close:hover{color:var(--fg)}
@@ -208,41 +229,59 @@
 </div>
 
 <div id="appView" hidden>
-  <header>
-    <a href="/" class="brand" style="color:inherit">
-      <img src="/assets/logo.png" alt="Chimedis">
-      <span>
-        <h1 data-i18n="app_title">Bàn làm việc nghiên cứu</h1>
-        <div class="sub" data-i18n="app_subtitle">Chimedis · Tìm kiếm + Thư viện + Nhật ký tìm kiếm</div>
-      </span>
-    </a>
-    <span class="who">
-      <span id="aiUsageChip"></span>
-      <span id="whoLabel"></span> · <a href="/tai-khoan.html" data-i18n="nav_account">Tài khoản</a> · <a href="#" onclick="wbSignOut();return false" data-i18n="nav_signout">Thoát</a>
-      <span class="lang-wrap">
-        <button class="lang-btn" onclick="toggleLangMenu()" aria-label="Language"><span class="lang-label">VI</span> ▾</button>
-        <div class="lang-menu">
-          <div class="lang-opt" data-l="vi" onclick="setLang('vi')">Tiếng Việt<span class="ck">✓</span></div>
-          <div class="lang-opt" data-l="zh" onclick="setLang('zh')">中文<span class="ck">✓</span></div>
-          <div class="lang-opt" data-l="en" onclick="setLang('en')">English<span class="ck">✓</span></div>
-        </div>
-      </span>
-    </span>
-  </header>
   <div id="verifyBanner" class="msg" style="margin:0;border-radius:0;background:#FBF1E4;color:var(--warn)" hidden></div>
-  <main>
-    <div class="side">
-      <h2 data-i18n="side_my_projects">Dự án của tôi</h2>
-      <div id="projList"></div>
-      <button class="btn sm sec" style="width:100%;margin-top:10px" onclick="wbNewProject()" data-i18n="side_new_project">+ Tạo dự án</button>
-      <p class="hint" style="margin-top:16px">
-        <a href="#" onclick="wbResetAll();return false" style="color:var(--bad)" data-i18n="side_reset_all">Đặt lại — xoá toàn bộ dự án của tôi</a>
-      </p>
-    </div>
+  <div class="app-shell">
+    <nav class="app-sidebar">
+      <a href="/" class="app-brand">
+        <img src="/assets/logo.png" alt="Chimedis">
+        <span data-i18n="app_title_short">Chimedis</span>
+      </a>
+
+      <div class="proj-switch-wrap">
+        <button class="proj-switch-btn" onclick="toggleProjSwitch()">
+          <span class="lbl" id="projSwitchLabel" data-i18n="proj_switch_placeholder">Chọn dự án</span>
+          <span class="arrow">▾</span>
+        </button>
+        <div class="proj-switch-menu" id="projSwitchMenu">
+          <div id="projList"></div>
+          <button class="btn sm sec" style="width:100%;margin-top:6px" onclick="wbNewProject()" data-i18n="side_new_project">+ Tạo dự án</button>
+          <p class="hint" style="margin:8px 4px 2px">
+            <a href="#" onclick="wbResetAll();return false" style="color:var(--bad)" data-i18n="side_reset_all">Đặt lại — xoá toàn bộ dự án của tôi</a>
+          </p>
+        </div>
+      </div>
+
+      <div class="wb-tree" id="wbTree">
+        <p class="hint" style="padding:8px" data-i18n="tree_no_project">Chọn hoặc tạo một dự án để xem công cụ và hạng mục nghiên cứu.</p>
+      </div>
+
+      <div class="app-sidebar-bottom">
+        <div class="account-menu" id="accountMenu">
+          <a href="/tai-khoan.html" data-i18n="nav_account">Tài khoản</a>
+          <div class="lang-row">
+            <span data-i18n="account_menu_lang">Ngôn ngữ</span>
+            <select onchange="setLang(this.value)" id="accountLangSelect">
+              <option value="vi">VI</option>
+              <option value="zh">中</option>
+              <option value="en">EN</option>
+            </select>
+          </div>
+          <a href="#" onclick="wbSignOut();return false" data-i18n="nav_signout">Thoát</a>
+        </div>
+        <button class="account-chip" onclick="toggleAccountMenu()">
+          <span class="account-avatar" id="accountAvatar"></span>
+          <span class="account-info">
+            <span class="name" id="whoLabel"></span>
+            <span class="usage" id="aiUsageChip"></span>
+          </span>
+          <span class="arrow">▾</span>
+        </button>
+      </div>
+    </nav>
     <div class="content" id="content">
       <p class="muted" data-i18n="content_placeholder">Chọn hoặc tạo một dự án để bắt đầu.</p>
     </div>
-  </main>
+  </div>
 </div>
 
 <script type="module">
@@ -303,6 +342,8 @@ const I18N = {
     verify_banner_prefix: '⚠️ Email', verify_banner_suffix: 'chưa xác thực — bạn xem/tìm được nhưng chưa tạo được dự án.',
     verify_recheck_link: 'Tôi đã xác thực → kiểm tra lại', verify_resend_link: 'Gửi lại email',
     app_title: 'Bàn làm việc nghiên cứu', app_subtitle: 'Chimedis · Tìm kiếm + Thư viện + Nhật ký tìm kiếm',
+    app_title_short: 'Chimedis', proj_switch_placeholder: 'Chọn dự án', tree_no_project: 'Chọn hoặc tạo một dự án để xem công cụ và hạng mục nghiên cứu.',
+    account_menu_lang: 'Ngôn ngữ',
     nav_account: 'Tài khoản', nav_signout: 'Thoát',
     side_my_projects: 'Dự án của tôi', side_no_projects: 'Chưa có dự án nào.', side_new_project: '+ Tạo dự án',
     side_reset_all: 'Đặt lại — xoá toàn bộ dự án của tôi', side_search_runs_count: '{n} lượt tìm',
@@ -409,7 +450,9 @@ const I18N = {
     detail_no_abstract: 'Không có tóm tắt.', detail_note_label: 'Ghi chú',
     detail_save_note: 'Lưu ghi chú', detail_close: 'Đóng',
     ai_usage_chip: '{n} lượt AI tháng này',
-    tool_questions: 'Câu hỏi nghiên cứu', tool_search: 'Tìm kiếm & Thư viện', tool_runs: 'Nhật ký tìm kiếm & Khoảng trống',
+    tool_questions: 'Câu hỏi nghiên cứu', tool_search: 'Tìm kiếm', tool_library: 'Thư viện', tool_runs: 'Nhật ký tìm kiếm & Khoảng trống',
+    questions_list_title: 'Câu hỏi đã lưu ({n})', search_results_title: 'Kết quả tìm kiếm', search_results_empty: 'Nhập truy vấn bên trái rồi bấm "Tìm & ghi nhật ký" — kết quả sẽ hiện ở đây.',
+    library_add_panel_title: 'Thêm bản ghi',
     tools_section_label: 'Công cụ', tracks_section_label: 'Hạng mục nghiên cứu',
     add_track: 'Thêm hạng mục', tracks_empty: 'Chưa có hạng mục nào — bấm "Thêm hạng mục" để bắt đầu.',
     new_track_prompt: 'Chọn loại hạng mục (nhập số):', new_track_invalid: 'Lựa chọn không hợp lệ.',
@@ -419,7 +462,7 @@ const I18N = {
     gate_not_found: 'Không tìm thấy Gate này.',
     gate_checklist_label: 'Việc cần làm', gate_deliverable_label: 'Deliverable',
     gate_mark_done: 'Đánh dấu đã hoàn thành Gate này',
-    gate_action_open_search: 'Mở tìm kiếm & thư viện', gate_action_gap_analysis: 'Phân tích khoảng trống (AI)',
+    gate_action_open_search: 'Mở tìm kiếm', gate_action_open_library: 'Mở thư viện', gate_action_gap_analysis: 'Phân tích khoảng trống (AI)',
     gate_action_open_questions: 'Mở câu hỏi nghiên cứu',
     panel3_record_label: 'Chi tiết bản ghi', panel3_gap_label: 'Chi tiết khoảng trống',
   },
@@ -443,6 +486,8 @@ const I18N = {
     verify_banner_prefix: '⚠️ 邮箱', verify_banner_suffix: '尚未验证 — 您可以查看/检索，但暂时无法创建项目。',
     verify_recheck_link: '我已验证 → 重新检查', verify_resend_link: '重新发送邮件',
     app_title: '研究工作台', app_subtitle: 'Chimedis · 检索 + 文献库 + 检索日志',
+    app_title_short: 'Chimedis', proj_switch_placeholder: '选择项目', tree_no_project: '选择或创建一个项目以查看工具和研究类别。',
+    account_menu_lang: '语言',
     nav_account: '账户', nav_signout: '退出',
     side_my_projects: '我的项目', side_no_projects: '暂无项目。', side_new_project: '+ 新建项目',
     side_reset_all: '重置 — 删除我的全部项目', side_search_runs_count: '{n} 次检索',
@@ -549,7 +594,9 @@ const I18N = {
     detail_no_abstract: '暂无摘要。', detail_note_label: '备注',
     detail_save_note: '保存备注', detail_close: '关闭',
     ai_usage_chip: '本月 {n} 次 AI 调用',
-    tool_questions: '研究问题', tool_search: '检索与文献库', tool_runs: '检索日志与研究空白',
+    tool_questions: '研究问题', tool_search: '检索', tool_library: '文献库', tool_runs: '检索日志与研究空白',
+    questions_list_title: '已保存的问题（{n}）', search_results_title: '检索结果', search_results_empty: '在左侧输入检索词并点击"检索并记录"，结果将显示在这里。',
+    library_add_panel_title: '添加记录',
     tools_section_label: '工具', tracks_section_label: '研究项目类别',
     add_track: '添加类别', tracks_empty: '尚未添加类别 — 点击"添加类别"开始。',
     new_track_prompt: '选择类别类型（输入编号）：', new_track_invalid: '选择无效。',
@@ -559,7 +606,7 @@ const I18N = {
     gate_not_found: '未找到该 Gate。',
     gate_checklist_label: '需完成的工作', gate_deliverable_label: '交付物',
     gate_mark_done: '标记此 Gate 已完成',
-    gate_action_open_search: '打开检索与文献库', gate_action_gap_analysis: '研究空白分析（AI）',
+    gate_action_open_search: '打开检索', gate_action_open_library: '打开文献库', gate_action_gap_analysis: '研究空白分析（AI）',
     gate_action_open_questions: '打开研究问题',
     panel3_record_label: '记录详情', panel3_gap_label: '研究空白详情',
   },
@@ -583,6 +630,8 @@ const I18N = {
     verify_banner_prefix: '⚠️ Email', verify_banner_suffix: 'is not verified yet — you can browse/search, but cannot create projects yet.',
     verify_recheck_link: "I've verified → recheck", verify_resend_link: 'Resend email',
     app_title: 'Research Workbench', app_subtitle: 'Chimedis · Search + Library + Search Log',
+    app_title_short: 'Chimedis', proj_switch_placeholder: 'Choose a project', tree_no_project: 'Choose or create a project to see tools and research tracks.',
+    account_menu_lang: 'Language',
     nav_account: 'Account', nav_signout: 'Sign out',
     side_my_projects: 'My projects', side_no_projects: 'No projects yet.', side_new_project: '+ New project',
     side_reset_all: 'Reset — delete all my projects', side_search_runs_count: '{n} searches',
@@ -689,7 +738,9 @@ const I18N = {
     detail_no_abstract: 'No abstract available.', detail_note_label: 'Note',
     detail_save_note: 'Save note', detail_close: 'Close',
     ai_usage_chip: '{n} AI runs this month',
-    tool_questions: 'Research questions', tool_search: 'Search & library', tool_runs: 'Search log & gaps',
+    tool_questions: 'Research questions', tool_search: 'Search', tool_library: 'Library', tool_runs: 'Search log & gaps',
+    questions_list_title: 'Saved questions ({n})', search_results_title: 'Search results', search_results_empty: 'Enter a query on the left and click "Search & log" — results will appear here.',
+    library_add_panel_title: 'Add a record',
     tools_section_label: 'Tools', tracks_section_label: 'Research tracks',
     add_track: 'Add track', tracks_empty: 'No tracks yet — click "Add track" to start.',
     new_track_prompt: 'Choose a track type (enter the number):', new_track_invalid: 'Invalid choice.',
@@ -699,7 +750,7 @@ const I18N = {
     gate_not_found: 'This Gate was not found.',
     gate_checklist_label: 'Tasks', gate_deliverable_label: 'Deliverable',
     gate_mark_done: 'Mark this Gate as done',
-    gate_action_open_search: 'Open search & library', gate_action_gap_analysis: 'Gap analysis (AI)',
+    gate_action_open_search: 'Open search', gate_action_open_library: 'Open library', gate_action_gap_analysis: 'Gap analysis (AI)',
     gate_action_open_questions: 'Open research questions',
     panel3_record_label: 'Record detail', panel3_gap_label: 'Gap detail',
   },
@@ -728,6 +779,8 @@ function closeLangMenu() { document.querySelectorAll('.lang-menu').forEach((m) =
 function syncLangMenu() {
   document.querySelectorAll('.lang-opt').forEach((el) => { el.classList.toggle('active', el.dataset.l === state.lang); });
   document.querySelectorAll('.lang-label').forEach((el) => { el.textContent = state.lang.toUpperCase() === 'ZH' ? '中' : state.lang.toUpperCase(); });
+  const sel = $('accountLangSelect');
+  if (sel) sel.value = state.lang;
 }
 window.setLang = (l) => {
   state.lang = l;
@@ -841,7 +894,9 @@ onAuthStateChanged(auth, async (user) => {
     if (!d.success) throw new Error(d.error || 'Lỗi đồng bộ');
     currentUser = d.user;
     $('loginView').hidden = true; $('appView').hidden = false; $('loginLangWrap').hidden = true;
-    $('whoLabel').textContent = currentUser.display_name || currentUser.email || '';
+    const whoName = currentUser.display_name || currentUser.email || '';
+    $('whoLabel').textContent = whoName;
+    $('accountAvatar').textContent = whoName.trim().slice(0, 1).toUpperCase() || '?';
     const banner = $('verifyBanner');
     if (banner) {
       banner.hidden = !!d.user.verified;
@@ -862,15 +917,26 @@ async function wbLoadAiUsage() {
   try {
     const r = await api('/api/workbench/ai-usage');
     const el = $('aiUsageChip');
-    if (el) el.innerHTML = `<span class="ai-usage-chip">${t('ai_usage_chip', { n: r.runsThisMonth })}</span>`;
+    if (el) el.textContent = t('ai_usage_chip', { n: r.runsThisMonth });
   } catch (e) { /* im lặng — chỉ là chỉ báo phụ, không chặn app */ }
 }
 
 function renderProjList() {
   $('projList').innerHTML = projects.length
-    ? projects.map((p) => `<div class="proj ${p.id === activeId ? 'on' : ''}" onclick="wbOpen(${p.id})">${esc(p.title)}<small>${t('side_search_runs_count', { n: p.search_run_count })}</small></div>`).join('')
+    ? projects.map((p) => `<div class="proj ${p.id === activeId ? 'on' : ''}" onclick="wbOpen(${p.id});closeProjSwitch()">${esc(p.title)}<small>${t('side_search_runs_count', { n: p.search_run_count })}</small></div>`).join('')
     : `<p class="hint">${t('side_no_projects')}</p>`;
+  const active = projects.find((p) => p.id === activeId);
+  const label = $('projSwitchLabel');
+  if (label) label.textContent = active ? active.title : t('proj_switch_placeholder');
 }
+window.toggleProjSwitch = () => { closeAccountMenu(); $('projSwitchMenu').classList.toggle('show'); };
+function closeProjSwitch() { $('projSwitchMenu').classList.remove('show'); }
+window.toggleAccountMenu = () => { closeProjSwitch(); $('accountMenu').classList.toggle('show'); };
+function closeAccountMenu() { $('accountMenu').classList.remove('show'); }
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.proj-switch-wrap')) closeProjSwitch();
+  if (!e.target.closest('.app-sidebar-bottom')) closeAccountMenu();
+});
 async function loadProjects() {
   const d = await api('/api/workbench/projects');
   projects = d.projects || [];
@@ -916,6 +982,7 @@ function renderProject() {
   const p = activeDetail.project;
   const qs = activeDetail.questions || [];
   const runs = activeDetail.searchRuns || [];
+  $('wbTree').innerHTML = renderTree();
   $('content').innerHTML = `
     <div class="projhead">
       <h1>${esc(p.title)}</h1>
@@ -923,9 +990,8 @@ function renderProject() {
       <a href="#" class="hint" onclick="wbDeleteProject();return false">${t('delete_project_link')}</a>
     </div>
     <div class="wb-workspace">
-      <nav class="wb-tree" id="wbTree">${renderTree()}</nav>
-      <div class="wb-main" id="wbMain">${renderWbMain()}</div>
-      <aside class="panel3" id="panel3" ${panel3 ? '' : 'hidden'}>${renderPanel3()}</aside>
+      <div class="wb-mid" id="wbMid">${renderMid()}</div>
+      <div class="wb-side" id="wbSide" ${activeSection.type === 'gate' ? 'hidden' : ''}>${renderSide()}</div>
     </div>`;
   wbProfileHint();
 }
@@ -937,6 +1003,7 @@ function renderProject() {
 const ICONS = {
   questions: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 0 1 4.7-1.2c.5 1-.2 1.7-1 2.3-.7.5-1.2 1-1.2 1.9"/><path d="M12 16.5h.01"/></svg>',
   search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+  library: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5.5A2 2 0 0 1 6 3.5h11a1 1 0 0 1 1 1V19"/><path d="M6.5 17H19v3.5a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2v-.5a1.5 1.5 0 0 1 1.5-1.5Z"/></svg>',
   runs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>',
   msc_thesis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 12v4.5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5V12"/><path d="M21 9.5v6"/></svg>',
   phd_thesis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 12v4.5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5V12"/><path d="M21 9.5v6"/></svg>',
@@ -949,6 +1016,7 @@ const ICONS = {
 const TOOLS = [
   ['questions', 'tool_questions'],
   ['search', 'tool_search'],
+  ['library', 'tool_library'],
   ['runs', 'tool_runs'],
 ];
 
@@ -1011,14 +1079,18 @@ window.wbToggleTrack = (trackId) => {
 };
 window.wbSelectTool = (tool) => {
   activeSection = { type: 'tool', tool };
+  panel3 = null;
   $('wbTree').innerHTML = renderTree();
-  $('wbMain').innerHTML = renderWbMain();
+  $('wbMid').innerHTML = renderMid();
+  const side = $('wbSide'); side.hidden = false; side.innerHTML = renderSide();
   wbProfileHint();
 };
 window.wbSelectGate = (trackId, gateNo) => {
   activeSection = { type: 'gate', trackId, gateNo };
+  panel3 = null;
   $('wbTree').innerHTML = renderTree();
-  $('wbMain').innerHTML = renderWbMain();
+  $('wbMid').innerHTML = renderMid();
+  $('wbSide').hidden = true;
 };
 
 window.wbNewTrack = async () => {
@@ -1069,40 +1141,57 @@ window.wbGateToggleDone = async (trackId, gateNo, checked) => {
   } catch (e) { alert(t('err_update_prefix') + e.message); }
 };
 
-// ===== Nội dung khung giữa (wb-main) — điều phối theo activeSection =====
+// ===== Khung giữa (tương tác) + khung phải (kết quả) — điều phối theo activeSection.
+// Đúng bố cục 3 phần kiểu Claude/SciSpace: trái = điều hướng, giữa = nơi thao tác/nhập liệu,
+// phải = nơi hiển thị kết quả (danh sách hoặc chi tiết 1 mục qua panel3). =====
 
-function renderWbMain() {
+function renderMid() {
   if (activeSection.type === 'gate') return renderGateDetail(activeSection.trackId, activeSection.gateNo);
   const qs = activeDetail.questions || [];
   const runs = activeDetail.searchRuns || [];
   switch (activeSection.tool) {
-    case 'questions': return `<div class="card">${renderQuestionsCard(qs)}</div>`;
-    case 'search': return `
-      <div class="card">${renderSearchCard(qs)}</div>
-      <div class="card" id="libraryCard">${renderLibraryCard(activeDetail.library || [])}</div>`;
-    case 'runs': return `
-      <div class="card" id="runsCard">${renderRunsCard(runs)}</div>
-      <div class="card" id="gapCard">${renderGapCard(activeDetail.gapCandidates || [])}</div>`;
+    case 'questions': return `<div class="card">${renderQuestionsForm()}</div>`;
+    case 'search': return `<div class="card">${renderSearchCard(qs)}</div>`;
+    case 'library': return `<div class="card">${renderLibraryAddPanel()}</div>`;
+    case 'runs': return `<div class="card" id="runsCard">${renderRunsCard(runs)}</div>`;
     default: return '';
   }
 }
 
-function renderQuestionsCard(qs) {
+function renderSide() {
+  if (activeSection.type === 'gate') return '';
+  switch (activeSection.tool) {
+    case 'questions': return `<div class="card">${renderQuestionsList(activeDetail.questions || [])}</div>${renderPanel3Wrap()}`;
+    case 'search': return `<div class="card">${renderSearchResultsPane()}</div>${renderPanel3Wrap()}`;
+    case 'library': return `<div class="card" id="libraryCard">${renderLibraryCard(activeDetail.library || [])}</div>${renderPanel3Wrap()}`;
+    case 'runs': return `<div id="gapPreviewBox">${renderGapPreview()}</div><div class="card" id="gapCard">${renderGapCard(activeDetail.gapCandidates || [])}</div>${renderPanel3Wrap()}`;
+    default: return '';
+  }
+}
+function renderPanel3Wrap() {
+  return panel3 ? `<div class="card" id="panel3" style="margin-top:14px">${renderPanel3()}</div>` : '';
+}
+
+function renderQuestionsForm() {
   return `
     <h3>${t('card_questions_title')}</h3>
     <p class="hint" style="margin-bottom:10px">${t('questions_hint')}</p>
-    ${qs.map((q) => `<div style="margin-bottom:6px;display:flex;gap:6px;align-items:baseline;flex-wrap:wrap">
-      <span class="pill">${esc(q.question_profile)}</span>
-      <span style="flex:1">${esc(q.question_text) || t('question_no_content')}</span>
-      <a href="#" class="hint" onclick="wbEditQuestion(${q.id});return false">${t('question_edit')}</a>
-      <a href="#" class="hint" onclick="wbDeleteQuestion(${q.id});return false">${t('question_delete')}</a>
-    </div>`).join('') || `<p class="hint">${t('questions_empty')}</p>`}
     <label>${t('question_content_label')}</label>
     <input id="qText" placeholder="${esc(t('question_content_ph'))}" />
     <label>${t('question_profile_label')}</label>
     <select id="qProfile" onchange="wbProfileHint()">${PROFILES.map(([v, lk]) => `<option value="${v}">${esc(t(lk))}</option>`).join('')}</select>
     <p class="hint" id="qProfileHint" style="margin-top:4px"></p>
     <button class="btn sm" style="margin-top:6px" onclick="wbAddQuestion()">${t('question_save')}</button>`;
+}
+function renderQuestionsList(qs) {
+  return `
+    <h3>${t('questions_list_title', { n: qs.length })}</h3>
+    ${qs.map((q) => `<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">
+      <span class="pill">${esc(q.question_profile)}</span>
+      <div style="margin:5px 0;font-size:13.5px">${esc(q.question_text) || t('question_no_content')}</div>
+      <a href="#" class="hint" onclick="wbEditQuestion(${q.id});return false">${t('question_edit')}</a> ·
+      <a href="#" class="hint" onclick="wbDeleteQuestion(${q.id});return false">${t('question_delete')}</a>
+    </div>`).join('') || `<p class="hint">${t('questions_empty')}</p>`}`;
 }
 
 function renderSearchCard(qs) {
@@ -1117,8 +1206,10 @@ function renderSearchCard(qs) {
       <div><label>${t('search_year_from')}</label><input id="sYearFrom" type="number" min="1900" max="2100" /></div>
       <div><label>${t('search_year_to')}</label><input id="sYearTo" type="number" min="1900" max="2100" /></div>
     </div>
-    <button class="btn" style="margin-top:12px" id="sBtn" onclick="wbRunSearch()">${t('search_submit')}</button>
-    <div id="sResult"></div>`;
+    <button class="btn" style="margin-top:12px" id="sBtn" onclick="wbRunSearch()">${t('search_submit')}</button>`;
+}
+function renderSearchResultsPane() {
+  return `<h3>${t('search_results_title')}</h3><div id="sResult"><p class="hint">${t('search_results_empty')}</p></div>`;
 }
 
 function renderGateDetail(trackId, gateNo) {
@@ -1127,7 +1218,8 @@ function renderGateDetail(trackId, gateNo) {
   if (!tr || !g) return `<p class="hint">${t('gate_not_found')}</p>`;
   const done = (tr.progress || []).some((p) => p.gateNo === gateNo && p.status === 'done');
   const actions = (g.actions || []).map((a) => {
-    if (a === 'search' || a === 'library') return `<a class="btn sm sec" href="#" onclick="wbSelectTool('search');return false">${t('gate_action_open_search')}</a>`;
+    if (a === 'search') return `<a class="btn sm sec" href="#" onclick="wbSelectTool('search');return false">${t('gate_action_open_search')}</a>`;
+    if (a === 'library') return `<a class="btn sm sec" href="#" onclick="wbSelectTool('library');return false">${t('gate_action_open_library')}</a>`;
     if (a === 'gap_analysis') return `<a class="btn sm" href="#" onclick="wbSelectTool('runs');return false">${t('gate_action_gap_analysis')}</a>`;
     if (a === 'research_question') return `<a class="btn sm sec" href="#" onclick="wbSelectTool('questions');return false">${t('gate_action_open_questions')}</a>`;
     return '';
@@ -1172,10 +1264,8 @@ function renderPanel3() {
   return '';
 }
 function syncPanel3() {
-  const el = $('panel3');
-  if (!el) return;
-  el.hidden = !panel3;
-  el.innerHTML = renderPanel3();
+  const side = $('wbSide');
+  if (side) side.innerHTML = renderSide();
 }
 
 const STUDY_TYPE_KEY = {
@@ -1212,6 +1302,43 @@ function renderRecordDetail(r) {
       <button type="button" class="btn sm sec" onclick="wbToggleRecordDetail(${r.recordId})">${t('detail_close')}</button>
     </div>
   </div>`;
+}
+function renderLibraryAddPanel() {
+  return `
+    <h3>${t('library_add_panel_title')}</h3>
+    <p class="hint" style="margin-bottom:10px">${t('library_desc')}</p>
+    <div class="row" style="margin-bottom:4px">
+      <button type="button" class="btn sm sec" onclick="wbToggleManualForm()">${t('library_add_manual')}</button>
+      <button type="button" class="btn sm sec" onclick="wbToggleImportForm()">${t('library_import_btn')}</button>
+    </div>
+    <div id="wbImportForm" class="card" style="display:none;background:var(--bg);margin:10px 0 0">
+      <h4 style="margin:0 0 6px">${t('import_title')}</h4>
+      <p class="hint">${t('import_hint')}</p>
+      <label>${t('import_file_label')}</label>
+      <div class="file-drop"><input id="impFile" type="file" accept=".ris,.bib,.bibtex,.env,.net,.enw,.nx,.txt,text/plain"></div>
+      <label>${t('import_or_paste')}</label>
+      <textarea id="impText" rows="6" placeholder="${esc(t('import_textarea_ph'))}"></textarea>
+      <button class="btn sm" style="margin-top:6px" onclick="wbImportRefs()">${t('import_submit')}</button>
+      <button class="btn sm sec" style="margin-top:6px" onclick="wbToggleImportForm(false)">${t('import_cancel')}</button>
+      <div id="impMsg"></div>
+    </div>
+    <div id="wbManualForm" class="card" style="display:none;background:var(--bg);margin:10px 0 0">
+      <label>${t('manual_title_label')}</label><input id="mfTitle" placeholder="${esc(t('manual_title_ph'))}">
+      <div class="row">
+        <div><label>${t('manual_authors_label')}</label><input id="mfAuthors" placeholder="${esc(t('manual_authors_ph'))}"></div>
+        <div><label>${t('manual_journal_label')}</label><input id="mfJournal" placeholder="${esc(t('manual_journal_ph'))}"></div>
+        <div><label>${t('manual_year_label')}</label><input id="mfYear" type="number" min="1900" max="2100"></div>
+      </div>
+      <div class="row">
+        <div><label>${t('manual_doi_label')}</label><input id="mfDoi" placeholder="${esc(t('manual_doi_ph'))}"></div>
+        <div><label>${t('manual_pmid_label')}</label><input id="mfPmid"></div>
+        <div><label>${t('manual_keywords_label')}</label><input id="mfKeywords" placeholder="${esc(t('manual_keywords_ph'))}"></div>
+      </div>
+      <label>${t('manual_abstract_label')}</label><textarea id="mfAbstract" rows="3"></textarea>
+      <button class="btn sm" style="margin-top:6px" onclick="wbSaveManual()">${t('manual_save')}</button>
+      <button class="btn sm sec" style="margin-top:6px" onclick="wbToggleManualForm(false)">${t('manual_cancel')}</button>
+      <div id="mfMsg"></div>
+    </div>`;
 }
 function renderLibraryCard(records) {
   const STATUS_KEY = { shortlisted: 'status_shortlisted', included: 'status_included', excluded: 'status_excluded' };
@@ -1258,42 +1385,12 @@ function renderLibraryCard(records) {
     </div>
     <p class="hint" style="margin-top:-4px">${t('col_source_hint')}</p>` : '';
   return `
-    <h3>${t('library_title', { n: records.length })}
-      <button type="button" class="btn sm sec" style="margin-left:8px" onclick="wbToggleManualForm()">${t('library_add_manual')}</button>
-      <button type="button" class="btn sm sec" onclick="wbToggleImportForm()">${t('library_import_btn')}</button></h3>
-    <p class="hint">${t('library_desc')}
+    <h3>${t('library_title', { n: records.length })}</h3>
+    <p class="hint">
       ${records.length ? `${t('library_export')} <a href="#" onclick="wbLibExport('xlsx');return false">${t('export_excel')}</a> ·
         <a href="#" onclick="wbLibExport('docx');return false">${t('export_word')}</a> ·
         <a href="#" onclick="wbLibExport('csv');return false">${t('export_csv')}</a>` : ''}</p>
     ${filterBar}
-    <div id="wbImportForm" class="card" style="display:none;background:var(--bg);margin:0 0 12px">
-      <h4 style="margin:0 0 6px">${t('import_title')}</h4>
-      <p class="hint">${t('import_hint')}</p>
-      <label>${t('import_file_label')}</label>
-      <div class="file-drop"><input id="impFile" type="file" accept=".ris,.bib,.bibtex,.env,.net,.enw,.nx,.txt,text/plain"></div>
-      <label>${t('import_or_paste')}</label>
-      <textarea id="impText" rows="6" placeholder="${esc(t('import_textarea_ph'))}"></textarea>
-      <button class="btn sm" style="margin-top:6px" onclick="wbImportRefs()">${t('import_submit')}</button>
-      <button class="btn sm sec" style="margin-top:6px" onclick="wbToggleImportForm(false)">${t('import_cancel')}</button>
-      <div id="impMsg"></div>
-    </div>
-    <div id="wbManualForm" class="card" style="display:none;background:var(--bg);margin:0 0 12px">
-      <label>${t('manual_title_label')}</label><input id="mfTitle" placeholder="${esc(t('manual_title_ph'))}">
-      <div class="row">
-        <div><label>${t('manual_authors_label')}</label><input id="mfAuthors" placeholder="${esc(t('manual_authors_ph'))}"></div>
-        <div><label>${t('manual_journal_label')}</label><input id="mfJournal" placeholder="${esc(t('manual_journal_ph'))}"></div>
-        <div><label>${t('manual_year_label')}</label><input id="mfYear" type="number" min="1900" max="2100"></div>
-      </div>
-      <div class="row">
-        <div><label>${t('manual_doi_label')}</label><input id="mfDoi" placeholder="${esc(t('manual_doi_ph'))}"></div>
-        <div><label>${t('manual_pmid_label')}</label><input id="mfPmid"></div>
-        <div><label>${t('manual_keywords_label')}</label><input id="mfKeywords" placeholder="${esc(t('manual_keywords_ph'))}"></div>
-      </div>
-      <label>${t('manual_abstract_label')}</label><textarea id="mfAbstract" rows="3"></textarea>
-      <button class="btn sm" style="margin-top:6px" onclick="wbSaveManual()">${t('manual_save')}</button>
-      <button class="btn sm sec" style="margin-top:6px" onclick="wbToggleManualForm(false)">${t('manual_cancel')}</button>
-      <div id="mfMsg"></div>
-    </div>
     ${records.length ? `
     <div class="row" style="align-items:center;margin-bottom:8px">
       <label style="flex:none;display:flex;align-items:center;gap:5px;margin:0">
@@ -1485,8 +1582,7 @@ function renderRunsCard(runs) {
         <a href="#" onclick="wbLog('csv');return false">${t('export_csv')}</a> ·
         <a href="#" onclick="wbLog('docx');return false">${t('export_word')}</a>
       </p>
-      ${renderRuns(runs)}
-      <div id="gapPreviewBox">${renderGapPreview()}</div>`;
+      ${renderRuns(runs)}`;
 }
 
 function renderRuns(runs) {
@@ -1652,6 +1748,7 @@ window.wbResetAll = async () => {
   }
   activeId = null; activeDetail = null;
   $('content').innerHTML = `<p class="muted">${t('reset_done')}</p>`;
+  $('wbTree').innerHTML = `<p class="hint" style="padding:8px">${t('tree_no_project')}</p>`;
   await loadProjects();
 };
 
@@ -1692,6 +1789,7 @@ window.wbDeleteProject = async () => {
   await api('/api/workbench/projects/' + activeId, { method: 'DELETE' });
   activeId = null; activeDetail = null;
   $('content').innerHTML = `<p class="muted">${t('project_deleted')}</p>`;
+  $('wbTree').innerHTML = `<p class="hint" style="padding:8px">${t('tree_no_project')}</p>`;
   await loadProjects();
 };
 
