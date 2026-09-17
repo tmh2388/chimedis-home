@@ -262,7 +262,7 @@ CREATE TABLE IF NOT EXISTS wb_ai_runs (
 CREATE TABLE IF NOT EXISTS wb_research_tracks (
   id            BIGINT AUTO_INCREMENT PRIMARY KEY,
   project_id    BIGINT NOT NULL,
-  track_type    ENUM('msc_thesis','phd_thesis','intl_paper','report') NOT NULL,
+  track_type    ENUM('msc_thesis','phd_thesis','intl_paper','report','conference_abstract','grant_proposal') NOT NULL,
   study_design  VARCHAR(40) NULL,
   title         VARCHAR(300) NULL,
   created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

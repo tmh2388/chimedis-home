@@ -673,7 +673,7 @@ router.get('/projects/:id/tracks', requireDb, requireUser, async (req, res) => {
   }
 });
 
-const TRACK_TYPES_VALID = ['msc_thesis', 'phd_thesis', 'intl_paper', 'report'];
+const TRACK_TYPES_VALID = ['msc_thesis', 'phd_thesis', 'intl_paper', 'report', 'conference_abstract', 'grant_proposal'];
 
 router.post('/projects/:id/tracks', requireDb, requireUser, requireVerified, async (req, res) => {
   try {

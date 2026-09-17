@@ -50,41 +50,82 @@
   .app-shell{display:flex;min-height:100vh}
   @media (max-width:860px){ .app-shell{flex-direction:column;min-height:0} }
 
-  .app-sidebar{width:252px;flex:0 0 252px;background:var(--card);border-right:1px solid var(--border);
-    display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden}
-  @media (max-width:860px){ .app-sidebar{width:auto;flex:none;position:static;height:auto;max-height:70vh;border-right:none;border-bottom:1px solid var(--border)} }
+  .app-sidebar{width:228px;flex:0 0 228px;background:var(--card);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow:hidden;
+    transition:width .16s,flex-basis .16s}
 
-  .app-brand{display:flex;align-items:center;gap:8px;padding:14px 14px 10px;flex:0 0 auto}
-  .app-brand img{width:26px;height:26px;object-fit:contain;flex:0 0 auto}
-  .app-brand span{font-family:var(--font-serif);font-size:15.5px;font-weight:700;color:var(--ink)}
+  /* ===== Chế độ thu gọn — dải icon (kiểu VS Code/Claude Code activity bar). Bấm mũi tên ở
+     góc trên bật/tắt; trạng thái lưu localStorage. Gate con (không có icon riêng, chỉ có
+     chấm trạng thái) bị ẩn khi thu gọn — bấm vào 1 hạng mục sẽ tự mở lại sidebar. ===== */
+  .app-sidebar.collapsed{width:56px;flex:0 0 56px}
+  .app-sidebar.collapsed .app-brand span,
+  .app-sidebar.collapsed .proj-switch-btn .lbl,
+  .app-sidebar.collapsed .proj-switch-btn .arrow,
+  .app-sidebar.collapsed .tsection-label,
+  .app-sidebar.collapsed .tnode .lbl,
+  .app-sidebar.collapsed .tnode .arrow,
+  .app-sidebar.collapsed .tnode .track-progress,
+  .app-sidebar.collapsed .tnode.child,
+  .app-sidebar.collapsed .account-info{display:none}
+  .app-sidebar.collapsed .app-brand{justify-content:center}
+  .app-sidebar.collapsed .sidebar-collapse-btn svg{transform:rotate(180deg)}
+  .app-sidebar.collapsed .proj-switch-btn{justify-content:center}
+  .app-sidebar.collapsed .tnode{justify-content:center;padding:9px 6px}
+  .app-sidebar.collapsed .account-chip{justify-content:center}
+  .app-sidebar.collapsed .account-chip .arrow{display:none}
 
-  .proj-switch-wrap{position:relative;padding:0 10px 10px;flex:0 0 auto}
-  .proj-switch-btn{width:100%;display:flex;align-items:center;gap:7px;padding:8px 9px;border-radius:8px;
+  /* Trên mobile, sidebar luôn xếp dọc toàn chiều rộng — chế độ thu gọn (dải icon) chỉ có ý
+     nghĩa ở desktop, KHÔNG áp dụng ở đây. Khối này đứng SAU khối ".collapsed" ở trên để thắng
+     theo thứ tự nguồn (cùng độ đặc hiệu, @media không tự nâng độ đặc hiệu). */
+  @media (max-width:860px){
+    .app-sidebar,.app-sidebar.collapsed{width:auto;flex:none;position:static;height:auto;max-height:60vh;border-right:none;border-bottom:1px solid var(--border)}
+    .app-sidebar.collapsed .app-brand span,.app-sidebar.collapsed .proj-switch-btn .lbl,
+    .app-sidebar.collapsed .proj-switch-btn .arrow,.app-sidebar.collapsed .tsection-label,
+    .app-sidebar.collapsed .tnode .lbl,.app-sidebar.collapsed .tnode .arrow,
+    .app-sidebar.collapsed .tnode .track-progress,.app-sidebar.collapsed .tnode.child,
+    .app-sidebar.collapsed .account-info{display:revert}
+    .app-sidebar.collapsed .app-brand,.app-sidebar.collapsed .proj-switch-btn,
+    .app-sidebar.collapsed .tnode,.app-sidebar.collapsed .account-chip{justify-content:flex-start}
+    .app-sidebar.collapsed .tnode{padding:8px 9px}
+    .app-sidebar.collapsed .account-chip .arrow{display:block}
+    .sidebar-collapse-btn{display:none}
+  }
+
+  .app-brand{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:12px 10px 8px;flex:0 0 auto}
+  .app-brand img{width:24px;height:24px;object-fit:contain;flex:0 0 auto}
+  .app-brand span{font-family:var(--font-serif);font-size:15px;font-weight:700;color:var(--ink);white-space:nowrap}
+  .sidebar-collapse-btn{flex:0 0 auto;width:22px;height:22px;border:none;background:transparent;color:var(--muted-fg);
+    cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:6px}
+  .sidebar-collapse-btn:hover{background:var(--bg);color:var(--fg)}
+  .sidebar-collapse-btn svg{width:14px;height:14px;transition:transform .16s}
+
+  .proj-switch-wrap{position:relative;padding:0 8px 8px;flex:0 0 auto}
+  .proj-switch-btn{width:100%;display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:8px;
     border:1px solid var(--border-strong);background:var(--bg);color:var(--ink);font-size:12.5px;font-weight:700;
     cursor:pointer;text-align:left;font-family:inherit}
   .proj-switch-btn:hover{background:#EFE8D8}
   .proj-switch-btn .lbl{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .proj-switch-btn .arrow{flex:0 0 auto;font-size:10px;color:var(--muted-fg)}
-  .proj-switch-menu{display:none;position:absolute;top:calc(100% + 4px);left:10px;right:10px;background:#fff;
+  .proj-switch-menu{display:none;position:absolute;top:calc(100% + 4px);left:8px;right:8px;background:#fff;
     border-radius:11px;box-shadow:0 8px 24px rgba(14,58,58,.2);border:1px solid var(--border);padding:8px;
     z-index:60;max-height:60vh;overflow:auto}
   .proj-switch-menu.show{display:block}
-  .proj{padding:9px 11px;border-radius:8px;cursor:pointer;font-size:13.5px;border:1px solid transparent;margin-bottom:2px}
+  .proj{padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13.5px;border:1px solid transparent;margin-bottom:2px}
   .proj:hover{background:var(--bg)}
   .proj.on{background:var(--bg);border-color:var(--border-strong);font-weight:700;color:var(--ink)}
   .proj small{display:block;color:var(--muted-fg);font-weight:400}
 
   .app-sidebar-bottom{flex:0 0 auto;border-top:1px solid var(--border);position:relative}
-  .account-chip{width:100%;display:flex;align-items:center;gap:9px;padding:10px;border:none;background:transparent;
+  .account-chip{width:100%;display:flex;align-items:center;gap:8px;padding:9px 10px;border:none;background:transparent;
     cursor:pointer;text-align:left;font-family:inherit}
   .account-chip:hover{background:var(--bg)}
-  .account-avatar{flex:0 0 auto;width:30px;height:30px;border-radius:50%;background:#F5EDE3;color:var(--accent-2);
-    font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .account-avatar{flex:0 0 auto;width:28px;height:28px;border-radius:50%;background:#F5EDE3;color:var(--accent-2);
+    font-size:11.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
   .account-info{flex:1;min-width:0}
   .account-info .name{font-size:12.5px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .account-info .usage{font-size:10.5px;color:var(--muted-fg)}
   .account-chip .arrow{flex:0 0 auto;font-size:11px;color:var(--muted-fg)}
-  .account-menu{display:none;position:absolute;bottom:calc(100% + 4px);left:10px;right:10px;background:#fff;
+  .account-menu{display:none;position:absolute;bottom:calc(100% + 4px);left:8px;right:8px;background:#fff;
     border-radius:11px;box-shadow:0 8px 24px rgba(14,58,58,.2);border:1px solid var(--border);padding:6px;z-index:60}
   .account-menu.show{display:block}
   .account-menu a,.account-menu .lang-row{display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:7px;
@@ -93,9 +134,24 @@
   .account-menu .lang-row select{width:auto;height:auto;border:none;background:transparent;font:inherit;color:inherit;
     padding:0;margin-left:auto}
 
-  .content{padding:22px 26px;max-width:1120px;flex:1 1 auto;min-width:0}
-  @media (max-width:860px){ .content{padding:18px 16px} }
-  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px;overflow-x:auto}
+  /* Popover "Thêm hạng mục" — neo bằng position:fixed (toạ độ set qua JS lúc click) nên
+     không bị .wb-tree{overflow:auto} cắt mất khi nút nằm cuối danh sách dài. */
+  .track-popover{position:fixed;width:264px;background:#fff;border:1px solid var(--border);
+    border-radius:11px;box-shadow:0 10px 28px rgba(14,58,58,.24);padding:6px;z-index:70;
+    max-height:70vh;overflow:auto}
+  .tp-head{display:flex;align-items:center;gap:6px;padding:8px 8px 6px;font-size:11px;font-weight:700;
+    text-transform:uppercase;letter-spacing:.04em;color:var(--muted-fg)}
+  .tp-back{flex:0 0 auto;color:var(--fg);font-size:15px;font-weight:700;line-height:1}
+  .tp-row{display:flex;align-items:center;gap:8px;padding:9px 8px;border-radius:8px;cursor:pointer;font-size:13px}
+  .tp-row:hover{background:var(--bg)}
+  .tp-row .ic{flex:0 0 auto;width:15px;height:15px;color:var(--accent)}
+  .tp-label{flex:1}
+  .tp-chev{flex:0 0 auto;color:var(--muted-fg)}
+  .tp-badge{flex:0 0 auto;font-size:10px;color:var(--muted-fg);background:var(--bg);border-radius:8px;padding:2px 7px}
+
+  .content{padding:18px 22px;max-width:1200px;flex:1 1 auto;min-width:0}
+  @media (max-width:860px){ .content{padding:16px} }
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;margin-bottom:14px;overflow-x:auto}
   .card h3{font-family:var(--font-serif);margin:0 0 12px;font-size:16px;color:var(--ink)}
 
   label{display:block;font-size:12.5px;color:var(--muted-fg);margin:9px 0 4px;font-weight:600}
@@ -140,12 +196,12 @@
   /* ===== M5 — cây hạng mục nghiên cứu + khung thứ 3 (panel chi tiết) =====
      Buttons dùng padding theo nội dung + white-space:nowrap (KHÔNG width cố định) để chữ
      luôn nằm gọn; mọi hàng dùng flex-wrap để không tràn ngang trên màn hẹp. */
-  .projhead{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px;margin-bottom:14px}
+  .projhead{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin-bottom:12px}
   .projhead h1{font-family:var(--font-serif);font-size:19px;margin:0;color:var(--ink)}
   .ai-usage-chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;
     background:#F5EDE3;color:var(--accent-2);font-size:11.5px;font-weight:700;white-space:nowrap}
 
-  .wb-workspace{display:flex;align-items:flex-start;gap:16px}
+  .wb-workspace{display:flex;align-items:flex-start;gap:14px}
   @media (max-width:1100px){ .wb-workspace{flex-direction:column;align-items:stretch} }
 
   /* #wbTree giờ sống bên trong .app-sidebar (đã có nền/viền riêng) — chỉ còn spacing + scroll. */
@@ -231,11 +287,16 @@
 <div id="appView" hidden>
   <div id="verifyBanner" class="msg" style="margin:0;border-radius:0;background:#FBF1E4;color:var(--warn)" hidden></div>
   <div class="app-shell">
-    <nav class="app-sidebar">
-      <a href="/" class="app-brand">
-        <img src="/assets/logo.png" alt="Chimedis">
-        <span data-i18n="app_title_short">Chimedis</span>
-      </a>
+    <nav class="app-sidebar" id="appSidebar">
+      <div class="app-brand">
+        <a href="/" style="display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden">
+          <img src="/assets/logo.png" alt="Chimedis">
+          <span data-i18n="app_title_short">Chimedis</span>
+        </a>
+        <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" onclick="wbToggleSidebarCollapse()" data-i18n-title="sidebar_collapse_title" title="Thu gọn menu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg>
+        </button>
+      </div>
 
       <div class="proj-switch-wrap">
         <button class="proj-switch-btn" onclick="toggleProjSwitch()">
@@ -254,6 +315,7 @@
       <div class="wb-tree" id="wbTree">
         <p class="hint" style="padding:8px" data-i18n="tree_no_project">Chọn hoặc tạo một dự án để xem công cụ và hạng mục nghiên cứu.</p>
       </div>
+      <div class="track-popover" id="trackPopover" hidden></div>
 
       <div class="app-sidebar-bottom">
         <div class="account-menu" id="accountMenu">
@@ -308,6 +370,7 @@ let researchGates = null; // { gates: [...], trackTypes: {...} } — tĩnh, tả
 let activeSection = { type: 'tool', tool: 'search' }; // { type:'tool', tool } | { type:'gate', trackId, gateNo }
 let expandedTracks = new Set(); // trackId đang mở trong cây menu
 let panel3 = null; // { kind:'record'|'gap', id } — nội dung khung thứ 3 (chi tiết)
+let sideCollapsed = false; // người dùng chủ động ẩn khung "kết quả" (wb-side) qua nút bấm
 try { auth = getAuth(initializeApp(FIREBASE_CONFIG)); } catch (e) { console.error(e); }
 
 const $ = (id) => document.getElementById(id);
@@ -343,6 +406,8 @@ const I18N = {
     verify_recheck_link: 'Tôi đã xác thực → kiểm tra lại', verify_resend_link: 'Gửi lại email',
     app_title: 'Bàn làm việc nghiên cứu', app_subtitle: 'Chimedis · Tìm kiếm + Thư viện + Nhật ký tìm kiếm',
     app_title_short: 'Chimedis', proj_switch_placeholder: 'Chọn dự án', tree_no_project: 'Chọn hoặc tạo một dự án để xem công cụ và hạng mục nghiên cứu.',
+    sidebar_collapse_title: 'Thu gọn menu', sidebar_expand_title: 'Mở rộng menu',
+    side_panel_hide: 'Ẩn kết quả', side_panel_show: 'Hiện kết quả',
     account_menu_lang: 'Ngôn ngữ',
     nav_account: 'Tài khoản', nav_signout: 'Thoát',
     side_my_projects: 'Dự án của tôi', side_no_projects: 'Chưa có dự án nào.', side_new_project: '+ Tạo dự án',
@@ -458,6 +523,7 @@ const I18N = {
     new_track_prompt: 'Chọn loại hạng mục (nhập số):', new_track_invalid: 'Lựa chọn không hợp lệ.',
     new_track_study_design_prompt: 'Chọn loại nghiên cứu của bài báo (nhập số):',
     new_track_title_prompt: 'Đặt tên riêng cho hạng mục này (có thể để trống):',
+    new_track_title_ph: 'Để trống dùng tên mặc định',
     confirm_delete_track: 'Xoá hạng mục này? Tiến độ Gate đã đánh dấu sẽ mất — không ảnh hưởng thư viện/dữ liệu tìm kiếm.',
     gate_not_found: 'Không tìm thấy Gate này.',
     gate_checklist_label: 'Việc cần làm', gate_deliverable_label: 'Deliverable',
@@ -487,6 +553,8 @@ const I18N = {
     verify_recheck_link: '我已验证 → 重新检查', verify_resend_link: '重新发送邮件',
     app_title: '研究工作台', app_subtitle: 'Chimedis · 检索 + 文献库 + 检索日志',
     app_title_short: 'Chimedis', proj_switch_placeholder: '选择项目', tree_no_project: '选择或创建一个项目以查看工具和研究类别。',
+    sidebar_collapse_title: '收起菜单', sidebar_expand_title: '展开菜单',
+    side_panel_hide: '隐藏结果', side_panel_show: '显示结果',
     account_menu_lang: '语言',
     nav_account: '账户', nav_signout: '退出',
     side_my_projects: '我的项目', side_no_projects: '暂无项目。', side_new_project: '+ 新建项目',
@@ -602,6 +670,7 @@ const I18N = {
     new_track_prompt: '选择类别类型（输入编号）：', new_track_invalid: '选择无效。',
     new_track_study_design_prompt: '选择该论文的研究设计类型（输入编号）：',
     new_track_title_prompt: '为该类别自定义名称（可留空）：',
+    new_track_title_ph: '留空使用默认名称',
     confirm_delete_track: '删除此类别？已标记的 Gate 进度将丢失 — 不影响文献库/检索数据。',
     gate_not_found: '未找到该 Gate。',
     gate_checklist_label: '需完成的工作', gate_deliverable_label: '交付物',
@@ -631,6 +700,8 @@ const I18N = {
     verify_recheck_link: "I've verified → recheck", verify_resend_link: 'Resend email',
     app_title: 'Research Workbench', app_subtitle: 'Chimedis · Search + Library + Search Log',
     app_title_short: 'Chimedis', proj_switch_placeholder: 'Choose a project', tree_no_project: 'Choose or create a project to see tools and research tracks.',
+    sidebar_collapse_title: 'Collapse menu', sidebar_expand_title: 'Expand menu',
+    side_panel_hide: 'Hide results', side_panel_show: 'Show results',
     account_menu_lang: 'Language',
     nav_account: 'Account', nav_signout: 'Sign out',
     side_my_projects: 'My projects', side_no_projects: 'No projects yet.', side_new_project: '+ New project',
@@ -746,6 +817,7 @@ const I18N = {
     new_track_prompt: 'Choose a track type (enter the number):', new_track_invalid: 'Invalid choice.',
     new_track_study_design_prompt: 'Choose the study design for this paper (enter the number):',
     new_track_title_prompt: 'Give this track a name (optional):',
+    new_track_title_ph: 'Leave blank for the default name',
     confirm_delete_track: 'Delete this track? Marked Gate progress will be lost — this does not affect your library/search data.',
     gate_not_found: 'This Gate was not found.',
     gate_checklist_label: 'Tasks', gate_deliverable_label: 'Deliverable',
@@ -936,6 +1008,7 @@ function closeAccountMenu() { $('accountMenu').classList.remove('show'); }
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.proj-switch-wrap')) closeProjSwitch();
   if (!e.target.closest('.app-sidebar-bottom')) closeAccountMenu();
+  if (!e.target.closest('.track-popover') && !e.target.closest('.tnode.add')) closeTrackPopover();
 });
 async function loadProjects() {
   const d = await api('/api/workbench/projects');
@@ -988,10 +1061,11 @@ function renderProject() {
       <h1>${esc(p.title)}</h1>
       <span class="muted">${t('project_hash', { id: p.id })} · ${t('project_meta', { q: qs.length, r: runs.length })}</span>
       <a href="#" class="hint" onclick="wbDeleteProject();return false">${t('delete_project_link')}</a>
+      <button class="btn sm sec" style="margin-left:auto${activeSection.type === 'gate' ? ';display:none' : ''}" onclick="wbToggleSidePanel()" id="sideToggleBtn">${sideCollapsed ? t('side_panel_show') : t('side_panel_hide')}</button>
     </div>
     <div class="wb-workspace">
       <div class="wb-mid" id="wbMid">${renderMid()}</div>
-      <div class="wb-side" id="wbSide" ${activeSection.type === 'gate' ? 'hidden' : ''}>${renderSide()}</div>
+      <div class="wb-side" id="wbSide" ${(activeSection.type === 'gate' || sideCollapsed) ? 'hidden' : ''}>${renderSide()}</div>
     </div>`;
   wbProfileHint();
 }
@@ -1009,6 +1083,9 @@ const ICONS = {
   phd_thesis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 12v4.5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5V12"/><path d="M21 9.5v6"/></svg>',
   intl_paper: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14.5 3v4.5H19"/><path d="M8 12.5h8M8 15.5h8M8 9.5h4"/></svg>',
   report: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="1.6"/><path d="M9 2.8h6a1 1 0 0 1 1 1v1.4H8V3.8a1 1 0 0 1 1-1Z"/><path d="M8.5 12h7M8.5 15.3h7M8.5 8.7h4"/></svg>',
+  conference_abstract: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.6"/><path d="M8 20h8M12 16v4"/><path d="M7 9.5h6M7 12.5h4"/></svg>',
+  grant_proposal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14.5 3v4.5H19"/><circle cx="9.5" cy="14" r="2"/><path d="M9.5 12v-.6M9.5 16.6V16M7.8 14h-.6M11.8 14h-.6"/></svg>',
+  add: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>',
   gate: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 21V3l14 5.2L5 13"/></svg>',
   deliverable: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="0.6" fill="currentColor"/></svg>',
 };
@@ -1023,7 +1100,7 @@ const TOOLS = [
 function renderTree() {
   const toolsHtml = TOOLS.map(([id, lk]) => {
     const on = activeSection.type === 'tool' && activeSection.tool === id;
-    return `<div class="tnode ${on ? 'on' : ''}" onclick="wbSelectTool('${id}')"><span class="ic">${ICONS[id]}</span>${esc(t(lk))}</div>`;
+    return `<div class="tnode ${on ? 'on' : ''}" onclick="wbSelectTool('${id}')" title="${esc(t(lk))}"><span class="ic">${ICONS[id]}</span><span class="lbl">${esc(t(lk))}</span></div>`;
   }).join('');
   const tracks = activeDetail.tracks || [];
   const tracksHtml = tracks.map(renderTrackNode).join('') || `<p class="hint" style="padding:4px 8px">${t('tracks_empty')}</p>`;
@@ -1032,7 +1109,7 @@ function renderTree() {
     ${toolsHtml}
     <div class="tsection-label" style="margin-top:14px">${t('tracks_section_label')}</div>
     ${tracksHtml}
-    <div class="tnode add" onclick="wbNewTrack()">+ ${t('add_track')}</div>`;
+    <div class="tnode add" onclick="wbNewTrack(event)" title="${esc(t('add_track'))}"><span class="ic">${ICONS.add}</span><span class="lbl">${esc(t('add_track'))}</span></div>`;
 }
 
 function trackLabel(tr) {
@@ -1064,25 +1141,39 @@ function renderTrackNode(tr) {
     </div>`;
   }).join('') : '';
   return `
-    <div class="tnode" onclick="wbToggleTrack(${tr.id})" style="cursor:pointer">
+    <div class="tnode" onclick="wbToggleTrack(${tr.id})" style="cursor:pointer" title="${trackLabel(tr)}">
       <span class="arrow">${open ? '▾' : '▸'}</span>
       <span class="ic">${ICONS[tr.trackType] || ''}</span>
-      <span style="flex:1">${trackLabel(tr)}</span>
+      <span class="lbl" style="flex:1">${trackLabel(tr)}</span>
       <span class="track-progress">${doneSet.size}/${gateNos.length}</span>
     </div>
     ${childrenHtml}`;
 }
 
 window.wbToggleTrack = (trackId) => {
-  if (expandedTracks.has(trackId)) expandedTracks.delete(trackId); else expandedTracks.add(trackId);
+  if (sidebarCollapsed) { wbToggleSidebarCollapse(); expandedTracks.add(trackId); }
+  else if (expandedTracks.has(trackId)) expandedTracks.delete(trackId);
+  else expandedTracks.add(trackId);
   $('wbTree').innerHTML = renderTree();
+};
+
+// ===== Thu gọn sidebar thành dải icon (kiểu VS Code/Claude Code activity bar) =====
+let sidebarCollapsed = localStorage.getItem('chimedis_wb_sidebar_collapsed') === '1';
+if (sidebarCollapsed) $('appSidebar').classList.add('collapsed');
+window.wbToggleSidebarCollapse = () => {
+  sidebarCollapsed = !sidebarCollapsed;
+  localStorage.setItem('chimedis_wb_sidebar_collapsed', sidebarCollapsed ? '1' : '0');
+  $('appSidebar').classList.toggle('collapsed', sidebarCollapsed);
+  const btn = $('sidebarCollapseBtn');
+  if (btn) btn.title = t(sidebarCollapsed ? 'sidebar_expand_title' : 'sidebar_collapse_title');
 };
 window.wbSelectTool = (tool) => {
   activeSection = { type: 'tool', tool };
   panel3 = null;
   $('wbTree').innerHTML = renderTree();
   $('wbMid').innerHTML = renderMid();
-  const side = $('wbSide'); side.hidden = false; side.innerHTML = renderSide();
+  const side = $('wbSide'); side.hidden = sideCollapsed; side.innerHTML = renderSide();
+  const btn = $('sideToggleBtn'); if (btn) { btn.style.display = ''; btn.textContent = sideCollapsed ? t('side_panel_show') : t('side_panel_hide'); }
   wbProfileHint();
 };
 window.wbSelectGate = (trackId, gateNo) => {
@@ -1091,34 +1182,85 @@ window.wbSelectGate = (trackId, gateNo) => {
   $('wbTree').innerHTML = renderTree();
   $('wbMid').innerHTML = renderMid();
   $('wbSide').hidden = true;
+  const btn = $('sideToggleBtn'); if (btn) btn.style.display = 'none';
+};
+window.wbToggleSidePanel = () => {
+  sideCollapsed = !sideCollapsed;
+  const side = $('wbSide');
+  if (side) side.hidden = sideCollapsed;
+  const btn = $('sideToggleBtn');
+  if (btn) btn.textContent = sideCollapsed ? t('side_panel_show') : t('side_panel_hide');
 };
 
-window.wbNewTrack = async () => {
-  const typeDefs = Object.entries(researchGates.trackTypes);
-  const typeLabels = typeDefs.map(([id, def], i) => `${i + 1}. ${langOf(def.label)}`).join('\n');
-  const pick = prompt(`${t('new_track_prompt')}\n${typeLabels}`);
-  if (!pick) return;
-  const idx = parseInt(pick, 10) - 1;
-  if (!Number.isInteger(idx) || !typeDefs[idx]) return alert(t('new_track_invalid'));
-  const [trackType, def] = typeDefs[idx];
-  let studyDesign = null;
-  if (trackType === 'intl_paper') {
-    const sdDefs = Object.entries(def.studyDesigns);
-    const sdLabels = sdDefs.map(([id, sd], i) => `${i + 1}. ${langOf(sd.label)} (${sd.standard})`).join('\n');
-    const sdPick = prompt(`${t('new_track_study_design_prompt')}\n${sdLabels}`);
-    if (!sdPick) return;
-    const sdIdx = parseInt(sdPick, 10) - 1;
-    if (!Number.isInteger(sdIdx) || !sdDefs[sdIdx]) return alert(t('new_track_invalid'));
-    studyDesign = sdDefs[sdIdx][0];
+// ===== Popover "Thêm hạng mục" — thay cho chuỗi prompt() cũ (xấu, cứng nhắc). Neo bằng
+// position:fixed + toạ độ nút bấm lúc click, KHÔNG lồng trong #wbTree (tránh bị .wb-tree
+// {overflow:auto} cắt mất khi nút nằm cuối danh sách dài). =====
+let trackWizard = null; // { step:'type'|'design'|'title', trackType, studyDesign }
+
+window.wbNewTrack = (evt) => {
+  trackWizard = { step: 'type' };
+  const r = evt.currentTarget.getBoundingClientRect();
+  const el = $('trackPopover');
+  const top = Math.min(r.bottom + 6, window.innerHeight - 100);
+  el.style.top = top + 'px';
+  el.style.left = Math.min(r.left, window.innerWidth - 276) + 'px';
+  el.hidden = false;
+  renderTrackPopover();
+};
+function closeTrackPopover() {
+  trackWizard = null;
+  const el = $('trackPopover');
+  if (el) { el.hidden = true; el.innerHTML = ''; }
+}
+function renderTrackPopover() {
+  const el = $('trackPopover');
+  if (!el || !trackWizard) return;
+  if (trackWizard.step === 'type') {
+    const rows = Object.entries(researchGates.trackTypes).map(([id, def]) => `
+      <div class="tp-row" onclick="wbTrackPickType('${id}')">
+        <span class="ic">${ICONS[id] || ''}</span><span class="tp-label">${langOf(def.label)}</span>
+        <span class="tp-chev">›</span>
+      </div>`).join('');
+    el.innerHTML = `<div class="tp-head">${t('new_track_prompt')}</div>${rows}`;
+  } else if (trackWizard.step === 'design') {
+    const def = researchGates.trackTypes.intl_paper;
+    const rows = Object.entries(def.studyDesigns).map(([id, sd]) => `
+      <div class="tp-row" onclick="wbTrackPickDesign('${id}')">
+        <span class="tp-label">${langOf(sd.label)}</span><span class="tp-badge">${sd.standard}</span>
+      </div>`).join('');
+    el.innerHTML = `<div class="tp-head"><a href="#" class="tp-back" onclick="wbTrackBack();return false">‹</a>${t('new_track_study_design_prompt')}</div>${rows}`;
+  } else if (trackWizard.step === 'title') {
+    el.innerHTML = `
+      <div class="tp-head"><a href="#" class="tp-back" onclick="wbTrackBack();return false">‹</a>${t('new_track_title_prompt')}</div>
+      <input id="tpTitleInput" placeholder="${esc(t('new_track_title_ph'))}" style="margin:2px 0 8px">
+      <button class="btn sm" style="width:100%" onclick="wbTrackSubmit()">${t('add_track')}</button>`;
+    setTimeout(() => { const inp = $('tpTitleInput'); if (inp) inp.focus(); }, 0);
   }
-  let title = null;
-  if (trackType === 'intl_paper' || trackType === 'report') {
-    title = prompt(t('new_track_title_prompt')) || null;
-  }
+}
+window.wbTrackPickType = (trackType) => {
+  trackWizard.trackType = trackType;
+  trackWizard.step = trackType === 'intl_paper' ? 'design' : 'title';
+  renderTrackPopover();
+};
+window.wbTrackPickDesign = (studyDesign) => {
+  trackWizard.studyDesign = studyDesign;
+  trackWizard.step = 'title';
+  renderTrackPopover();
+};
+window.wbTrackBack = () => {
+  trackWizard.step = trackWizard.trackType === 'intl_paper' && trackWizard.step === 'title' ? 'design' : 'type';
+  renderTrackPopover();
+};
+window.wbTrackSubmit = async () => {
+  const title = ($('tpTitleInput').value || '').trim() || null;
   try {
-    await api(`/api/workbench/projects/${activeId}/tracks`, { method: 'POST', body: JSON.stringify({ trackType, studyDesign, title }) });
+    await api(`/api/workbench/projects/${activeId}/tracks`, {
+      method: 'POST',
+      body: JSON.stringify({ trackType: trackWizard.trackType, studyDesign: trackWizard.studyDesign || null, title }),
+    });
     activeDetail.tracks = (await api(`/api/workbench/projects/${activeId}/tracks`)).tracks;
     (activeDetail.tracks || []).forEach((tr) => expandedTracks.add(tr.id));
+    closeTrackPopover();
     $('wbTree').innerHTML = renderTree();
   } catch (e) { alert(t('err_prefix') + e.message); }
 };
