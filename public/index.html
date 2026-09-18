@@ -329,19 +329,42 @@ tr.lit-detail .lk a:hover{text-decoration:underline}
 .lib-pick{position:absolute;z-index:50;background:#fff;border:1px solid var(--border-strong,#ddd);border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.12);padding:10px;min-width:220px;font-size:13px}
 .lib-pick select{width:100%;margin-bottom:8px;padding:5px}
 .lib-pick .row{display:flex;gap:6px;justify-content:flex-end}
-.wb-panel-backdrop{position:fixed;inset:0;background:rgba(20,18,12,.28);z-index:89}
+.wb-panel-backdrop{position:fixed;inset:0;background:rgba(20,18,12,.32);z-index:89}
 .wb-panel-backdrop[hidden]{display:none}
-.wb-panel{position:fixed;top:0;right:0;height:100vh;width:380px;max-width:92vw;background:#fff;border-left:1px solid var(--border-strong,#ddd);box-shadow:-10px 0 28px rgba(0,0,0,.10);z-index:90;display:flex;flex-direction:column}
+.wb-panel{position:fixed;top:0;right:0;height:100vh;width:380px;max-width:92vw;background:var(--bg);
+  border-left:1px solid var(--border);box-shadow:-10px 0 28px rgba(14,58,58,.14);z-index:90;
+  display:flex;flex-direction:column}
 .wb-panel[hidden]{display:none}
-.wb-panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border-strong,#eee);font-size:14px}
-.wb-panel-close{background:none;border:none;font-size:17px;cursor:pointer;color:var(--muted-fg,#888);line-height:1}
-.wb-panel-body{flex:1;overflow-y:auto;padding:14px 16px;font-size:13px}
-.wb-panel-body select,.wb-panel-body input{width:100%;padding:7px 8px;margin:4px 0 10px;border:1px solid var(--border-strong,#ddd);border-radius:6px;font:inherit}
+.wb-panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;
+  border-bottom:1px solid var(--border);background:var(--card)}
+.wb-panel-title{display:flex;align-items:center;gap:8px;color:var(--ink)}
+.wb-panel-title svg{width:18px;height:18px;color:var(--accent);flex:0 0 auto}
+.wb-panel-title strong{font-family:var(--font-serif);font-size:15.5px;font-weight:700}
+.wb-panel-close{width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  background:none;border:none;border-radius:7px;cursor:pointer;color:var(--muted-fg)}
+.wb-panel-close:hover{background:var(--bg);color:var(--fg)}
+.wb-panel-close svg{width:16px;height:16px}
+.wb-panel-body{flex:1;overflow-y:auto;padding:16px 18px;font-size:13px}
+.wb-panel-body label.hint{display:block;font-size:11px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--muted-fg);margin:0 0 6px}
+.wb-panel-body select,.wb-panel-body input,.wb-panel-body textarea{width:100%;height:38px;padding:0 11px;
+  margin:0 0 10px;border:1.5px solid var(--border-strong);border-radius:8px;background:var(--card);
+  font:inherit;font-size:13.5px;color:var(--fg)}
+.wb-panel-body textarea{height:auto;padding:9px 11px}
 .wb-panel-body .btn{margin-top:4px}
-.wb-lib-item{padding:9px 0;border-bottom:1px solid #f0ede4}
-.wb-lib-item .t{font-weight:600;font-size:12.5px;line-height:1.4}
-.wb-lib-item .m{color:var(--muted-fg,#888);font-size:11.5px;margin-top:2px}
-.wb-panel-open-link{display:block;width:100%;text-align:center;margin-top:16px;box-sizing:border-box}
+.wb-lib-item{padding:10px 12px;margin-bottom:8px;border-radius:10px;background:var(--card);
+  border:1px solid var(--border);transition:border-color .14s}
+.wb-lib-item:hover{border-color:var(--border-strong)}
+.wb-lib-item .t{font-weight:600;font-size:12.5px;line-height:1.4;color:var(--ink)}
+.wb-lib-item .m{color:var(--muted-fg);font-size:11.5px;margin-top:3px}
+.wb-lib-item .wb-lib-del{flex:none;display:flex;align-items:center;justify-content:center;
+  width:24px;height:24px;border-radius:6px;color:var(--muted-fg)}
+.wb-lib-item .wb-lib-del:hover{background:var(--bg);color:var(--bad,#9A3A22)}
+.wb-lib-item .wb-lib-del svg{width:14px;height:14px}
+.wb-panel-open-link{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;
+  margin-top:16px;box-sizing:border-box}
+.wb-panel-section-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;
+  color:var(--muted-fg);margin:18px 0 8px}
 </style>
 </head>
 <body>
@@ -394,7 +417,10 @@ if (auth) {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
           <span data-i18n="dict_cta">Tra từ điển</span>
         </a>
-        <button class="btn btn-sm" id="wbPanelBtn" onclick="toggleWbPanel()" data-i18n-title="wb_btn_title">📚 <span id="wbPanelBtnLabel" data-i18n="wb_btn_label">Nghiên cứu</span></button>
+        <button class="btn btn-secondary btn-sm" id="wbPanelBtn" onclick="toggleWbPanel()" data-i18n-title="wb_btn_title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5.5A2 2 0 0 1 6 3.5h11a1 1 0 0 1 1 1V19"/><path d="M6.5 17H19v3.5a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2v-.5a1.5 1.5 0 0 1 1.5-1.5Z"/></svg>
+          <span id="wbPanelBtnLabel" data-i18n="wb_btn_label">Nghiên cứu</span>
+        </button>
       </div>
     </div>
     <button class="burger" id="burgerBtn" aria-label="Menu" aria-expanded="false" onclick="toggleMobileNav()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg></button>
@@ -408,8 +434,13 @@ if (auth) {
 <div id="wbPanelBackdrop" class="wb-panel-backdrop" hidden onclick="toggleWbPanel(false)"></div>
 <aside id="wbPanel" class="wb-panel" hidden>
   <div class="wb-panel-head">
-    <strong data-i18n="wb_panel_header">📚 Nghiên cứu của tôi</strong>
-    <button type="button" class="wb-panel-close" onclick="toggleWbPanel(false)" data-i18n-aria="wb_panel_close">✕</button>
+    <span class="wb-panel-title">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5.5A2 2 0 0 1 6 3.5h11a1 1 0 0 1 1 1V19"/><path d="M6.5 17H19v3.5a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2v-.5a1.5 1.5 0 0 1 1.5-1.5Z"/></svg>
+      <strong data-i18n="wb_panel_header">Nghiên cứu của tôi</strong>
+    </span>
+    <button type="button" class="wb-panel-close" onclick="toggleWbPanel(false)" data-i18n-aria="wb_panel_close">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
   </div>
   <div class="wb-panel-body" id="wbPanelBody"><p class="hint" data-i18n="wb_loading">Đang tải…</p></div>
 </aside>
@@ -1241,7 +1272,7 @@ document.addEventListener('click', (e)=>{
     if(!projects.length){
       body.innerHTML = `<p class="hint">${t('wb_no_projects')}</p>
         <input id="wbNewProjTitle" placeholder="${esc(t('wb_new_proj_ph'))}">
-        <button type="button" class="btn btn-sm" onclick="wbCreateProjectFromPanel()">${t('wb_create_proj_btn')}</button>`;
+        <button type="button" class="btn btn-primary btn-sm" onclick="wbCreateProjectFromPanel()">${t('wb_create_proj_btn')}</button>`;
       return;
     }
     if(!__wbActiveProject || !projects.some(p=>String(p.id)===__wbActiveProject)) wbSetActiveProject(projects[0].id);
@@ -1272,8 +1303,8 @@ document.addEventListener('click', (e)=>{
         <input id="pmKeywords" placeholder="${esc(t('pm_keywords_ph'))}">
         <textarea id="pmAbstract" rows="3" placeholder="${esc(t('pm_abstract_ph'))}"></textarea>
         <div style="display:flex;gap:6px;margin-top:4px">
-          <button type="button" class="btn btn-sm" onclick="wbPanelSaveManual()">${t('pm_save_btn')}</button>
-          <button type="button" class="btn btn-sm" onclick="wbPanelToggleManual(false)">${t('pm_cancel_btn')}</button>
+          <button type="button" class="btn btn-primary btn-sm" onclick="wbPanelSaveManual()">${t('pm_save_btn')}</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="wbPanelToggleManual(false)">${t('pm_cancel_btn')}</button>
         </div>
       </div>
       ${lib.records.length ? lib.records.map(r=>`
@@ -1282,10 +1313,12 @@ document.addEventListener('click', (e)=>{
             <div class="t">${esc(r.title)}</div>
             <div class="m">${r.year||'—'} · ${esc(r.studyType||t('wb_status_unknown'))}${r.status && r.status!=='shortlisted' ? ' · '+esc(r.status) : ''}</div>
           </div>
-          <a href="#" onclick="wbPanelDeleteOne(${r.recordId});return false" title="${esc(t('wb_delete_one_title'))}" style="flex:none;color:#9a2f2f;font-size:15px;line-height:1">✕</a>
+          <a href="#" class="wb-lib-del" onclick="wbPanelDeleteOne(${r.recordId});return false" title="${esc(t('wb_delete_one_title'))}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0-.7 13a1 1 0 0 1-1 1H8.7a1 1 0 0 1-1-1L7 7"/></svg>
+          </a>
         </div>`).join('') : `<p class="hint">${t('wb_no_records')}</p>`}
-      <a class="btn btn-sm wb-panel-open-link" href="/workbench.html" target="_blank">${t('wb_open_full_link')}</a>
-      <p class="hint" style="margin-top:6px">${t('wb_open_full_hint')}</p>`;
+      <a class="btn btn-primary btn-sm wb-panel-open-link" href="/workbench.html" target="_blank">${t('wb_open_full_link')}</a>
+      <p class="hint" style="margin-top:6px;text-align:center">${t('wb_open_full_hint')}</p>`;
   }
   window.renderWbPanel = renderWbPanel;
   window.wbSwitchProject = (val) => {
@@ -1586,7 +1619,7 @@ const I18N = {
     footer_desc:"Cổng thông tin tra cứu và nghiên cứu Trung Y — Chinese Medicine Discovery. Nội dung phục vụ học tập, nghiên cứu, không thay thế chẩn đoán y khoa.",
     footer_col_library:"Thư viện", footer_col_product:"Sản phẩm", footer_dict_online:"Tra từ điển online", footer_get_app:"Tải app",
     footer_col_contact:"Liên hệ", footer_copyright:"© 2026 Hạ Vân Y Đạo", footer_note:"Nội dung minh hoạ — thư viện đang được xây dựng",
-    wb_btn_label:"Nghiên cứu", wb_btn_title:"Dự án & thư viện nghiên cứu", wb_panel_header:"📚 Nghiên cứu của tôi", wb_panel_close:"Đóng",
+    wb_btn_label:"Nghiên cứu", wb_btn_title:"Dự án & thư viện nghiên cứu", wb_panel_header:"Nghiên cứu của tôi", wb_panel_close:"Đóng",
     wb_login_prompt:"Đăng nhập để lưu bài vào thư viện nghiên cứu và quản lý dự án — không mất gì khi tìm/xem/tải, chỉ cần cho việc lưu lại.",
     wb_login_btn:"Đăng nhập / Đăng ký", wb_loading:"Đang tải…", wb_err_load_projects:"Lỗi tải dự án: {msg}",
     wb_no_projects:"Chưa có dự án nào.", wb_new_proj_ph:"Tên dự án đầu tiên", wb_create_proj_btn:"Tạo dự án",
@@ -1648,7 +1681,7 @@ const I18N = {
     footer_desc:"中医查询与研究门户 — Chinese Medicine Discovery。内容仅供学习研究使用，不能替代医学诊断。",
     footer_col_library:"文库", footer_col_product:"产品", footer_dict_online:"在线查词典", footer_get_app:"下载应用",
     footer_col_contact:"联系方式", footer_copyright:"© 2026 夏雲醫道", footer_note:"示例内容 — 文库建设中",
-    wb_btn_label:"研究", wb_btn_title:"研究项目与文献库", wb_panel_header:"📚 我的研究", wb_panel_close:"关闭",
+    wb_btn_label:"研究", wb_btn_title:"研究项目与文献库", wb_panel_header:"我的研究", wb_panel_close:"关闭",
     wb_login_prompt:"登录后即可将文献保存到研究文献库并管理项目 — 搜索/查看/下载都无需登录，仅保存时需要。",
     wb_login_btn:"登录 / 注册", wb_loading:"加载中…", wb_err_load_projects:"加载项目出错：{msg}",
     wb_no_projects:"暂无项目。", wb_new_proj_ph:"第一个项目的名称", wb_create_proj_btn:"创建项目",
@@ -1710,7 +1743,7 @@ const I18N = {
     footer_desc:"A discovery portal for TCM research — Chinese Medicine Discovery. Content is for study and research only, not a substitute for medical diagnosis.",
     footer_col_library:"Library", footer_col_product:"Product", footer_dict_online:"Open dictionary online", footer_get_app:"Get the app",
     footer_col_contact:"Contact", footer_copyright:"© 2026 Ha Van Y Dao", footer_note:"Sample content — library under construction",
-    wb_btn_label:"Research", wb_btn_title:"Research projects & library", wb_panel_header:"📚 My Research", wb_panel_close:"Close",
+    wb_btn_label:"Research", wb_btn_title:"Research projects & library", wb_panel_header:"My Research", wb_panel_close:"Close",
     wb_login_prompt:"Sign in to save articles to your research library and manage projects — searching/viewing/downloading needs no account, only saving does.",
     wb_login_btn:"Sign in / Sign up", wb_loading:"Loading…", wb_err_load_projects:"Error loading projects: {msg}",
     wb_no_projects:"No projects yet.", wb_new_proj_ph:"First project name", wb_create_proj_btn:"Create project",
