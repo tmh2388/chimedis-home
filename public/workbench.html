@@ -167,8 +167,12 @@
     border:1px solid var(--border-strong);border-radius:7px;background:#fff;color:var(--fg);cursor:pointer}
   input[type="file"]::file-selector-button:hover{background:var(--bg)}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
-  .row{display:flex;gap:12px;flex-wrap:wrap}
-  .row>div{flex:1;min-width:150px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;align-items:stretch}
+  /* justify-content:flex-end đẩy input/select xuống ĐÁY cột — khi nhãn 1 cột dài hơn cột
+     khác và tự xuống 2 dòng (vd "Tác giả (phẩy giữa các tên)" cạnh "Năm"), input của cả 2
+     cột vẫn thẳng hàng ngang nhau thay vì cột nhãn dài bị đẩy thấp hơn (lỗi user chụp ảnh
+     báo 2026-09-18: "CÁC TEXTBOX KHÔNG THẲNG HÀNG"). */
+  .row>div{flex:1;min-width:150px;display:flex;flex-direction:column;justify-content:flex-end}
 
   table{width:100%;border-collapse:collapse;font-size:13px}
   th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
