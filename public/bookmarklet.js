@@ -7,6 +7,18 @@
 //
 // Chạy TRÊN DOM của trang bên ngoài (CNKI/万方/tạp chí bất kỳ) — dùng Shadow DOM để cô lập
 // hoàn toàn CSS, tránh xung đột với style của trang chủ.
+//
+// TÓM TẮT (abstract) — quan trọng cho Gap Analysis (M4) nên KHÔNG được bỏ sót/rút gọn âm
+// thầm. 3 tầng dò, ưu tiên trên xuống, mỗi tầng chỉ nhận nếu tầng trước rỗng:
+//   1) <meta name="citation_abstract"> — chuẩn Highwire, hiếm site có (gần như chắc chắn
+//      CNKI/万方 không phát hành thẻ này).
+//   2) Quét DOM theo danh sách CSS selector đã biết của CNKI/万方 + tên lớp chung "abstract".
+//   3) Quét DOM tìm nhãn "摘要"/"Abstract" đứng riêng rồi lấy phần văn bản theo sau.
+// KHÔNG bao giờ dùng <meta name="description"> làm tóm tắt (thường chỉ là câu SEO ngắn,
+// không phải abstract thật — im lặng dùng nhầm sẽ làm hỏng chất lượng Gap Map).
+// Vì 2+3 là suy đoán dựa trên cấu trúc trang (dễ hỏng khi site đổi giao diện), ô tóm tắt
+// trong overlay LUÔN cho sửa tay trước khi lưu — nếu dò rỗng hoặc sai, tự bôi-copy đoạn tóm
+// tắt hiển thị trên trang rồi dán vào là chắc chắn nhất.
 (function () {
   if (window.__chimedisBookmarkletActive) return;
   window.__chimedisBookmarkletActive = true;
@@ -24,6 +36,56 @@
       .filter(Boolean);
   }
   function meta1(name) { return metaAll(name)[0] || ''; }
+  function visibleText(el) {
+    return ((el.innerText != null ? el.innerText : el.textContent) || '').replace(/\s+/g, ' ').trim();
+  }
+  var ABSTRACT_LABEL_RE = /^(摘\s*要|abstract)\s*[:：]?\s*$/i;
+  var ABSTRACT_PREFIX_RE = /^(摘\s*要|abstract)\s*[:：]\s*/i;
+
+  // Danh sách selector đã biết của CNKI/万方 + tên lớp/id chung "abstract" ở các tạp chí khác.
+  var KNOWN_ABSTRACT_SELECTORS = [
+    '#ChDivSummary', '.abstract-text', '.brief', '.summary-content',
+    '#abstract', '.Abstract', '.abstract', 'section.abstract', 'div.abstract',
+    '[class*="abstract" i]', '[id*="abstract" i]',
+  ];
+  function findAbstractBySelectors() {
+    for (var i = 0; i < KNOWN_ABSTRACT_SELECTORS.length; i++) {
+      var els;
+      try { els = document.querySelectorAll(KNOWN_ABSTRACT_SELECTORS[i]); } catch (e) { continue; }
+      for (var j = 0; j < els.length; j++) {
+        var txt = visibleText(els[j]).replace(ABSTRACT_PREFIX_RE, '');
+        if (txt.length > 40 && txt.length < 8000) return txt;
+      }
+    }
+    return '';
+  }
+  // Quét toàn trang tìm 1 phần tử NHỎ (label) mà toàn bộ chữ chỉ là "摘要"/"Abstract", rồi
+  // lấy văn bản của phần tử anh em kế tiếp hoặc phần tử cha (sau khi bỏ chính nhãn đó).
+  // Giới hạn số phần tử quét để tránh chậm trên trang rất lớn.
+  function findAbstractByLabel() {
+    var all = document.body.querySelectorAll('*');
+    var limit = Math.min(all.length, 6000);
+    for (var i = 0; i < limit; i++) {
+      var el = all[i];
+      if (el.children.length > 2) continue;
+      var t = visibleText(el);
+      if (!t || t.length > 20 || !ABSTRACT_LABEL_RE.test(t)) continue;
+      var sib = el.nextElementSibling;
+      if (sib) {
+        var sTxt = visibleText(sib);
+        if (sTxt.length > 40 && sTxt.length < 8000) return sTxt;
+      }
+      var parent = el.parentElement;
+      if (parent) {
+        var pTxt = visibleText(parent).replace(ABSTRACT_PREFIX_RE, '');
+        if (pTxt.length > 40 && pTxt.length < 8000) return pTxt;
+      }
+    }
+    return '';
+  }
+  function findAbstract() {
+    return meta1('citation_abstract') || meta1('dc.description') || findAbstractBySelectors() || findAbstractByLabel() || '';
+  }
 
   function extractRecord() {
     var title = meta1('citation_title') || meta1('dc.title') || document.title || '';
@@ -38,7 +100,6 @@
     var year = yearMatch ? parseInt(yearMatch[0], 10) : null;
     var doi = meta1('citation_doi') || '';
     var pmid = meta1('citation_pmid') || '';
-    var abstract = meta1('citation_abstract') || meta1('dc.description') || meta1('description') || '';
     var keywordsRaw = metaAll('citation_keywords');
     var keywords = [];
     keywordsRaw.forEach(function (k) {
@@ -51,7 +112,7 @@
       year: year,
       doi: doi.trim() || null,
       pmid: pmid.trim() || null,
-      abstract: abstract.trim() || null,
+      abstract: findAbstract().trim() || null,
       keywords: keywords.slice(0, 20),
       landingUrl: location.href,
       source: 'manual',
@@ -67,14 +128,18 @@
   var style = document.createElement('style');
   style.textContent =
     ':host{all:initial}' +
-    '.bk-card{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;width:320px;' +
+    '.bk-card{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;width:340px;' +
+    'max-height:min(80vh,620px);overflow:auto;' +
     'background:#F5F0E6;color:#0E3A3A;border:1px solid #d8cfb8;border-radius:12px;' +
     'box-shadow:0 8px 28px rgba(0,0,0,.25);padding:16px;font-size:13px;line-height:1.45}' +
-    '.bk-title{font-weight:700;font-size:13px;margin-bottom:6px}' +
-    '.bk-field{max-height:64px;overflow:auto;margin-bottom:8px;color:#2b2b2b}' +
-    '.bk-meta{color:#6b6355;font-size:12px;margin-bottom:10px}' +
+    '.bk-title{font-weight:700;font-size:13px;margin-bottom:8px}' +
+    '.bk-lbl{font-size:11px;color:#6b6355;margin:8px 0 3px;font-weight:600}' +
+    '.bk-meta{color:#6b6355;font-size:12px;margin-bottom:4px}' +
+    '.bk-warn{font-size:11.5px;color:#8a5a00;background:#fbf0d6;border-radius:6px;padding:6px 8px;margin-top:4px}' +
     '.bk-row{display:flex;gap:8px;margin-top:10px}' +
-    'select,button{font:inherit;border-radius:8px;border:1px solid #d8cfb8;padding:7px 9px}' +
+    'input[type=text],textarea,select,button{font:inherit;border-radius:8px;border:1px solid #d8cfb8;padding:7px 9px}' +
+    'input[type=text],textarea{width:100%;background:#fff;color:#241f19;resize:vertical}' +
+    'textarea{min-height:80px}' +
     'select{flex:1;background:#fff;color:#0E3A3A}' +
     'button{cursor:pointer;background:#fff;color:#0E3A3A}' +
     'button.primary{background:#B4472B;color:#fff;border-color:#B4472B;font-weight:600}' +
@@ -94,6 +159,11 @@
   function close() {
     host.remove();
     window.__chimedisBookmarkletActive = false;
+  }
+  function escHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
   }
 
   if (!TOKEN) {
@@ -119,8 +189,13 @@
   card.innerHTML =
     '<button class="bk-close">×</button>' +
     '<div class="bk-title">Lưu vào Chimedis</div>' +
-    '<div class="bk-field"><b>' + escHtml(rec.title) + '</b></div>' +
-    '<div class="bk-meta">' + escHtml(authorsPreview) + (rec.journal ? ' · ' + escHtml(rec.journal) : '') + (rec.year ? ' · ' + rec.year : '') + '</div>' +
+    '<div class="bk-lbl">Tiêu đề</div>' +
+    '<input type="text" class="bk-title-input" value="' + escHtml(rec.title) + '" />' +
+    '<div class="bk-meta" style="margin-top:6px">' + escHtml(authorsPreview) + (rec.journal ? ' · ' + escHtml(rec.journal) : '') + (rec.year ? ' · ' + rec.year : '') + '</div>' +
+    '<div class="bk-lbl">Tóm tắt (abstract)</div>' +
+    '<textarea class="bk-abstract-input" placeholder="Không tự đọc được — bôi-copy đoạn tóm tắt trên trang rồi dán vào đây (không bắt buộc, nhưng cần cho phân tích khoảng trống sau này)">' + escHtml(rec.abstract || '') + '</textarea>' +
+    (rec.abstract ? '' : '<div class="bk-warn">⚠️ Không tự đọc được tóm tắt trên trang này — dán tay vào ô trên nếu muốn dùng cho phân tích khoảng trống sau này.</div>') +
+    '<div class="bk-lbl">Lưu vào dự án</div>' +
     '<select class="bk-project"><option value="">Đang tải danh sách dự án…</option></select>' +
     '<div class="bk-row">' +
     '<button class="bk-save primary" disabled>Lưu</button>' +
@@ -133,12 +208,8 @@
   var statusEl = card.querySelector('.bk-status');
   var selectEl = card.querySelector('.bk-project');
   var saveBtn = card.querySelector('.bk-save');
-
-  function escHtml(s) {
-    return String(s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
+  var titleInput = card.querySelector('.bk-title-input');
+  var abstractInput = card.querySelector('.bk-abstract-input');
 
   fetch(API_BASE + '/projects', { headers: { Authorization: 'Bearer ' + TOKEN } })
     .then(function (r) { return r.json(); })
@@ -161,6 +232,10 @@
   saveBtn.onclick = function () {
     var projectId = selectEl.value;
     if (!projectId) return;
+    var title = titleInput.value.trim();
+    if (!title) { titleInput.focus(); return; }
+    rec.title = title;
+    rec.abstract = abstractInput.value.trim() || null;
     saveBtn.disabled = true;
     statusEl.textContent = 'Đang lưu…';
     statusEl.className = 'bk-status';
