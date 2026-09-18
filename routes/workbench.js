@@ -16,7 +16,7 @@ import { guessStudyType, STUDY_TYPE_LABEL_VI } from '../lib/study-type.js';
 import { parseReferences } from '../lib/ref-import.js';
 import { generateGapCandidates, isGapLlmConfigured } from '../lib/gap-candidates.js';
 import { logAiRun } from '../lib/ai-runs.js';
-import { GATES, TRACK_TYPES } from '../lib/research-gates.js';
+import { GATES, TRACK_TYPES, trackHasSubtypes } from '../lib/research-gates.js';
 import {
   writeSearchRun, listSearchRuns, renderSearchLogMarkdown, renderSearchLogCsv,
   upsertStandaloneRecord,
@@ -672,7 +672,7 @@ router.get('/projects/:id/tracks', requireDb, requireUser, async (req, res) => {
   }
 });
 
-const TRACK_TYPES_VALID = ['msc_thesis', 'phd_thesis', 'intl_paper', 'report', 'conference_abstract', 'grant_proposal'];
+const TRACK_TYPES_VALID = Object.keys(TRACK_TYPES);
 
 router.post('/projects/:id/tracks', requireDb, requireUser, requireVerified, async (req, res) => {
   try {
@@ -682,12 +682,13 @@ router.post('/projects/:id/tracks', requireDb, requireUser, requireVerified, asy
     if (!TRACK_TYPES_VALID.includes(trackType)) {
       return res.status(400).json({ success: false, error: 'trackType không hợp lệ' });
     }
-    if (trackType === 'intl_paper' && !studyDesign) {
-      return res.status(400).json({ success: false, error: 'Bài báo quốc tế cần chọn loại nghiên cứu (studyDesign)' });
+    const needsSubtype = trackHasSubtypes(trackType);
+    if (needsSubtype && !studyDesign) {
+      return res.status(400).json({ success: false, error: 'Hạng mục này cần chọn loại nghiên cứu (studyDesign)' });
     }
     const [r] = await getPool().query(
       'INSERT INTO wb_research_tracks (project_id, track_type, study_design, title) VALUES (?,?,?,?)',
-      [project.id, trackType, trackType === 'intl_paper' ? String(studyDesign).slice(0, 40) : null, title ? String(title).trim().slice(0, 300) : null]
+      [project.id, trackType, needsSubtype ? String(studyDesign).slice(0, 40) : null, title ? String(title).trim().slice(0, 300) : null]
     );
     res.json({ success: true, id: r.insertId });
   } catch (err) {

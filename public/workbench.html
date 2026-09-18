@@ -66,6 +66,8 @@
   .app-sidebar.collapsed .tnode .arrow,
   .app-sidebar.collapsed .tnode .track-progress,
   .app-sidebar.collapsed .tnode.child,
+  .app-sidebar.collapsed .tnode.child2,
+  .app-sidebar.collapsed .tnode.child3,
   .app-sidebar.collapsed .account-info{display:none}
   .app-sidebar.collapsed .app-brand{justify-content:center}
   .app-sidebar.collapsed .sidebar-collapse-btn svg{transform:rotate(180deg)}
@@ -83,6 +85,7 @@
     .app-sidebar.collapsed .proj-switch-btn .arrow,.app-sidebar.collapsed .tsection-label,
     .app-sidebar.collapsed .tnode .lbl,.app-sidebar.collapsed .tnode .arrow,
     .app-sidebar.collapsed .tnode .track-progress,.app-sidebar.collapsed .tnode.child,
+    .app-sidebar.collapsed .tnode.child2,.app-sidebar.collapsed .tnode.child3,
     .app-sidebar.collapsed .account-info{display:revert}
     .app-sidebar.collapsed .app-brand,.app-sidebar.collapsed .proj-switch-btn,
     .app-sidebar.collapsed .tnode,.app-sidebar.collapsed .account-chip{justify-content:flex-start}
@@ -215,6 +218,14 @@
   .tnode.add{color:var(--muted-fg)}
   .tnode.child{padding-left:24px;font-size:12px}
   .tnode.child.on{background:var(--accent);color:#fff}
+  .tnode.child2{padding-left:36px;font-size:11.5px}
+  .tnode.child2.on{background:var(--accent);color:#fff}
+  .tnode.child2.add{color:var(--muted-fg)}
+  .tnode.child2.add .ic{width:12px;height:12px}
+  .tnode.child3{padding-left:50px;font-size:11px}
+  .tnode-del{flex:0 0 auto;color:var(--muted-fg);font-size:14px;line-height:1;padding:2px 4px;opacity:0;transition:opacity .12s}
+  .tnode:hover .tnode-del{opacity:1}
+  .tnode-del:hover{color:var(--bad)}
   .tnode .arrow{flex:0 0 auto;width:14px;text-align:center;color:var(--muted-fg);font-size:10px}
   .tnode.on .arrow{color:#fff}
   .tnode .ic{flex:0 0 auto;width:15px;height:15px;color:var(--accent)}
@@ -369,7 +380,6 @@ let gapPreview = null; // { runId, candidates: [...] } — kết quả LLM CHƯA
 // ===== M5 — hạng mục nghiên cứu (tracks/Gate) + khung thứ 3 =====
 let researchGates = null; // { gates: [...], trackTypes: {...} } — tĩnh, tải 1 lần lúc đăng nhập
 let activeSection = { type: 'tool', tool: 'search' }; // { type:'tool', tool } | { type:'gate', trackId, gateNo }
-let expandedTracks = new Set(); // trackId đang mở trong cây menu
 let panel3 = null; // { kind:'record'|'gap', id } — nội dung khung thứ 3 (chi tiết)
 let sideCollapsed = false; // người dùng chủ động ẩn khung "kết quả" (wb-side) qua nút bấm
 try { auth = getAuth(initializeApp(FIREBASE_CONFIG)); } catch (e) { console.error(e); }
@@ -525,7 +535,7 @@ const I18N = {
     new_track_prompt: 'Chọn loại hạng mục (nhập số):', new_track_invalid: 'Lựa chọn không hợp lệ.',
     new_track_study_design_prompt: 'Chọn loại nghiên cứu của bài báo (nhập số):',
     new_track_title_prompt: 'Đặt tên riêng cho hạng mục này (có thể để trống):',
-    new_track_title_ph: 'Để trống dùng tên mặc định',
+    new_track_title_ph: 'Để trống dùng tên mặc định', new_instance_add: '+ Thêm bài mới',
     confirm_delete_track: 'Xoá hạng mục này? Tiến độ Gate đã đánh dấu sẽ mất — không ảnh hưởng thư viện/dữ liệu tìm kiếm.',
     gate_not_found: 'Không tìm thấy Gate này.',
     gate_checklist_label: 'Việc cần làm', gate_deliverable_label: 'Deliverable',
@@ -673,7 +683,7 @@ const I18N = {
     new_track_prompt: '选择类别类型（输入编号）：', new_track_invalid: '选择无效。',
     new_track_study_design_prompt: '选择该论文的研究设计类型（输入编号）：',
     new_track_title_prompt: '为该类别自定义名称（可留空）：',
-    new_track_title_ph: '留空使用默认名称',
+    new_track_title_ph: '留空使用默认名称', new_instance_add: '+ 添加新条目',
     confirm_delete_track: '删除此类别？已标记的 Gate 进度将丢失 — 不影响文献库/检索数据。',
     gate_not_found: '未找到该 Gate。',
     gate_checklist_label: '需完成的工作', gate_deliverable_label: '交付物',
@@ -821,7 +831,7 @@ const I18N = {
     new_track_prompt: 'Choose a track type (enter the number):', new_track_invalid: 'Invalid choice.',
     new_track_study_design_prompt: 'Choose the study design for this paper (enter the number):',
     new_track_title_prompt: 'Give this track a name (optional):',
-    new_track_title_ph: 'Leave blank for the default name',
+    new_track_title_ph: 'Leave blank for the default name', new_instance_add: '+ Add new item',
     confirm_delete_track: 'Delete this track? Marked Gate progress will be lost — this does not affect your library/search data.',
     gate_not_found: 'This Gate was not found.',
     gate_checklist_label: 'Tasks', gate_deliverable_label: 'Deliverable',
@@ -1054,7 +1064,8 @@ window.wbOpen = async (id) => {
   openRecordId = null;
   panel3 = null;
   activeSection = { type: 'tool', tool: 'search' };
-  expandedTracks = new Set();
+  // Cây "Hạng mục nghiên cứu" (expandedCats) KHÔNG reset khi đổi dự án — hạng mục là danh mục
+  // cố định thuộc về người dùng, chỉ nội dung thực thể bên trong đổi theo dự án đang mở.
   // 4 request độc lập (không cái nào cần kết quả của cái khác) — trước đây gọi tuần tự (await
   // từng cái) nên cộng dồn độ trễ mạng x4, chạy song song bằng Promise.all cho nhanh (xem
   // feedback user 2026-09-18 — mở Bàn làm việc rất lâu).
@@ -1068,7 +1079,6 @@ window.wbOpen = async (id) => {
   activeDetail.library = libRes.records;
   activeDetail.gapCandidates = gapRes.candidates;
   gapPreview = null;
-  (activeDetail.tracks || []).forEach((tr) => expandedTracks.add(tr.id));
   renderProject();
 };
 
@@ -1110,7 +1120,12 @@ const ICONS = {
   runs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>',
   msc_thesis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 12v4.5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5V12"/><path d="M21 9.5v6"/></svg>',
   phd_thesis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 12v4.5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5V12"/><path d="M21 9.5v6"/></svg>',
-  intl_paper: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14.5 3v4.5H19"/><path d="M8 12.5h8M8 15.5h8M8 9.5h4"/></svg>',
+  original_research: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14.5 3v4.5H19"/><path d="M8 12.5h8M8 15.5h8M8 9.5h4"/></svg>',
+  systematic_review: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-5-5"/><path d="M7.5 10.5h6"/></svg>',
+  narrative_review: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2 2 0 0 1 6 4h4v16H6a2 2 0 0 1-2-1.5Z"/><path d="M20 5.5A2 2 0 0 0 18 4h-4v16h4a2 2 0 0 0 2-1.5Z"/></svg>',
+  case_report: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="1.6"/><path d="M12 9v6M9 12h6"/></svg>',
+  protocol_paper: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="3.5" width="12" height="17" rx="1.6"/><path d="M9 8h6M9 11.5h6M9 15h3.5"/></svg>',
+  short_communication: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A1.6 1.6 0 0 1 5.6 4h12.8A1.6 1.6 0 0 1 20 5.5v9A1.6 1.6 0 0 1 18.4 16H9l-4 4v-4H5.6A1.6 1.6 0 0 1 4 14.5Z"/></svg>',
   report: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="1.6"/><path d="M9 2.8h6a1 1 0 0 1 1 1v1.4H8V3.8a1 1 0 0 1 1-1Z"/><path d="M8.5 12h7M8.5 15.3h7M8.5 8.7h4"/></svg>',
   conference_abstract: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="1.6"/><path d="M8 20h8M12 16v4"/><path d="M7 9.5h6M7 12.5h4"/></svg>',
   grant_proposal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14.5 3v4.5H19"/><circle cx="9.5" cy="14" r="2"/><path d="M9.5 12v-.6M9.5 16.6V16M7.8 14h-.6M11.8 14h-.6"/></svg>',
@@ -1128,64 +1143,107 @@ const TOOLS = [
 
 // Công cụ + Hạng mục nghiên cứu LUÔN hiện đủ mục cha — kể cả khi chưa chọn dự án nào (chỉ
 // khác ở nội dung Hạng mục: có dự án thì hiện cây thật, chưa có thì hiện gợi ý chọn dự án).
+// Cây 4 tầng: Hạng mục CỐ ĐỊNH (catalog, luôn hiện, không do user tạo/xoá) → [loại nghiên cứu
+// con nếu có] → thực thể (bài cụ thể user tạo, 0..N mỗi hạng mục/dự án) → Gate. expandedCats
+// dùng chung 1 Set cho cả 3 tầng lồng nhau (khoá là catId | 'catId:subId' | 'inst:trackId'),
+// KHÔNG reset khi đổi dự án — đúng bản chất "hạng mục cố định thuộc về người nghiên cứu", chỉ
+// nội dung thực thể bên trong đổi theo dự án đang mở (xem [[project_chimedis_literature_discovery]]
+// phần sửa 2026-09-18).
+let expandedCats = new Set();
+
 function renderTree() {
   const toolsHtml = TOOLS.map(([id, lk]) => {
     const on = activeSection.type === 'tool' && activeSection.tool === id;
     return `<div class="tnode ${on ? 'on' : ''}" onclick="wbSelectTool('${id}')" title="${esc(t(lk))}"><span class="ic">${ICONS[id]}</span><span class="lbl">${esc(t(lk))}</span></div>`;
   }).join('');
-  const tracksHtml = activeDetail
-    ? ((activeDetail.tracks || []).map(renderTrackNode).join('') || `<p class="hint" style="padding:4px 8px">${t('tracks_empty')}</p>`)
-    : `<p class="hint" style="padding:4px 8px">${t('tracks_locked_hint')}</p>`;
+  const catsHtml = Object.entries(researchGates.trackTypes).map(([catId, def]) => renderCategoryNode(catId, def)).join('');
   return `
     <div class="tsection-label">${t('tools_section_label')}</div>
     ${toolsHtml}
     <div class="tsection-label" style="margin-top:14px">${t('tracks_section_label')}</div>
-    ${tracksHtml}
-    <div class="tnode add" onclick="wbNewTrack(event)" title="${esc(t('add_track'))}"><span class="ic">${ICONS.add}</span><span class="lbl">${esc(t('add_track'))}</span></div>`;
+    ${catsHtml}`;
 }
 
-function trackLabel(tr) {
-  const def = researchGates.trackTypes[tr.trackType];
-  if (!def) return tr.trackType;
-  if (tr.trackType === 'intl_paper' && tr.studyDesign && def.studyDesigns[tr.studyDesign]) {
-    return tr.title ? esc(tr.title) : langOf(def.studyDesigns[tr.studyDesign].label);
-  }
-  return tr.title ? esc(tr.title) : langOf(def.label);
-}
 function langOf(labelObj) { return esc(labelObj[state.lang] || labelObj.vi); }
-function gatesOfTrack(tr) {
-  const def = researchGates.trackTypes[tr.trackType];
+function gatesForCat(catId, subId) {
+  const def = researchGates.trackTypes[catId];
   if (!def) return [];
   if (def.gates) return def.gates;
-  if (tr.trackType === 'intl_paper' && tr.studyDesign) return (def.studyDesigns[tr.studyDesign] || {}).gates || [];
+  if (def.studyDesigns && subId && def.studyDesigns[subId]) return def.studyDesigns[subId].gates;
   return [];
 }
-function renderTrackNode(tr) {
-  const open = expandedTracks.has(tr.id);
-  const gateNos = gatesOfTrack(tr);
+function instancesFor(catId, subId) {
+  if (!activeDetail) return [];
+  return (activeDetail.tracks || []).filter((tr) => tr.trackType === catId && (subId ? tr.studyDesign === subId : true));
+}
+function instanceLabel(tr) {
+  if (tr.title) return esc(tr.title);
+  const def = researchGates.trackTypes[tr.trackType];
+  if (!def) return tr.trackType;
+  if (def.studyDesigns && tr.studyDesign && def.studyDesigns[tr.studyDesign]) return langOf(def.studyDesigns[tr.studyDesign].label);
+  return langOf(def.label);
+}
+
+function renderCategoryNode(catId, def) {
+  const hasSub = !!def.studyDesigns;
+  const open = expandedCats.has(catId);
+  const inner = !open ? '' : hasSub
+    ? Object.entries(def.studyDesigns).map(([subId, sd]) => renderSubtypeNode(catId, subId, sd)).join('')
+    : renderInstanceList(catId, null);
+  return `
+    <div class="tnode" onclick="wbToggleCat('${catId}')" style="cursor:pointer" title="${langOf(def.label)}">
+      <span class="arrow">${open ? '▾' : '▸'}</span>
+      <span class="ic">${ICONS[catId] || ''}</span>
+      <span class="lbl" style="flex:1">${langOf(def.label)}</span>
+    </div>
+    ${inner}`;
+}
+function renderSubtypeNode(catId, subId, sd) {
+  const key = catId + ':' + subId;
+  const open = expandedCats.has(key);
+  const inner = open ? renderInstanceList(catId, subId) : '';
+  return `
+    <div class="tnode child" onclick="wbToggleCat('${key}')" style="cursor:pointer" title="${langOf(sd.label)}">
+      <span class="arrow">${open ? '▾' : '▸'}</span>
+      <span class="lbl" style="flex:1">${langOf(sd.label)}</span>
+      <span class="track-progress">${sd.standard}</span>
+    </div>
+    ${inner}`;
+}
+function renderInstanceList(catId, subId) {
+  const rows = instancesFor(catId, subId).map(renderInstanceNode).join('');
+  const addLabel = t('new_instance_add');
+  return rows + `<div class="tnode child2 add" onclick="wbNewInstance(event,'${catId}','${subId || ''}')" title="${esc(addLabel)}">
+    <span class="ic">${ICONS.add}</span><span class="lbl">${esc(addLabel)}</span>
+  </div>`;
+}
+function renderInstanceNode(tr) {
+  const key = 'inst:' + tr.id;
+  const open = expandedCats.has(key);
+  const gateNos = gatesForCat(tr.trackType, tr.studyDesign);
   const doneSet = new Set((tr.progress || []).filter((g) => g.status === 'done').map((g) => g.gateNo));
   const childrenHtml = open ? gateNos.map((no) => {
     const g = researchGates.gates.find((x) => x.no === no);
     if (!g) return '';
     const on = activeSection.type === 'gate' && activeSection.trackId === tr.id && activeSection.gateNo === no;
-    return `<div class="tnode child ${on ? 'on' : ''}" onclick="wbSelectGate(${tr.id},${no})">
-      <span class="dot ${doneSet.has(no) ? 'done' : ''}"></span>${langOf(g.title)}
+    return `<div class="tnode child3 ${on ? 'on' : ''}" onclick="wbSelectGate(${tr.id},${no})">
+      <span class="dot ${doneSet.has(no) ? 'done' : ''}"></span><span class="lbl">${langOf(g.title)}</span>
     </div>`;
   }).join('') : '';
   return `
-    <div class="tnode" onclick="wbToggleTrack(${tr.id})" style="cursor:pointer" title="${trackLabel(tr)}">
+    <div class="tnode child2" onclick="wbToggleCat('${key}')" style="cursor:pointer" title="${instanceLabel(tr)}">
       <span class="arrow">${open ? '▾' : '▸'}</span>
-      <span class="ic">${ICONS[tr.trackType] || ''}</span>
-      <span class="lbl" style="flex:1">${trackLabel(tr)}</span>
+      <span class="lbl" style="flex:1">${instanceLabel(tr)}</span>
       <span class="track-progress">${doneSet.size}/${gateNos.length}</span>
+      <a href="#" class="tnode-del" onclick="event.stopPropagation();wbDeleteTrack(${tr.id});return false" title="${esc(t('link_delete'))}">×</a>
     </div>
     ${childrenHtml}`;
 }
 
-window.wbToggleTrack = (trackId) => {
-  if (sidebarCollapsed) { wbToggleSidebarCollapse(); expandedTracks.add(trackId); }
-  else if (expandedTracks.has(trackId)) expandedTracks.delete(trackId);
-  else expandedTracks.add(trackId);
+window.wbToggleCat = (key) => {
+  if (sidebarCollapsed) { wbToggleSidebarCollapse(); expandedCats.add(key); }
+  else if (expandedCats.has(key)) expandedCats.delete(key);
+  else expandedCats.add(key);
   $('wbTree').innerHTML = renderTree();
 };
 
@@ -1230,14 +1288,14 @@ window.wbToggleSidePanel = () => {
   if (btn) btn.textContent = sideCollapsed ? t('side_panel_show') : t('side_panel_hide');
 };
 
-// ===== Popover "Thêm hạng mục" — thay cho chuỗi prompt() cũ (xấu, cứng nhắc). Neo bằng
-// position:fixed + toạ độ nút bấm lúc click, KHÔNG lồng trong #wbTree (tránh bị .wb-tree
-// {overflow:auto} cắt mất khi nút nằm cuối danh sách dài). =====
-let trackWizard = null; // { step:'type'|'design'|'title', trackType, studyDesign }
+// ===== Popover tạo THỰC THỂ mới trong 1 hạng mục cố định (đã biết catId/subId từ nút "+" nào
+// được bấm, nên chỉ còn 1 bước "đặt tên" — không còn bước "chọn loại" như trước, vì loại đã
+// cố định theo đúng vị trí trong cây). Neo bằng position:fixed, KHÔNG lồng trong #wbTree. =====
+let trackWizard = null; // { catId, subId }
 
-window.wbNewTrack = (evt) => {
+window.wbNewInstance = (evt, catId, subId) => {
   if (!activeId) { alert(t('tracks_locked_hint')); return; }
-  trackWizard = { step: 'type' };
+  trackWizard = { catId, subId: subId || null };
   const r = evt.currentTarget.getBoundingClientRect();
   const el = $('trackPopover');
   const top = Math.min(r.bottom + 6, window.innerHeight - 100);
@@ -1254,51 +1312,22 @@ function closeTrackPopover() {
 function renderTrackPopover() {
   const el = $('trackPopover');
   if (!el || !trackWizard) return;
-  if (trackWizard.step === 'type') {
-    const rows = Object.entries(researchGates.trackTypes).map(([id, def]) => `
-      <div class="tp-row" onclick="wbTrackPickType('${id}')">
-        <span class="ic">${ICONS[id] || ''}</span><span class="tp-label">${langOf(def.label)}</span>
-        <span class="tp-chev">›</span>
-      </div>`).join('');
-    el.innerHTML = `<div class="tp-head">${t('new_track_prompt')}</div>${rows}`;
-  } else if (trackWizard.step === 'design') {
-    const def = researchGates.trackTypes.intl_paper;
-    const rows = Object.entries(def.studyDesigns).map(([id, sd]) => `
-      <div class="tp-row" onclick="wbTrackPickDesign('${id}')">
-        <span class="tp-label">${langOf(sd.label)}</span><span class="tp-badge">${sd.standard}</span>
-      </div>`).join('');
-    el.innerHTML = `<div class="tp-head"><a href="#" class="tp-back" onclick="wbTrackBack();return false">‹</a>${t('new_track_study_design_prompt')}</div>${rows}`;
-  } else if (trackWizard.step === 'title') {
-    el.innerHTML = `
-      <div class="tp-head"><a href="#" class="tp-back" onclick="wbTrackBack();return false">‹</a>${t('new_track_title_prompt')}</div>
-      <input id="tpTitleInput" placeholder="${esc(t('new_track_title_ph'))}" style="margin:2px 0 8px">
-      <button class="btn sm" style="width:100%" onclick="wbTrackSubmit()">${t('add_track')}</button>`;
-    setTimeout(() => { const inp = $('tpTitleInput'); if (inp) inp.focus(); }, 0);
-  }
+  const def = researchGates.trackTypes[trackWizard.catId];
+  const label = trackWizard.subId && def.studyDesigns ? langOf(def.studyDesigns[trackWizard.subId].label) : langOf(def.label);
+  el.innerHTML = `
+    <div class="tp-head">${label}</div>
+    <input id="tpTitleInput" placeholder="${esc(t('new_track_title_ph'))}" style="margin:2px 0 8px">
+    <button class="btn sm" style="width:100%" onclick="wbTrackSubmit()">${t('add_track')}</button>`;
+  setTimeout(() => { const inp = $('tpTitleInput'); if (inp) inp.focus(); }, 0);
 }
-window.wbTrackPickType = (trackType) => {
-  trackWizard.trackType = trackType;
-  trackWizard.step = trackType === 'intl_paper' ? 'design' : 'title';
-  renderTrackPopover();
-};
-window.wbTrackPickDesign = (studyDesign) => {
-  trackWizard.studyDesign = studyDesign;
-  trackWizard.step = 'title';
-  renderTrackPopover();
-};
-window.wbTrackBack = () => {
-  trackWizard.step = trackWizard.trackType === 'intl_paper' && trackWizard.step === 'title' ? 'design' : 'type';
-  renderTrackPopover();
-};
 window.wbTrackSubmit = async () => {
   const title = ($('tpTitleInput').value || '').trim() || null;
   try {
     await api(`/api/workbench/projects/${activeId}/tracks`, {
       method: 'POST',
-      body: JSON.stringify({ trackType: trackWizard.trackType, studyDesign: trackWizard.studyDesign || null, title }),
+      body: JSON.stringify({ trackType: trackWizard.catId, studyDesign: trackWizard.subId, title }),
     });
     activeDetail.tracks = (await api(`/api/workbench/projects/${activeId}/tracks`)).tracks;
-    (activeDetail.tracks || []).forEach((tr) => expandedTracks.add(tr.id));
     closeTrackPopover();
     $('wbTree').innerHTML = renderTree();
   } catch (e) { alert(t('err_prefix') + e.message); }
@@ -1408,7 +1437,7 @@ function renderGateDetail(trackId, gateNo) {
   const uniqueActions = [...new Set(actions)].join('');
   return `
     <div class="card">
-      <p class="hint" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;font-size:10.5px">${trackLabel(tr)} · Gate ${gateNo}</p>
+      <p class="hint" style="margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em;font-size:10.5px">${instanceLabel(tr)} · Gate ${gateNo}</p>
       <div class="gate-eyebrow"><span class="ic">${ICONS.gate}</span><h3 style="margin:0">${langOf(g.title)}</h3></div>
       <p style="font-size:13.5px;color:var(--fg);line-height:1.6">${langOf(g.goal)}</p>
       <p class="hint" style="margin:12px 0 6px;font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:.04em">${t('gate_checklist_label')}</p>
