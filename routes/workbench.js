@@ -949,6 +949,17 @@ async function fetchLibraryRecords(pool, projectId) {
     if (!idsByRecord.has(r.record_id)) idsByRecord.set(r.record_id, {});
     idsByRecord.get(r.record_id)[r.scheme] = r.value;
   }
+  // M11 — ghi chú trích xuất, gộp theo record_id để đính kèm khi xuất Evidence Matrix.
+  const [noteRows] = await pool.query(
+    `SELECT record_id, tag, quote, content, page_ref FROM wb_extraction_notes
+      WHERE project_id=? AND record_id IN (?) ORDER BY created_at ASC`,
+    [projectId, ids]
+  );
+  const notesByRecord = new Map();
+  for (const n of noteRows) {
+    if (!notesByRecord.has(n.record_id)) notesByRecord.set(n.record_id, []);
+    notesByRecord.get(n.record_id).push(n);
+  }
   return rows.map((r) => {
     const studyTypeRaw = r.study_type && r.study_type !== 'unknown' ? r.study_type : null;
     const studyType = studyTypeRaw || guessStudyType(r.title, r.abstract);
@@ -961,6 +972,7 @@ async function fetchLibraryRecords(pool, projectId) {
       keywords: safeJson(r.keywords_json, []), subjectHeadings: safeJson(r.subjects_json, []),
       mergedFrom: safeJson(r.merged_from_json, []),
       identifiers: idsByRecord.get(r.record_id) || {},
+      extractionNotes: notesByRecord.get(r.record_id) || [],
     };
   });
 }
@@ -1086,6 +1098,106 @@ router.delete('/projects/:id/library', requireDb, requireUser, requireVerified, 
   }
 });
 
+// ===== M11 — Ghi chú trích xuất (extraction notes). Xem db/m11-workbench.sql. =====
+// Nhiều ghi chú tự do mỗi bài, gắn theo CẶP (project, record) — 1 bài dùng chung nhiều dự án
+// (identity-graph dedup, M0) nhưng ghi chú chỉ có ý nghĩa trong ngữ cảnh 1 dự án cụ thể.
+
+router.get('/projects/:id/library/:recordId/notes', requireDb, requireUser, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const recordId = parseInt(req.params.recordId, 10);
+    if (!Number.isInteger(recordId)) return res.status(400).json({ success: false, error: 'recordId không hợp lệ' });
+    const [rows] = await getPool().query(
+      `SELECT id, tag, quote, content, page_ref, created_at, updated_at
+         FROM wb_extraction_notes WHERE project_id=? AND record_id=? ORDER BY created_at ASC`,
+      [project.id, recordId]
+    );
+    res.json({ success: true, notes: rows });
+  } catch (err) {
+    console.error('GET /workbench/projects/:id/library/:recordId/notes:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi tải ghi chú' });
+  }
+});
+
+router.post('/projects/:id/library/:recordId/notes', requireDb, requireUser, requireVerified, rlWrite, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const recordId = parseInt(req.params.recordId, 10);
+    if (!Number.isInteger(recordId)) return res.status(400).json({ success: false, error: 'recordId không hợp lệ' });
+    const content = String(req.body?.content || '').trim();
+    if (!content) return res.status(400).json({ success: false, error: 'Thiếu nội dung ghi chú' });
+    const tag = req.body?.tag ? String(req.body.tag).trim().slice(0, 60) : null;
+    const quote = req.body?.quote ? String(req.body.quote).trim().slice(0, 8000) : null;
+    const pageRef = req.body?.pageRef ? String(req.body.pageRef).trim().slice(0, 30) : null;
+    try {
+      const [r] = await getPool().query(
+        `INSERT INTO wb_extraction_notes (project_id, record_id, tag, quote, content, page_ref)
+           VALUES (?,?,?,?,?,?)`,
+        [project.id, recordId, tag, quote, content.slice(0, 8000), pageRef]
+      );
+      res.json({ success: true, id: r.insertId });
+    } catch (e) {
+      if (e.code === 'ER_NO_REFERENCED_ROW_2' || e.code === 'ER_NO_REFERENCED_ROW') {
+        return res.status(404).json({ success: false, error: 'Bài này chưa có trong thư viện dự án' });
+      }
+      throw e;
+    }
+  } catch (err) {
+    console.error('POST /workbench/projects/:id/library/:recordId/notes:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi lưu ghi chú' });
+  }
+});
+
+router.patch('/projects/:id/library/:recordId/notes/:noteId', requireDb, requireUser, requireVerified, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const recordId = parseInt(req.params.recordId, 10);
+    const noteId = parseInt(req.params.noteId, 10);
+    if (!Number.isInteger(recordId) || !Number.isInteger(noteId)) return res.status(400).json({ success: false, error: 'ID không hợp lệ' });
+    const sets = []; const vals = [];
+    if (req.body?.tag !== undefined) { sets.push('tag=?'); vals.push(req.body.tag ? String(req.body.tag).trim().slice(0, 60) : null); }
+    if (req.body?.quote !== undefined) { sets.push('quote=?'); vals.push(req.body.quote ? String(req.body.quote).trim().slice(0, 8000) : null); }
+    if (req.body?.pageRef !== undefined) { sets.push('page_ref=?'); vals.push(req.body.pageRef ? String(req.body.pageRef).trim().slice(0, 30) : null); }
+    if (req.body?.content !== undefined) {
+      const content = String(req.body.content || '').trim();
+      if (!content) return res.status(400).json({ success: false, error: 'Nội dung ghi chú không được để trống' });
+      sets.push('content=?'); vals.push(content.slice(0, 8000));
+    }
+    if (!sets.length) return res.status(400).json({ success: false, error: 'Không có gì để cập nhật' });
+    vals.push(project.id, recordId, noteId);
+    const [r] = await getPool().query(
+      `UPDATE wb_extraction_notes SET ${sets.join(', ')} WHERE project_id=? AND record_id=? AND id=?`,
+      vals
+    );
+    if (!r.affectedRows) return res.status(404).json({ success: false, error: 'Không tìm thấy ghi chú' });
+    res.json({ success: true });
+  } catch (err) {
+    console.error('PATCH /workbench/projects/:id/library/:recordId/notes/:noteId:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi cập nhật ghi chú' });
+  }
+});
+
+router.delete('/projects/:id/library/:recordId/notes/:noteId', requireDb, requireUser, requireVerified, async (req, res) => {
+  try {
+    const project = await ownedProject(req, res);
+    if (!project) return;
+    const recordId = parseInt(req.params.recordId, 10);
+    const noteId = parseInt(req.params.noteId, 10);
+    if (!Number.isInteger(recordId) || !Number.isInteger(noteId)) return res.status(400).json({ success: false, error: 'ID không hợp lệ' });
+    await getPool().query(
+      'DELETE FROM wb_extraction_notes WHERE project_id=? AND record_id=? AND id=?',
+      [project.id, recordId, noteId]
+    );
+    res.json({ success: true });
+  } catch (err) {
+    console.error('DELETE /workbench/projects/:id/library/:recordId/notes/:noteId:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi xoá ghi chú' });
+  }
+});
+
 function safeJson(s, fallback) {
   if (s == null) return fallback;
   if (typeof s !== 'string') return s;
@@ -1098,7 +1210,17 @@ function intOrNull(v) {
 }
 
 // ===== M3 — Evidence Matrix export (xlsx/docx/csv) ===================================
-const LIB_COLUMNS = ['Tiêu đề', 'Tác giả', 'Tạp chí', 'Năm', 'Tập/Số/Trang', 'Loại nghiên cứu', 'Trạng thái', 'DOI/PMID', 'Từ khoá', 'Ghi chú', 'Tóm tắt'];
+const LIB_COLUMNS = ['Tiêu đề', 'Tác giả', 'Tạp chí', 'Năm', 'Tập/Số/Trang', 'Loại nghiên cứu', 'Trạng thái', 'DOI/PMID', 'Từ khoá', 'Ghi chú', 'Ghi chú trích xuất', 'Tóm tắt'];
+// Gộp các thẻ ghi chú trích xuất (M11) thành 1 chuỗi đọc được cho CSV/XLSX/DOCX —
+// mỗi ghi chú 1 dòng: [Nhãn] nội dung (tr.X) "trích dẫn nguyên văn".
+function formatExtractionNotes(notes) {
+  return (notes || []).map((n) => {
+    let line = (n.tag ? `[${n.tag}] ` : '') + n.content;
+    if (n.page_ref) line += ` (${n.page_ref})`;
+    if (n.quote) line += ` — "${n.quote.slice(0, 300)}"`;
+    return line;
+  }).join('\n');
+}
 function libRowValues(r) {
   const authors = (r.authors || []).slice(0, 6).join('; ') + ((r.authors || []).length > 6 ? '…' : '');
   const ids = r.identifiers || {};
@@ -1111,7 +1233,7 @@ function libRowValues(r) {
     r.title || '', authors, r.journal || '', r.year || '', vip,
     studyLabel + (r.studyTypeGuessed ? ' (tự động, chưa xác nhận)' : ''),
     { shortlisted: 'Đã chọn lọc', included: 'Đưa vào bài', excluded: 'Loại' }[r.status] || r.status,
-    idStr, kw, r.note || '', (r.abstract || '').slice(0, 3000),
+    idStr, kw, r.note || '', formatExtractionNotes(r.extractionNotes), (r.abstract || '').slice(0, 3000),
   ];
 }
 function renderLibraryCsv(records) {

@@ -180,6 +180,19 @@
   .lib-row-active td{background:#F5EDE3}
   .lib-detail p{margin:0 0 8px;font-size:13px;line-height:1.5}
   .lib-detail textarea{width:100%;margin-top:4px}
+  .ext-notes-section{margin-top:14px;padding-top:10px;border-top:1px dashed var(--border)}
+  .ext-notes-list{display:flex;flex-direction:column;gap:8px;margin:6px 0 10px}
+  .ext-note-card{position:relative;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 26px 8px 10px}
+  .ext-note-tag{display:inline-block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;
+    color:var(--accent);background:#F5EDE3;border-radius:4px;padding:1px 7px;margin-bottom:4px}
+  .ext-note-content{margin:0 0 4px;font-size:13px;line-height:1.5}
+  .ext-note-quote{margin:0 0 4px;font-size:12.5px;font-style:italic;color:var(--muted-fg)}
+  .ext-note-page{margin:0;font-size:11.5px;color:var(--muted-fg)}
+  .ext-note-del{position:absolute;top:6px;right:6px;background:none;border:none;color:var(--muted-fg);
+    font-size:15px;line-height:1;cursor:pointer;padding:2px 4px}
+  .ext-note-del:hover{color:var(--accent)}
+  .ext-note-form{display:flex;flex-direction:column;gap:6px}
+  .ext-note-form input,.ext-note-form textarea{width:100%;font:inherit;padding:6px 8px;border:1px solid var(--border);border-radius:6px}
 
   .cov{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700}
   .cov.complete{background:#E7F3EA;color:var(--ok)}
@@ -531,6 +544,15 @@ const I18N = {
     detail_keywords: 'Từ khoá', detail_topics: 'Chủ đề', detail_abstract: 'Tóm tắt',
     detail_no_abstract: 'Không có tóm tắt.', detail_note_label: 'Ghi chú',
     detail_save_note: 'Lưu ghi chú', detail_close: 'Đóng',
+    extraction_notes_label: 'Ghi chú trích xuất (khi đọc toàn văn)',
+    extraction_notes_empty: 'Chưa có ghi chú trích xuất nào — đọc bản PDF đầy đủ rồi ghi lại ý quan trọng ở đây.',
+    extraction_note_tag_ph: 'Nhãn (vd: Phương pháp, Kết quả...) — không bắt buộc',
+    extraction_note_content_ph: 'Ghi lại ý quan trọng bạn đọc được...',
+    extraction_note_quote_ph: 'Trích dẫn nguyên văn (không bắt buộc)',
+    extraction_note_page_ph: 'Số trang',
+    extraction_note_add: '+ Thêm ghi chú',
+    extraction_note_delete: 'Xoá ghi chú này',
+    extraction_note_confirm_delete: 'Xoá ghi chú này?',
     ai_usage_chip: '{n} lượt AI tháng này',
     tool_questions: 'Câu hỏi nghiên cứu', tool_search: 'Tìm kiếm', tool_library: 'Thư viện', tool_runs: 'Nhật ký tìm kiếm & Khoảng trống',
     questions_list_title: 'Câu hỏi đã lưu ({n})', search_results_title: 'Kết quả tìm kiếm', search_results_empty: 'Nhập truy vấn bên trái rồi bấm "Tìm & ghi nhật ký" — kết quả sẽ hiện ở đây.',
@@ -680,6 +702,15 @@ const I18N = {
     detail_keywords: '关键词', detail_topics: '主题', detail_abstract: '摘要',
     detail_no_abstract: '暂无摘要。', detail_note_label: '备注',
     detail_save_note: '保存备注', detail_close: '关闭',
+    extraction_notes_label: '提取笔记（阅读全文时使用）',
+    extraction_notes_empty: '尚无提取笔记 — 阅读完整 PDF 后在此记录重点内容。',
+    extraction_note_tag_ph: '标签（如：方法、结果……）— 可选',
+    extraction_note_content_ph: '记录你读到的重点内容……',
+    extraction_note_quote_ph: '原文引用（可选）',
+    extraction_note_page_ph: '页码',
+    extraction_note_add: '+ 添加笔记',
+    extraction_note_delete: '删除此笔记',
+    extraction_note_confirm_delete: '删除此笔记？',
     ai_usage_chip: '本月 {n} 次 AI 调用',
     tool_questions: '研究问题', tool_search: '检索', tool_library: '文献库', tool_runs: '检索日志与研究空白',
     questions_list_title: '已保存的问题（{n}）', search_results_title: '检索结果', search_results_empty: '在左侧输入检索词并点击"检索并记录"，结果将显示在这里。',
@@ -829,6 +860,15 @@ const I18N = {
     detail_keywords: 'Keywords', detail_topics: 'Topics', detail_abstract: 'Abstract',
     detail_no_abstract: 'No abstract available.', detail_note_label: 'Note',
     detail_save_note: 'Save note', detail_close: 'Close',
+    extraction_notes_label: 'Extraction notes (while reading the full text)',
+    extraction_notes_empty: 'No extraction notes yet — read the full PDF and jot down key points here.',
+    extraction_note_tag_ph: 'Tag (e.g. Method, Results...) — optional',
+    extraction_note_content_ph: 'Note down what you found important...',
+    extraction_note_quote_ph: 'Verbatim quote (optional)',
+    extraction_note_page_ph: 'Page',
+    extraction_note_add: '+ Add note',
+    extraction_note_delete: 'Delete this note',
+    extraction_note_confirm_delete: 'Delete this note?',
     ai_usage_chip: '{n} AI runs this month',
     tool_questions: 'Research questions', tool_search: 'Search', tool_library: 'Library', tool_runs: 'Search log & gaps',
     questions_list_title: 'Saved questions ({n})', search_results_title: 'Search results', search_results_empty: 'Enter a query on the left and click "Search & log" — results will appear here.',
@@ -1538,8 +1578,55 @@ function renderRecordDetail(r) {
       <button type="button" class="btn sm" onclick="wbSaveNote(${r.recordId})">${t('detail_save_note')}</button>
       <button type="button" class="btn sm sec" onclick="wbToggleRecordDetail(${r.recordId})">${t('detail_close')}</button>
     </div>
+    ${renderExtractionNotes(r)}
   </div>`;
 }
+// M11 — Ghi chú trích xuất: nhiều thẻ ghi chú tự do/bài, dùng khi đọc toàn văn (Chimedis
+// không tự đọc PDF — đây là nơi user lưu lại những gì mình tự trích, để dùng khi viết luận).
+function renderExtractionNotes(r) {
+  const notes = r.extractionNotes || [];
+  const list = notes.length ? notes.map((n) => `
+    <div class="ext-note-card">
+      <button type="button" class="ext-note-del" onclick="wbDeleteNote(${r.recordId},${n.id})" title="${esc(t('extraction_note_delete'))}">×</button>
+      ${n.tag ? `<span class="ext-note-tag">${esc(n.tag)}</span>` : ''}
+      <p class="ext-note-content">${esc(n.content)}</p>
+      ${n.quote ? `<p class="ext-note-quote">“${esc(n.quote)}”</p>` : ''}
+      ${n.page_ref ? `<p class="ext-note-page">${esc(n.page_ref)}</p>` : ''}
+    </div>`).join('') : `<p class="hint">${t('extraction_notes_empty')}</p>`;
+  return `<div class="ext-notes-section">
+    <label>${t('extraction_notes_label')}</label>
+    <div class="ext-notes-list">${list}</div>
+    <div class="ext-note-form">
+      <input id="enTag_${r.recordId}" placeholder="${esc(t('extraction_note_tag_ph'))}">
+      <textarea id="enContent_${r.recordId}" rows="2" placeholder="${esc(t('extraction_note_content_ph'))}"></textarea>
+      <input id="enQuote_${r.recordId}" placeholder="${esc(t('extraction_note_quote_ph'))}">
+      <input id="enPage_${r.recordId}" style="max-width:120px" placeholder="${esc(t('extraction_note_page_ph'))}">
+      <button type="button" class="btn sm" onclick="wbAddNote(${r.recordId})">${t('extraction_note_add')}</button>
+    </div>
+  </div>`;
+}
+window.wbAddNote = async (recordId) => {
+  const contentEl = $('enContent_' + recordId);
+  const content = contentEl ? contentEl.value.trim() : '';
+  if (!content) { if (contentEl) contentEl.focus(); return; }
+  const tag = ($('enTag_' + recordId)?.value || '').trim();
+  const quote = ($('enQuote_' + recordId)?.value || '').trim();
+  const pageRef = ($('enPage_' + recordId)?.value || '').trim();
+  try {
+    await api(`/api/workbench/projects/${activeId}/library/${recordId}/notes`, {
+      method: 'POST',
+      body: JSON.stringify({ content, tag: tag || undefined, quote: quote || undefined, pageRef: pageRef || undefined }),
+    });
+    await wbRefreshLibrary();
+  } catch (e) { alert(t('err_update_prefix') + e.message); }
+};
+window.wbDeleteNote = async (recordId, noteId) => {
+  if (!confirm(t('extraction_note_confirm_delete'))) return;
+  try {
+    await api(`/api/workbench/projects/${activeId}/library/${recordId}/notes/${noteId}`, { method: 'DELETE' });
+    await wbRefreshLibrary();
+  } catch (e) { alert(t('err_update_prefix') + e.message); }
+};
 function renderLibraryAddPanel() {
   return `
     <h3>${t('library_add_panel_title')}</h3>
@@ -1693,6 +1780,7 @@ async function wbRefreshLibrary() {
   activeDetail.library = (await api('/api/workbench/projects/' + activeId + '/library')).records;
   const card = $('libraryCard');
   if (card) card.innerHTML = renderLibraryCard(activeDetail.library);
+  syncPanel3();
 }
 window.wbToggleManualForm = (force) => {
   const el = $('wbManualForm');

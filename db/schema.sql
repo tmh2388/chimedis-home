@@ -226,6 +226,21 @@ CREATE TABLE IF NOT EXISTS wb_project_records (
   INDEX idx_project_status (project_id, status, added_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ===== M11 — Ghi chú trích xuất (extraction notes). Xem db/m11-workbench.sql. =====
+CREATE TABLE IF NOT EXISTS wb_extraction_notes (
+  id          BIGINT AUTO_INCREMENT PRIMARY KEY,
+  project_id  BIGINT NOT NULL,
+  record_id   BIGINT NOT NULL,
+  tag         VARCHAR(60) NULL COMMENT 'Nhãn tự đặt, vd "Phương pháp"/"Kết quả"/"Trích dùng"',
+  quote       TEXT NULL COMMENT 'Trích dẫn nguyên văn từ bài (tuỳ chọn)',
+  content     TEXT NOT NULL COMMENT 'Nội dung ghi chú/diễn giải của người dùng',
+  page_ref    VARCHAR(30) NULL COMMENT 'Số trang tham chiếu, vd "tr.12" hoặc "p.456-458"',
+  created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (project_id, record_id) REFERENCES wb_project_records(project_id, record_id) ON DELETE CASCADE,
+  INDEX idx_project_record (project_id, record_id, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- ===== M4 v1 — Gap Candidate (chỉ tới trạng thái "candidate"). Xem db/m4-workbench.sql. =====
 CREATE TABLE IF NOT EXISTS wb_gap_candidates (
   id                   BIGINT AUTO_INCREMENT PRIMARY KEY,
