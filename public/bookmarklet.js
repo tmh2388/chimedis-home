@@ -100,6 +100,17 @@
     var year = yearMatch ? parseInt(yearMatch[0], 10) : null;
     var doi = meta1('citation_doi') || '';
     var pmid = meta1('citation_pmid') || '';
+    var pmcid = meta1('citation_pmcid') || '';
+    var volume = meta1('citation_volume') || '';
+    var issue = meta1('citation_issue') || '';
+    var firstPage = meta1('citation_firstpage') || '';
+    var lastPage = meta1('citation_lastpage') || '';
+    var pages = meta1('citation_pages') || (firstPage ? (lastPage ? firstPage + '-' + lastPage : firstPage) : '');
+    // Ngôn ngữ: ưu tiên thẻ chuẩn/khai báo trang → suy đoán thô từ chữ Hán trong tiêu đề
+    // (KHÔNG suy đoán tiếng Việt vì dấu câu dễ nhầm, để trống cho user tự sửa nếu cần).
+    var language = meta1('citation_language') || meta1('dc.language') ||
+      (document.documentElement.lang || '').split('-')[0] || '';
+    if (!language && /[一-鿿]/.test(title)) language = 'zh';
     var keywordsRaw = metaAll('citation_keywords');
     var keywords = [];
     keywordsRaw.forEach(function (k) {
@@ -110,8 +121,13 @@
       authors: authorsRaw.slice(0, 30),
       journal: journal.trim() || null,
       year: year,
+      volume: volume.trim() || null,
+      issue: issue.trim() || null,
+      pages: pages.trim() || null,
+      language: language.trim() || null,
       doi: doi.trim() || null,
       pmid: pmid.trim() || null,
+      pmcid: pmcid.trim() || null,
       abstract: findAbstract().trim() || null,
       keywords: keywords.slice(0, 20),
       landingUrl: location.href,
@@ -185,13 +201,23 @@
     return;
   }
 
-  var authorsPreview = rec.authors.length ? rec.authors.slice(0, 3).join(', ') + (rec.authors.length > 3 ? '…' : '') : '(chưa rõ tác giả)';
+  var authorsJoined = rec.authors.join(', ');
   card.innerHTML =
     '<button class="bk-close">×</button>' +
     '<div class="bk-title">Lưu vào Chimedis</div>' +
     '<div class="bk-lbl">Tiêu đề</div>' +
     '<input type="text" class="bk-title-input" value="' + escHtml(rec.title) + '" />' +
-    '<div class="bk-meta" style="margin-top:6px">' + escHtml(authorsPreview) + (rec.journal ? ' · ' + escHtml(rec.journal) : '') + (rec.year ? ' · ' + rec.year : '') + '</div>' +
+    '<div class="bk-lbl">Tác giả (cách nhau bằng dấu phẩy)</div>' +
+    '<input type="text" class="bk-authors-input" value="' + escHtml(authorsJoined) + '" placeholder="Chưa rõ — gõ tay nếu cần" />' +
+    '<div style="display:flex;gap:8px">' +
+    '<div style="flex:2"><div class="bk-lbl">Tạp chí</div><input type="text" class="bk-journal-input" value="' + escHtml(rec.journal || '') + '" /></div>' +
+    '<div style="flex:1"><div class="bk-lbl">Năm</div><input type="text" class="bk-year-input" value="' + escHtml(rec.year || '') + '" /></div>' +
+    '</div>' +
+    '<div style="display:flex;gap:8px">' +
+    '<div style="flex:1"><div class="bk-lbl">Tập</div><input type="text" class="bk-volume-input" value="' + escHtml(rec.volume || '') + '" /></div>' +
+    '<div style="flex:1"><div class="bk-lbl">Số</div><input type="text" class="bk-issue-input" value="' + escHtml(rec.issue || '') + '" /></div>' +
+    '<div style="flex:1.4"><div class="bk-lbl">Trang</div><input type="text" class="bk-pages-input" value="' + escHtml(rec.pages || '') + '" placeholder="vd 45-52" /></div>' +
+    '</div>' +
     '<div class="bk-lbl">Tóm tắt (abstract)</div>' +
     '<textarea class="bk-abstract-input" placeholder="Không tự đọc được — bôi-copy đoạn tóm tắt trên trang rồi dán vào đây (không bắt buộc, nhưng cần cho phân tích khoảng trống sau này)">' + escHtml(rec.abstract || '') + '</textarea>' +
     (rec.abstract ? '' : '<div class="bk-warn">⚠️ Không tự đọc được tóm tắt trên trang này — dán tay vào ô trên nếu muốn dùng cho phân tích khoảng trống sau này.</div>') +
@@ -210,6 +236,12 @@
   var saveBtn = card.querySelector('.bk-save');
   var titleInput = card.querySelector('.bk-title-input');
   var abstractInput = card.querySelector('.bk-abstract-input');
+  var authorsInput = card.querySelector('.bk-authors-input');
+  var journalInput = card.querySelector('.bk-journal-input');
+  var yearInput = card.querySelector('.bk-year-input');
+  var volumeInput = card.querySelector('.bk-volume-input');
+  var issueInput = card.querySelector('.bk-issue-input');
+  var pagesInput = card.querySelector('.bk-pages-input');
 
   fetch(API_BASE + '/projects', { headers: { Authorization: 'Bearer ' + TOKEN } })
     .then(function (r) { return r.json(); })
@@ -236,6 +268,13 @@
     if (!title) { titleInput.focus(); return; }
     rec.title = title;
     rec.abstract = abstractInput.value.trim() || null;
+    rec.authors = authorsInput.value.split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+    rec.journal = journalInput.value.trim() || null;
+    var yearVal = parseInt(yearInput.value, 10);
+    rec.year = Number.isFinite(yearVal) ? yearVal : null;
+    rec.volume = volumeInput.value.trim() || null;
+    rec.issue = issueInput.value.trim() || null;
+    rec.pages = pagesInput.value.trim() || null;
     saveBtn.disabled = true;
     statusEl.textContent = 'Đang lưu…';
     statusEl.className = 'bk-status';

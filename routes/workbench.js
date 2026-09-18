@@ -818,6 +818,10 @@ export function normalizeInlineRecord(raw) {
     authors: Array.isArray(r.authors) ? r.authors.slice(0, 30) : [],
     journal: (r.venue || r.journal) ? String(r.venue || r.journal).slice(0, 300) : null,
     year: Number.isInteger(r.year) ? r.year : (parseInt(r.year, 10) || null),
+    volume: r.volume ? String(r.volume).slice(0, 20) : null,
+    issue: r.issue ? String(r.issue).slice(0, 20) : null,
+    pages: r.pages ? String(r.pages).slice(0, 30) : null,
+    language: r.language ? String(r.language).slice(0, 12) : null,
     study_type: STUDY_TYPE_FROM_DOCTYPE[String(r.type || '').toLowerCase()] || guessStudyType(r.title, r.abstract),
     oa_status: r.isOpenAccess ? 'oa' : null,
     keywords,
@@ -952,7 +956,8 @@ async function fetchLibraryRecords(pool, projectId) {
       recordId: r.record_id, status: r.status, note: r.note,
       addedAt: r.added_at, updatedAt: r.updated_at,
       title: r.title, abstract: r.abstract, authors: safeJson(r.authors_json, []),
-      journal: r.journal, year: r.year, studyType, studyTypeGuessed: !studyTypeRaw,
+      journal: r.journal, year: r.year, volume: r.volume, issue: r.issue, pages: r.pages,
+      language: r.language, studyType, studyTypeGuessed: !studyTypeRaw,
       keywords: safeJson(r.keywords_json, []), subjectHeadings: safeJson(r.subjects_json, []),
       mergedFrom: safeJson(r.merged_from_json, []),
       identifiers: idsByRecord.get(r.record_id) || {},
@@ -1093,15 +1098,17 @@ function intOrNull(v) {
 }
 
 // ===== M3 — Evidence Matrix export (xlsx/docx/csv) ===================================
-const LIB_COLUMNS = ['Tiêu đề', 'Tác giả', 'Tạp chí', 'Năm', 'Loại nghiên cứu', 'Trạng thái', 'DOI/PMID', 'Từ khoá', 'Ghi chú', 'Tóm tắt'];
+const LIB_COLUMNS = ['Tiêu đề', 'Tác giả', 'Tạp chí', 'Năm', 'Tập/Số/Trang', 'Loại nghiên cứu', 'Trạng thái', 'DOI/PMID', 'Từ khoá', 'Ghi chú', 'Tóm tắt'];
 function libRowValues(r) {
   const authors = (r.authors || []).slice(0, 6).join('; ') + ((r.authors || []).length > 6 ? '…' : '');
   const ids = r.identifiers || {};
   const idStr = ids.doi ? `doi:${ids.doi}` : (ids.pmid ? `pmid:${ids.pmid}` : (ids.url || Object.entries(ids).map(([k, v]) => `${k}:${v}`).join(' ')));
   const studyLabel = STUDY_TYPE_LABEL_VI[r.studyType] || r.studyType || 'Chưa rõ';
   const kw = [...(r.keywords || []), ...(r.subjectHeadings || [])].join('; ');
+  // "Tập(Số):Trang" kiểu trích dẫn Vancouver — chỉ ghép phần nào có, bỏ qua phần thiếu.
+  const vip = (r.volume ? r.volume : '') + (r.issue ? `(${r.issue})` : '') + (r.pages ? `:${r.pages}` : '');
   return [
-    r.title || '', authors, r.journal || '', r.year || '',
+    r.title || '', authors, r.journal || '', r.year || '', vip,
     studyLabel + (r.studyTypeGuessed ? ' (tự động, chưa xác nhận)' : ''),
     { shortlisted: 'Đã chọn lọc', included: 'Đưa vào bài', excluded: 'Loại' }[r.status] || r.status,
     idStr, kw, r.note || '', (r.abstract || '').slice(0, 3000),
