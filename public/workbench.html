@@ -299,6 +299,7 @@
       </div>
 
       <div class="proj-switch-wrap">
+        <div class="tsection-label" style="padding:6px 0 5px" data-i18n="proj_section_label">Dự án</div>
         <button class="proj-switch-btn" onclick="toggleProjSwitch()">
           <span class="lbl" id="projSwitchLabel" data-i18n="proj_switch_placeholder">Chọn dự án</span>
           <span class="arrow">▾</span>
@@ -405,7 +406,8 @@ const I18N = {
     verify_banner_prefix: '⚠️ Email', verify_banner_suffix: 'chưa xác thực — bạn xem/tìm được nhưng chưa tạo được dự án.',
     verify_recheck_link: 'Tôi đã xác thực → kiểm tra lại', verify_resend_link: 'Gửi lại email',
     app_title: 'Bàn làm việc nghiên cứu', app_subtitle: 'Chimedis · Tìm kiếm + Thư viện + Nhật ký tìm kiếm',
-    app_title_short: 'Chimedis', proj_switch_placeholder: 'Chọn dự án', tree_no_project: 'Chọn hoặc tạo một dự án để xem công cụ và hạng mục nghiên cứu.',
+    app_title_short: 'Chimedis', proj_section_label: 'Dự án', proj_switch_placeholder: 'Chọn dự án', tree_no_project: 'Chọn hoặc tạo một dự án để xem công cụ và hạng mục nghiên cứu.',
+    tool_locked_hint: 'Chọn hoặc tạo một dự án ở trên để dùng công cụ này.', tracks_locked_hint: 'Chọn một dự án để xem hạng mục nghiên cứu.',
     sidebar_collapse_title: 'Thu gọn menu', sidebar_expand_title: 'Mở rộng menu',
     side_panel_hide: 'Ẩn kết quả', side_panel_show: 'Hiện kết quả',
     account_menu_lang: 'Ngôn ngữ',
@@ -552,7 +554,8 @@ const I18N = {
     verify_banner_prefix: '⚠️ 邮箱', verify_banner_suffix: '尚未验证 — 您可以查看/检索，但暂时无法创建项目。',
     verify_recheck_link: '我已验证 → 重新检查', verify_resend_link: '重新发送邮件',
     app_title: '研究工作台', app_subtitle: 'Chimedis · 检索 + 文献库 + 检索日志',
-    app_title_short: 'Chimedis', proj_switch_placeholder: '选择项目', tree_no_project: '选择或创建一个项目以查看工具和研究类别。',
+    app_title_short: 'Chimedis', proj_section_label: '项目', proj_switch_placeholder: '选择项目', tree_no_project: '选择或创建一个项目以查看工具和研究类别。',
+    tool_locked_hint: '请先在上方选择或创建一个项目才能使用此工具。', tracks_locked_hint: '请选择一个项目以查看研究类别。',
     sidebar_collapse_title: '收起菜单', sidebar_expand_title: '展开菜单',
     side_panel_hide: '隐藏结果', side_panel_show: '显示结果',
     account_menu_lang: '语言',
@@ -699,7 +702,8 @@ const I18N = {
     verify_banner_prefix: '⚠️ Email', verify_banner_suffix: 'is not verified yet — you can browse/search, but cannot create projects yet.',
     verify_recheck_link: "I've verified → recheck", verify_resend_link: 'Resend email',
     app_title: 'Research Workbench', app_subtitle: 'Chimedis · Search + Library + Search Log',
-    app_title_short: 'Chimedis', proj_switch_placeholder: 'Choose a project', tree_no_project: 'Choose or create a project to see tools and research tracks.',
+    app_title_short: 'Chimedis', proj_section_label: 'Project', proj_switch_placeholder: 'Choose a project', tree_no_project: 'Choose or create a project to see tools and research tracks.',
+    tool_locked_hint: 'Choose or create a project above to use this tool.', tracks_locked_hint: 'Choose a project to see research tracks.',
     sidebar_collapse_title: 'Collapse menu', sidebar_expand_title: 'Expand menu',
     side_panel_hide: 'Hide results', side_panel_show: 'Show results',
     account_menu_lang: 'Language',
@@ -958,6 +962,12 @@ window.wbSignOut = () => signOut(auth);
 onAuthStateChanged(auth, async (user) => {
   if (!user) { $('loginView').hidden = false; $('appView').hidden = true; $('loginLangWrap').hidden = false; return; }
   try {
+    // /research-gates KHÔNG cần token (route công khai) — bắn đi NGAY, song song với toàn bộ
+    // chuỗi xác thực bên dưới, thay vì đợi sync xong mới gọi (trước đây làm tuần tự, cộng dồn
+    // độ trễ mạng của từng request khiến trang tải rất lâu — xem feedback user 2026-09-18).
+    if (!researchGates) {
+      researchGates = api('/api/workbench/research-gates').catch(() => ({ gates: [], trackTypes: {} }));
+    }
     await user.reload().catch(() => {});
     // ép token mới nếu Firebase đã xác nhận email nhưng token đang cache còn nói "chưa"
     const token = await user.getIdToken(user.emailVerified ? true : false);
@@ -977,13 +987,25 @@ onAuthStateChanged(auth, async (user) => {
         `<a href="#" onclick="wbRecheckVerify();return false"><b>${t('verify_recheck_link')}</b></a> · ` +
         `<a href="#" onclick="wbResendVerify();return false">${t('verify_resend_link')}</a>`;
     }
-    if (!researchGates) {
-      try { researchGates = await api('/api/workbench/research-gates'); } catch (e) { researchGates = { gates: [], trackTypes: {} }; }
-    }
-    wbLoadAiUsage();
-    await loadProjects();
+    // researchGates + AI-usage + danh sách dự án không phụ thuộc lẫn nhau — chạy song song.
+    researchGates = await researchGates;
+    await Promise.all([wbLoadAiUsage(), loadProjects()]);
+    await wbAutoOpenProject();
   } catch (e) { $('loginMsg').innerHTML = `<div class="msg err">${esc(e.message)}</div>`; }
 });
+
+// Tự mở lại đúng dự án đang xem dở lần trước (localStorage, khoá dùng CHUNG với panel rút gọn
+// ở trang chủ — public/index.html 'chimedisActiveProject') — vào thẳng link /workbench.html
+// cũng KHÔNG còn trống trơn nữa. Không có dự án đã lưu (hoặc dự án đó đã bị xoá) → mặc định mở
+// dự án mới cập nhật gần nhất (API đã ORDER BY updated_at DESC, nên projects[0] chính là nó).
+// Hoàn toàn chưa có dự án nào → chỉ vẽ lại cây Công cụ/Hạng mục (vẫn hiện đủ mục cha, không để
+// trống như trước).
+async function wbAutoOpenProject() {
+  if (!projects.length) { $('wbTree').innerHTML = renderTree(); return; }
+  const savedId = parseInt(localStorage.getItem('chimedisActiveProject'), 10);
+  const toOpen = projects.some((p) => p.id === savedId) ? savedId : projects[0].id;
+  await wbOpen(toOpen);
+}
 
 async function wbLoadAiUsage() {
   try {
@@ -1027,17 +1049,24 @@ window.wbNewProject = async () => {
 
 window.wbOpen = async (id) => {
   activeId = id;
+  localStorage.setItem('chimedisActiveProject', String(id));
   libraryFilters = { source: 'all', type: 'all' };
   openRecordId = null;
   panel3 = null;
   activeSection = { type: 'tool', tool: 'search' };
   expandedTracks = new Set();
-  await loadProjects();
-  activeDetail = await api('/api/workbench/projects/' + id);
-  try { activeDetail.library = (await api('/api/workbench/projects/' + id + '/library')).records; }
-  catch (e) { activeDetail.library = []; }
-  try { activeDetail.gapCandidates = (await api('/api/workbench/projects/' + id + '/gap-candidates')).candidates; }
-  catch (e) { activeDetail.gapCandidates = []; }
+  // 4 request độc lập (không cái nào cần kết quả của cái khác) — trước đây gọi tuần tự (await
+  // từng cái) nên cộng dồn độ trễ mạng x4, chạy song song bằng Promise.all cho nhanh (xem
+  // feedback user 2026-09-18 — mở Bàn làm việc rất lâu).
+  const [, detail, libRes, gapRes] = await Promise.all([
+    loadProjects(),
+    api('/api/workbench/projects/' + id),
+    api('/api/workbench/projects/' + id + '/library').catch(() => ({ records: [] })),
+    api('/api/workbench/projects/' + id + '/gap-candidates').catch(() => ({ candidates: [] })),
+  ]);
+  activeDetail = detail;
+  activeDetail.library = libRes.records;
+  activeDetail.gapCandidates = gapRes.candidates;
   gapPreview = null;
   (activeDetail.tracks || []).forEach((tr) => expandedTracks.add(tr.id));
   renderProject();
@@ -1097,13 +1126,16 @@ const TOOLS = [
   ['runs', 'tool_runs'],
 ];
 
+// Công cụ + Hạng mục nghiên cứu LUÔN hiện đủ mục cha — kể cả khi chưa chọn dự án nào (chỉ
+// khác ở nội dung Hạng mục: có dự án thì hiện cây thật, chưa có thì hiện gợi ý chọn dự án).
 function renderTree() {
   const toolsHtml = TOOLS.map(([id, lk]) => {
     const on = activeSection.type === 'tool' && activeSection.tool === id;
     return `<div class="tnode ${on ? 'on' : ''}" onclick="wbSelectTool('${id}')" title="${esc(t(lk))}"><span class="ic">${ICONS[id]}</span><span class="lbl">${esc(t(lk))}</span></div>`;
   }).join('');
-  const tracks = activeDetail.tracks || [];
-  const tracksHtml = tracks.map(renderTrackNode).join('') || `<p class="hint" style="padding:4px 8px">${t('tracks_empty')}</p>`;
+  const tracksHtml = activeDetail
+    ? ((activeDetail.tracks || []).map(renderTrackNode).join('') || `<p class="hint" style="padding:4px 8px">${t('tracks_empty')}</p>`)
+    : `<p class="hint" style="padding:4px 8px">${t('tracks_locked_hint')}</p>`;
   return `
     <div class="tsection-label">${t('tools_section_label')}</div>
     ${toolsHtml}
@@ -1171,6 +1203,12 @@ window.wbSelectTool = (tool) => {
   activeSection = { type: 'tool', tool };
   panel3 = null;
   $('wbTree').innerHTML = renderTree();
+  // Chưa mở dự án nào (VD user vừa xoá hết dự án) — #wbMid/#wbSide chưa tồn tại trong DOM vì
+  // #content vẫn đang là placeholder tĩnh; hiện gợi ý thay vì crash.
+  if (!activeDetail) {
+    $('content').innerHTML = `<p class="muted">${t('tool_locked_hint')}</p>`;
+    return;
+  }
   $('wbMid').innerHTML = renderMid();
   const side = $('wbSide'); side.hidden = sideCollapsed; side.innerHTML = renderSide();
   const btn = $('sideToggleBtn'); if (btn) { btn.style.display = ''; btn.textContent = sideCollapsed ? t('side_panel_show') : t('side_panel_hide'); }
@@ -1198,6 +1236,7 @@ window.wbToggleSidePanel = () => {
 let trackWizard = null; // { step:'type'|'design'|'title', trackType, studyDesign }
 
 window.wbNewTrack = (evt) => {
+  if (!activeId) { alert(t('tracks_locked_hint')); return; }
   trackWizard = { step: 'type' };
   const r = evt.currentTarget.getBoundingClientRect();
   const el = $('trackPopover');
@@ -1889,9 +1928,10 @@ window.wbResetAll = async () => {
     await api('/api/workbench/projects/' + p.id, { method: 'DELETE' });
   }
   activeId = null; activeDetail = null;
+  localStorage.removeItem('chimedisActiveProject');
   $('content').innerHTML = `<p class="muted">${t('reset_done')}</p>`;
-  $('wbTree').innerHTML = `<p class="hint" style="padding:8px">${t('tree_no_project')}</p>`;
   await loadProjects();
+  await wbAutoOpenProject();
 };
 
 window.wbProfileHint = () => {
@@ -1930,9 +1970,10 @@ window.wbDeleteProject = async () => {
   if (!confirm(t('confirm_delete_project'))) return;
   await api('/api/workbench/projects/' + activeId, { method: 'DELETE' });
   activeId = null; activeDetail = null;
+  localStorage.removeItem('chimedisActiveProject');
   $('content').innerHTML = `<p class="muted">${t('project_deleted')}</p>`;
-  $('wbTree').innerHTML = `<p class="hint" style="padding:8px">${t('tree_no_project')}</p>`;
   await loadProjects();
+  await wbAutoOpenProject();
 };
 
 window.wbRunSearch = async () => {

@@ -144,14 +144,13 @@ router.get('/projects/:id', requireDb, requireUser, async (req, res) => {
     const project = await ownedProject(req, res);
     if (!project) return;
     const pool = getPool();
-    const [questions] = await pool.query(
-      'SELECT * FROM wb_research_questions WHERE project_id=? ORDER BY created_at',
-      [project.id]
-    );
-    const runs = await listSearchRuns(project.id);
-    const [tracks] = await pool.query(
-      'SELECT * FROM wb_research_tracks WHERE project_id=? ORDER BY created_at', [project.id]
-    );
+    // 3 truy vấn độc lập (không cái nào cần kết quả của cái khác) — chạy song song thay vì
+    // tuần tự để giảm độ trễ tổng (xem feedback user 2026-09-18 — mở Bàn làm việc rất lâu).
+    const [[questions], runs, [tracks]] = await Promise.all([
+      pool.query('SELECT * FROM wb_research_questions WHERE project_id=? ORDER BY created_at', [project.id]),
+      listSearchRuns(project.id),
+      pool.query('SELECT * FROM wb_research_tracks WHERE project_id=? ORDER BY created_at', [project.id]),
+    ]);
     const [progress] = tracks.length
       ? await pool.query('SELECT track_id, gate_no, status FROM wb_gate_progress WHERE track_id IN (?)', [tracks.map((t) => t.id)])
       : [[]];
