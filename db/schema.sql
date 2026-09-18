@@ -285,6 +285,20 @@ CREATE TABLE IF NOT EXISTS wb_gate_progress (
   UNIQUE KEY uq_track_gate (track_id, gate_no)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- ===== Milestone M9 — Bookmarklet "Lưu vào Chimedis" (token cá nhân). Xem db/m9-workbench.sql =====
+CREATE TABLE IF NOT EXISTS wb_personal_tokens (
+  id            BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id       INT NOT NULL,
+  token_hash    CHAR(64) NOT NULL COMMENT 'sha256(token) — KHÔNG lưu token gốc',
+  label         VARCHAR(100) NULL,
+  created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  last_used_at  TIMESTAMP NULL,
+  revoked_at    TIMESTAMP NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_token_hash (token_hash),
+  INDEX idx_user (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 -- =====================================================================================
 -- ===== Milestone H1a — Auth Foundation ===============================================
 -- docs/milestone-H-homepage-integration.md §3.3. Idempotent. FK tới users(id) đã có.

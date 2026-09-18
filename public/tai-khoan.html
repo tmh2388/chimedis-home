@@ -76,6 +76,32 @@
     </div>
 
     <div class="card">
+      <h2 data-i18n="bm_h2">Lưu tài liệu từ CNKI/万方 (Bookmarklet)</h2>
+      <p class="muted" data-i18n="bm_desc">Bạn tự mở CNKI/万方/tạp chí bất kỳ ở tab riêng, tự đăng nhập, tự tìm — bấm nút bookmarklet bên dưới khi đang xem 1 bài để lưu thẳng vào thư viện Chimedis, khỏi gõ tay lại. Chimedis không tự động đăng nhập hay tải hàng loạt thay bạn.</p>
+      <div id="bmList" class="muted">—</div>
+      <div id="bmCreateRow" style="margin-top:10px;display:flex;gap:8px">
+        <input id="bmLabel" data-i18n-ph="bm_label_ph" placeholder="Đặt tên (vd: Máy tính cá nhân)" />
+        <button class="btn sec" style="white-space:nowrap" onclick="createBookmarklet()" data-i18n="bm_create_btn">+ Tạo bookmarklet mới</button>
+      </div>
+      <div id="bmMsg"></div>
+      <div id="bmNew" hidden style="margin-top:14px;padding:12px;border:1px dashed var(--accent);border-radius:8px">
+        <div style="font-weight:600;margin-bottom:6px" data-i18n="bm_created_title">Đã tạo — cài ngay bây giờ</div>
+        <p class="muted" data-i18n="bm_created_warn">⚠️ Đường dẫn bên dưới CHỈ hiện lần này. Cài ngay, đừng rời trang trước khi xong.</p>
+        <p class="muted" data-i18n="bm_install_desktop">Máy tính (Chrome/Cốc Cốc/Edge/Safari/trình duyệt Baidu…): kéo nút dưới đây thả vào thanh Bookmark của trình duyệt.</p>
+        <p style="text-align:center;margin:12px 0">
+          <a id="bmDragLink" href="#" class="btn" style="display:inline-block;text-decoration:none" data-i18n="bm_link_text">💾 Lưu vào Chimedis</a>
+        </p>
+        <p class="muted" data-i18n="bm_install_mobile">iPhone/iPad (Safari): tạo 1 bookmark bất kỳ trước → sửa bookmark đó → dán mã dưới đây thay cho địa chỉ → lưu lại.</p>
+        <textarea id="bmCode" readonly style="width:100%;height:70px;font:12px/1.4 monospace;padding:8px;border:1px solid var(--line);border-radius:6px"></textarea>
+        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn sec" onclick="copyBmCode()" data-i18n="bm_copy_code">Sao chép mã</button>
+          <button class="btn" onclick="dismissBmNew()" data-i18n="bm_done_btn">Xong, đã cài</button>
+        </div>
+        <p class="muted" style="margin-top:8px" data-i18n="bm_usage_hint">Cách dùng: mở CNKI/万方/tạp chí bất kỳ ở tab riêng → tự đăng nhập, mở 1 bài → bấm nút bookmarklet này → chọn dự án → Lưu.</p>
+      </div>
+    </div>
+
+    <div class="card">
       <h2 data-i18n="pw_h2">Đổi mật khẩu</h2>
       <p class="muted" data-i18n="pw_hint">Chỉ áp dụng nếu bạn đăng nhập bằng email + mật khẩu.</p>
       <button class="btn sec" onclick="resetPw()" data-i18n="btn_reset_pw">Gửi email đặt lại mật khẩu</button>
@@ -137,6 +163,26 @@ const I18N = {
     err_delete_confirm_text: 'Gõ đúng "XOA TAI KHOAN" để xác nhận.',
     confirm_delete_account: 'Xoá vĩnh viễn tài khoản và toàn bộ dữ liệu nghiên cứu? Không thể hoàn tác.',
     alert_account_deleted: 'Đã xoá tài khoản.',
+    bm_h2: 'Lưu tài liệu từ CNKI/万方 (Bookmarklet)',
+    bm_desc: 'Bạn tự mở CNKI/万方/tạp chí bất kỳ ở tab riêng, tự đăng nhập, tự tìm — bấm nút bookmarklet bên dưới khi đang xem 1 bài để lưu thẳng vào thư viện Chimedis, khỏi gõ tay lại. Chimedis không tự động đăng nhập hay tải hàng loạt thay bạn.',
+    bm_empty: 'Chưa có bookmarklet nào.',
+    bm_create_btn: '+ Tạo bookmarklet mới',
+    bm_label_ph: 'Đặt tên (vd: Máy tính cá nhân)',
+    bm_created_title: 'Đã tạo — cài ngay bây giờ',
+    bm_created_warn: '⚠️ Đường dẫn bên dưới CHỈ hiện lần này. Cài ngay, đừng rời trang trước khi xong.',
+    bm_install_desktop: 'Máy tính (Chrome/Cốc Cốc/Edge/Safari/trình duyệt Baidu…): kéo nút dưới đây thả vào thanh Bookmark của trình duyệt.',
+    bm_install_mobile: 'iPhone/iPad (Safari): tạo 1 bookmark bất kỳ trước → sửa bookmark đó → dán mã dưới đây thay cho địa chỉ → lưu lại.',
+    bm_link_text: '💾 Lưu vào Chimedis',
+    bm_copy_code: 'Sao chép mã',
+    bm_copied: 'Đã sao chép.',
+    bm_usage_hint: 'Cách dùng: mở CNKI/万方/tạp chí bất kỳ ở tab riêng → tự đăng nhập, mở 1 bài → bấm nút bookmarklet này → chọn dự án → Lưu.',
+    bm_done_btn: 'Xong, đã cài',
+    bm_revoke: 'Thu hồi',
+    bm_confirm_revoke: 'Thu hồi bookmarklet "{label}"? Link đã cài sẽ ngừng hoạt động.',
+    bm_last_used: 'Dùng gần nhất',
+    bm_never_used: 'chưa dùng lần nào',
+    bm_created_at: 'Tạo lúc',
+    bm_err_load: 'Lỗi tải danh sách bookmarklet: {msg}',
   },
   zh: {
     page_title: '账户 — Chimedis',
@@ -179,6 +225,26 @@ const I18N = {
     err_delete_confirm_text: '请准确输入 "XOA TAI KHOAN" 以确认。',
     confirm_delete_account: '确定要永久删除账户及全部研究数据吗？此操作不可撤销。',
     alert_account_deleted: '账户已删除。',
+    bm_h2: '从 CNKI/万方 保存文献（书签小工具）',
+    bm_desc: '您在独立标签页自行打开 CNKI/万方/任意期刊网站，自行登录、自行检索 — 打开某篇文献时点击下方书签小工具即可直接存入 Chimedis 文献库，无需手动输入。Chimedis 不会代您自动登录或批量下载。',
+    bm_empty: '尚未创建书签小工具。',
+    bm_create_btn: '+ 新建书签小工具',
+    bm_label_ph: '命名（如：我的电脑）',
+    bm_created_title: '已创建 — 请立即安装',
+    bm_created_warn: '⚠️ 下方链接仅显示这一次，请立即安装，安装完成前不要离开此页面。',
+    bm_install_desktop: '电脑端（Chrome/Cốc Cốc/Edge/Safari/百度浏览器等）：将下方按钮拖到浏览器的书签栏。',
+    bm_install_mobile: 'iPhone/iPad（Safari）：先创建任意一个书签 → 编辑该书签 → 用下方代码替换网址 → 保存。',
+    bm_link_text: '💾 保存到 Chimedis',
+    bm_copy_code: '复制代码',
+    bm_copied: '已复制。',
+    bm_usage_hint: '使用方法：在独立标签页打开 CNKI/万方/任意期刊网站 → 自行登录并打开某篇文献 → 点击此书签小工具 → 选择项目 → 保存。',
+    bm_done_btn: '完成，已安装',
+    bm_revoke: '撤销',
+    bm_confirm_revoke: '撤销书签小工具 "{label}"？已安装的链接将失效。',
+    bm_last_used: '最近使用',
+    bm_never_used: '尚未使用',
+    bm_created_at: '创建时间',
+    bm_err_load: '加载书签小工具列表出错：{msg}',
   },
   en: {
     page_title: 'Account — Chimedis',
@@ -221,6 +287,26 @@ const I18N = {
     err_delete_confirm_text: 'Type "XOA TAI KHOAN" exactly to confirm.',
     confirm_delete_account: 'Permanently delete your account and all research data? This cannot be undone.',
     alert_account_deleted: 'Account deleted.',
+    bm_h2: 'Save from CNKI/Wanfang (bookmarklet)',
+    bm_desc: 'You open CNKI/Wanfang/any journal site yourself in a separate tab, sign in and search yourself — click the bookmarklet below while viewing a paper to save it straight into your Chimedis library, no retyping. Chimedis never auto-signs-in or bulk-downloads on your behalf.',
+    bm_empty: 'No bookmarklet yet.',
+    bm_create_btn: '+ Create new bookmarklet',
+    bm_label_ph: 'Name it (e.g. My laptop)',
+    bm_created_title: 'Created — install it now',
+    bm_created_warn: '⚠️ The link below is shown only this once. Install it now, before leaving this page.',
+    bm_install_desktop: 'Desktop (Chrome/Coc Coc/Edge/Safari/Baidu browser…): drag the button below onto your browser\'s bookmarks bar.',
+    bm_install_mobile: 'iPhone/iPad (Safari): create any bookmark first → edit it → paste the code below in place of the URL → save.',
+    bm_link_text: '💾 Save to Chimedis',
+    bm_copy_code: 'Copy code',
+    bm_copied: 'Copied.',
+    bm_usage_hint: 'How to use: open CNKI/Wanfang/any journal site in a separate tab → sign in and open a paper → click this bookmarklet → pick a project → Save.',
+    bm_done_btn: 'Done, installed',
+    bm_revoke: 'Revoke',
+    bm_confirm_revoke: 'Revoke bookmarklet "{label}"? The installed link will stop working.',
+    bm_last_used: 'Last used',
+    bm_never_used: 'never used',
+    bm_created_at: 'Created',
+    bm_err_load: 'Error loading bookmarklets: {msg}',
   },
 };
 const state = { lang: localStorage.getItem('chimedis_portal_lang') || 'vi' };
@@ -237,6 +323,7 @@ function applyI18n() {
   document.title = t('page_title');
   const pt = document.getElementById('pageTitle'); if (pt) pt.textContent = t('page_title');
   if (window.__lastIdentities) renderIdentities(window.__lastIdentities);
+  if (window.__lastTokens) renderBookmarklets();
   if (window.__lastVerified !== undefined) {
     document.getElementById('fVerified').innerHTML = window.__lastVerified
       ? `<span class="pill ok">${t('verified_yes')}</span>`
@@ -299,10 +386,12 @@ onAuthStateChanged(auth, async (user) => {
       : `<span class="pill no">${t('verified_no')}</span>`;
     $('verifyRow').hidden = d.verified;
     renderIdentities(d.identities || []);
+    loadBookmarklets();
   } catch (e) { $('anon').hidden = false; $('anon').textContent = t('err_profile_load', { msg: e.message }); }
 });
 
 const LINKABLE = [['google.com','provider_google'],['apple.com','provider_apple'],['facebook.com','provider_facebook']];
+window.renderIdentities = renderIdentities;
 function renderIdentities(list) {
   window.__lastIdentities = list;
   const have = new Set(list.map((i) => i.provider));
@@ -316,6 +405,49 @@ function renderIdentities(list) {
   }
   $('identities').innerHTML = rows.join('');
 }
+// ===== M9 — Bookmarklet "Lưu vào Chimedis" =====
+function fmtDate(s) { return s ? new Date(s).toLocaleString(state.lang === 'vi' ? 'vi-VN' : state.lang === 'zh' ? 'zh-CN' : 'en-US') : ''; }
+function buildBookmarkletCode(token) {
+  return "javascript:(function(){var d=document,s=d.createElement('script');s.id='chimedis-bk-loader';" +
+    "s.src='https://chimedis.vn/bookmarklet.js?t=" + encodeURIComponent(token) + "&r='+Date.now();" +
+    "d.body.appendChild(s);})()";
+}
+async function loadBookmarklets() {
+  try {
+    window.__lastTokens = (await api('/api/bookmarklet/tokens')).tokens || [];
+    renderBookmarklets();
+  } catch (e) { $('bmList').innerHTML = '<div class="msg err">' + esc(t('bm_err_load', { msg: e.message })) + '</div>'; }
+}
+window.renderBookmarklets = renderBookmarklets;
+function renderBookmarklets() {
+  const list = window.__lastTokens || [];
+  $('bmList').innerHTML = list.length ? list.map((tk) => `<div class="row"><span>${esc(tk.label || '—')}<br><small class="muted">${esc(t('bm_created_at'))}: ${esc(fmtDate(tk.created_at))} · ${esc(t('bm_last_used'))}: ${tk.last_used_at ? esc(fmtDate(tk.last_used_at)) : esc(t('bm_never_used'))}</small></span><span><a href="#" onclick="revokeBookmarklet(${tk.id},'${esc(tk.label || '')}');return false">${esc(t('bm_revoke'))}</a></span></div>`).join('')
+    : `<span data-i18n="bm_empty">${esc(t('bm_empty'))}</span>`;
+}
+window.createBookmarklet = async () => {
+  const label = $('bmLabel').value.trim() || null;
+  $('bmMsg').innerHTML = '';
+  try {
+    const d = await api('/api/bookmarklet/tokens', { method: 'POST', body: JSON.stringify({ label }) });
+    const code = buildBookmarkletCode(d.token);
+    $('bmDragLink').setAttribute('href', code);
+    $('bmCode').value = code;
+    $('bmNew').hidden = false;
+    $('bmLabel').value = '';
+    await loadBookmarklets();
+  } catch (e) { $('bmMsg').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; }
+};
+window.copyBmCode = async () => {
+  try { await navigator.clipboard.writeText($('bmCode').value); $('bmMsg').innerHTML = `<div class="msg okm">${esc(t('bm_copied'))}</div>`; }
+  catch { $('bmCode').select(); document.execCommand('copy'); }
+};
+window.dismissBmNew = () => { $('bmNew').hidden = true; $('bmDragLink').removeAttribute('href'); $('bmCode').value = ''; };
+window.revokeBookmarklet = async (id, label) => {
+  if (!confirm(t('bm_confirm_revoke', { label }))) return;
+  try { await api('/api/bookmarklet/tokens/' + id, { method: 'DELETE' }); await loadBookmarklets(); }
+  catch (e) { $('bmMsg').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; }
+};
+
 function provObj(pid) {
   if (pid === 'google.com') return new GoogleAuthProvider();
   if (pid === 'facebook.com') { const p = new FacebookAuthProvider(); p.addScope('email'); return p; }

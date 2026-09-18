@@ -791,7 +791,7 @@ const STUDY_TYPE_FROM_DOCTYPE = {
 // Chuẩn hoá payload tối giản từ trang tìm công khai (public/index.html — field `r` của
 // tableRow()) sang shape upsertRecord() cần. KHÔNG tin literal `study_type`/`clinical` từ
 // client; chỉ ánh xạ qua bảng cố định ở trên, mặc định 'unknown'.
-function normalizeInlineRecord(raw) {
+export function normalizeInlineRecord(raw) {
   const r = raw || {};
   const identifiers = {};
   if (r.doi) identifiers.doi = String(r.doi).toLowerCase().trim();

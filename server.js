@@ -9,6 +9,7 @@ import userRoutes from './routes/users.js';
 import orcidRoutes from './routes/orcid.js';
 import researchRoutes from './routes/research.js';
 import workbenchRoutes from './routes/workbench.js';
+import bookmarkletRoutes from './routes/bookmarklet.js';
 import dictMissRoutes from './routes/dict-misses.js';
 import { startDictLearn } from './lib/dict-learn.js';
 import { initShadowLogPrune } from './lib/translate/shadow-log.js';
@@ -26,6 +27,7 @@ app.use(express.json({ limit: '3mb' })); // nhập RIS/BibTeX hàng loạt (M3) 
 app.use('/api/auth', authRoutes);
 app.use('/api/research', researchRoutes);
 app.use('/api/workbench', workbenchRoutes);
+app.use('/api/bookmarklet', bookmarkletRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/admin/documents', adminDocumentRoutes);
 app.use('/api/admin/users', userRoutes);
