@@ -211,6 +211,10 @@
   .wb-tree{flex:1 1 auto;overflow:auto;padding:6px 8px 12px;min-height:0}
   .tsection-label{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--muted-fg);
     padding:8px 8px 5px;font-weight:700}
+  .tsection-label.collapsible{display:flex;align-items:center;gap:5px;cursor:pointer;border-radius:6px;
+    user-select:none;transition:color .14s,background .14s}
+  .tsection-label.collapsible:hover{color:var(--fg);background:var(--hover-bg,rgba(0,0,0,.04))}
+  .tsection-arrow{font-size:9px;width:10px;text-align:center;flex:0 0 auto;opacity:.75}
   .tnode{display:flex;align-items:center;gap:8px;padding:8px 9px;border-radius:8px;font-size:12.5px;
     color:var(--fg);cursor:pointer;white-space:normal;word-break:break-word;transition:background .14s}
   .tnode:hover{background:var(--bg)}
@@ -419,6 +423,7 @@ const I18N = {
     app_title_short: 'Chimedis', proj_section_label: 'Dự án', proj_switch_placeholder: 'Chọn dự án', tree_no_project: 'Chọn hoặc tạo một dự án để xem công cụ và hạng mục nghiên cứu.',
     tool_locked_hint: 'Chọn hoặc tạo một dự án ở trên để dùng công cụ này.', tracks_locked_hint: 'Chọn một dự án để xem hạng mục nghiên cứu.',
     sidebar_collapse_title: 'Thu gọn menu', sidebar_expand_title: 'Mở rộng menu',
+    section_collapse_title: 'Thu gọn mục', section_expand_title: 'Mở rộng mục',
     side_panel_hide: 'Ẩn kết quả', side_panel_show: 'Hiện kết quả',
     account_menu_lang: 'Ngôn ngữ',
     nav_account: 'Tài khoản', nav_signout: 'Thoát',
@@ -567,6 +572,7 @@ const I18N = {
     app_title_short: 'Chimedis', proj_section_label: '项目', proj_switch_placeholder: '选择项目', tree_no_project: '选择或创建一个项目以查看工具和研究类别。',
     tool_locked_hint: '请先在上方选择或创建一个项目才能使用此工具。', tracks_locked_hint: '请选择一个项目以查看研究类别。',
     sidebar_collapse_title: '收起菜单', sidebar_expand_title: '展开菜单',
+    section_collapse_title: '收起该项', section_expand_title: '展开该项',
     side_panel_hide: '隐藏结果', side_panel_show: '显示结果',
     account_menu_lang: '语言',
     nav_account: '账户', nav_signout: '退出',
@@ -715,6 +721,7 @@ const I18N = {
     app_title_short: 'Chimedis', proj_section_label: 'Project', proj_switch_placeholder: 'Choose a project', tree_no_project: 'Choose or create a project to see tools and research tracks.',
     tool_locked_hint: 'Choose or create a project above to use this tool.', tracks_locked_hint: 'Choose a project to see research tracks.',
     sidebar_collapse_title: 'Collapse menu', sidebar_expand_title: 'Expand menu',
+    section_collapse_title: 'Collapse section', section_expand_title: 'Expand section',
     side_panel_hide: 'Hide results', side_panel_show: 'Show results',
     account_menu_lang: 'Language',
     nav_account: 'Account', nav_signout: 'Sign out',
@@ -1118,8 +1125,7 @@ const ICONS = {
   search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
   library: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5V5.5A2 2 0 0 1 6 3.5h11a1 1 0 0 1 1 1V19"/><path d="M6.5 17H19v3.5a1 1 0 0 1-1 1H6a2 2 0 0 1-2-2v-.5a1.5 1.5 0 0 1 1.5-1.5Z"/></svg>',
   runs: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.2 2"/></svg>',
-  msc_thesis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 12v4.5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5V12"/><path d="M21 9.5v6"/></svg>',
-  phd_thesis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 12v4.5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5V12"/><path d="M21 9.5v6"/></svg>',
+  thesis: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5 12 5l10 4.5-10 4.5-10-4.5Z"/><path d="M6 12v4.5c0 1 2.7 2.5 6 2.5s6-1.5 6-2.5V12"/><path d="M21 9.5v6"/></svg>',
   original_research: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h9l4 4v13a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z"/><path d="M14.5 3v4.5H19"/><path d="M8 12.5h8M8 15.5h8M8 9.5h4"/></svg>',
   systematic_review: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-5-5"/><path d="M7.5 10.5h6"/></svg>',
   narrative_review: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5A2 2 0 0 1 6 4h4v16H6a2 2 0 0 1-2-1.5Z"/><path d="M20 5.5A2 2 0 0 0 18 4h-4v16h4a2 2 0 0 0 2-1.5Z"/></svg>',
@@ -1151,16 +1157,37 @@ const TOOLS = [
 // phần sửa 2026-09-18).
 let expandedCats = new Set();
 
+// Nhãn khu vực (Công cụ / Hạng mục nghiên cứu) có thể thu gọn — mặc định MỞ, chỉ thu gọn
+// khi user chủ động ấn. Lưu localStorage để nhớ lựa chọn qua lần sau (giống sidebarCollapsed).
+let sectionsCollapsed = (() => {
+  try { return JSON.parse(localStorage.getItem('chimedis_wb_sections_collapsed') || '{}'); }
+  catch { return {}; }
+})();
+function saveSectionsCollapsed() {
+  try { localStorage.setItem('chimedis_wb_sections_collapsed', JSON.stringify(sectionsCollapsed)); } catch {}
+}
+window.wbToggleSection = (key) => {
+  sectionsCollapsed[key] = !sectionsCollapsed[key];
+  saveSectionsCollapsed();
+  $('wbTree').innerHTML = renderTree();
+};
+
 function renderTree() {
-  const toolsHtml = TOOLS.map(([id, lk]) => {
+  const toolsOpen = !sectionsCollapsed.tools;
+  const tracksOpen = !sectionsCollapsed.tracks;
+  const toolsHtml = !toolsOpen ? '' : TOOLS.map(([id, lk]) => {
     const on = activeSection.type === 'tool' && activeSection.tool === id;
     return `<div class="tnode ${on ? 'on' : ''}" onclick="wbSelectTool('${id}')" title="${esc(t(lk))}"><span class="ic">${ICONS[id]}</span><span class="lbl">${esc(t(lk))}</span></div>`;
   }).join('');
-  const catsHtml = Object.entries(researchGates.trackTypes).map(([catId, def]) => renderCategoryNode(catId, def)).join('');
+  const catsHtml = !tracksOpen ? '' : Object.entries(researchGates.trackTypes).map(([catId, def]) => renderCategoryNode(catId, def)).join('');
   return `
-    <div class="tsection-label">${t('tools_section_label')}</div>
+    <div class="tsection-label collapsible" onclick="wbToggleSection('tools')" title="${esc(t(toolsOpen ? 'section_collapse_title' : 'section_expand_title'))}">
+      <span class="tsection-arrow">${toolsOpen ? '▾' : '▸'}</span><span>${t('tools_section_label')}</span>
+    </div>
     ${toolsHtml}
-    <div class="tsection-label" style="margin-top:14px">${t('tracks_section_label')}</div>
+    <div class="tsection-label collapsible" style="margin-top:14px" onclick="wbToggleSection('tracks')" title="${esc(t(tracksOpen ? 'section_collapse_title' : 'section_expand_title'))}">
+      <span class="tsection-arrow">${tracksOpen ? '▾' : '▸'}</span><span>${t('tracks_section_label')}</span>
+    </div>
     ${catsHtml}`;
 }
 
