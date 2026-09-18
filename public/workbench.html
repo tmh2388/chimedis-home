@@ -175,7 +175,14 @@
   .row>div{flex:1;min-width:150px;display:flex;flex-direction:column;justify-content:flex-end}
 
   table{width:100%;border-collapse:collapse;font-size:13px}
-  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+  th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
+  /* table-layout:auto (mặc định) tính độ rộng cột theo nội dung KHÔNG XUỐNG DÒNG trước, rồi
+     mới quyết định — nếu 1 ô (vd cột Truy vấn nhiều pill nguồn dữ liệu) "muốn" rộng hơn chỗ
+     có, cả bảng tràn ra ngoài .card thay vì tự bọc dòng, đẩy cột cuối (nút Phân tích khoảng
+     trống) ra ngoài tầm nhìn — lỗi user báo 2026-09-18. .runs-table ép layout:fixed + tỉ lệ
+     cột cố định qua colgroup → nội dung PHẢI tự xuống dòng trong đúng cột của nó. */
+  .runs-table{table-layout:fixed}
+  .runs-table td{white-space:normal}
   th{color:var(--muted-fg);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.03em;background:#FCFAF6}
   tbody tr:hover td{background:#FCFAF6}
   .lib-title-link{color:var(--ink);font-weight:600;text-decoration:none}
@@ -262,6 +269,15 @@
 
   .wb-mid{flex:1 1 0;min-width:0}
   .wb-side{flex:1 1 0;min-width:0}
+  /* Thanh kéo giãn giữa "Nhật ký tìm kiếm" (wb-mid) và "Kết quả" (wb-side) — user yêu cầu
+     2026-09-18 sau khi báo nút "Phân tích khoảng trống" tràn ra ngoài tầm nhìn ở khung hẹp.
+     Kéo đổi flex-basis (px) của wb-mid, wb-side luôn flex:1 lấy phần còn lại — ẩn khi 1 trong
+     2 khung không hiển thị (Gate hoặc side đã thu gọn) vì lúc đó không có gì để chia tỉ lệ. */
+  .wb-resizer{flex:0 0 auto;width:14px;align-self:stretch;cursor:col-resize;position:relative;
+    display:flex;align-items:center;justify-content:center;touch-action:none}
+  .wb-resizer span{width:4px;height:36px;border-radius:3px;background:var(--border-strong);transition:background .14s}
+  .wb-resizer:hover span,.wb-resizer.active span{background:var(--accent)}
+  @media (max-width:1100px){ .wb-resizer{display:none} }
   .wb-mid .card,.wb-side .card{border-radius:14px;box-shadow:0 2px 10px rgba(14,58,58,.06)}
   .gate-eyebrow{display:flex;align-items:center;gap:8px;margin:0 0 4px}
   .gate-eyebrow .ic{flex:0 0 auto;width:26px;height:26px;border-radius:8px;background:#F5EDE3;
@@ -403,6 +419,8 @@ let researchGates = null; // { gates: [...], trackTypes: {...} } — tĩnh, tả
 let activeSection = { type: 'tool', tool: 'search' }; // { type:'tool', tool } | { type:'gate', trackId, gateNo }
 let panel3 = null; // { kind:'record'|'gap', id } — nội dung khung thứ 3 (chi tiết)
 let sideCollapsed = false; // người dùng chủ động ẩn khung "kết quả" (wb-side) qua nút bấm
+// Độ rộng wb-mid do user tự kéo (px) — null = mặc định 50/50 (flex:1 1 0 cả 2 bên).
+let wbMidWidthPx = parseInt(localStorage.getItem('chimedis_wb_mid_width'), 10) || null;
 try { auth = getAuth(initializeApp(FIREBASE_CONFIG)); } catch (e) { console.error(e); }
 
 const $ = (id) => document.getElementById(id);
@@ -442,6 +460,7 @@ const I18N = {
     sidebar_collapse_title: 'Thu gọn menu', sidebar_expand_title: 'Mở rộng menu',
     section_collapse_title: 'Thu gọn mục', section_expand_title: 'Mở rộng mục',
     side_panel_hide: 'Ẩn kết quả', side_panel_show: 'Hiện kết quả',
+    resizer_title: 'Kéo để đổi tỉ lệ 2 khung',
     account_menu_lang: 'Ngôn ngữ',
     nav_account: 'Tài khoản', nav_signout: 'Thoát',
     side_my_projects: 'Dự án của tôi', side_no_projects: 'Chưa có dự án nào.', side_new_project: '+ Tạo dự án',
@@ -600,6 +619,7 @@ const I18N = {
     sidebar_collapse_title: '收起菜单', sidebar_expand_title: '展开菜单',
     section_collapse_title: '收起该项', section_expand_title: '展开该项',
     side_panel_hide: '隐藏结果', side_panel_show: '显示结果',
+    resizer_title: '拖动以调整两栏比例',
     account_menu_lang: '语言',
     nav_account: '账户', nav_signout: '退出',
     side_my_projects: '我的项目', side_no_projects: '暂无项目。', side_new_project: '+ 新建项目',
@@ -758,6 +778,7 @@ const I18N = {
     sidebar_collapse_title: 'Collapse menu', sidebar_expand_title: 'Expand menu',
     section_collapse_title: 'Collapse section', section_expand_title: 'Expand section',
     side_panel_hide: 'Hide results', side_panel_show: 'Show results',
+    resizer_title: 'Drag to resize the two panels',
     account_menu_lang: 'Language',
     nav_account: 'Account', nav_signout: 'Sign out',
     side_my_projects: 'My projects', side_no_projects: 'No projects yet.', side_new_project: '+ New project',
@@ -1153,8 +1174,9 @@ function renderProject() {
       <a href="#" class="hint" onclick="wbDeleteProject();return false">${t('delete_project_link')}</a>
       <button class="btn sm sec" style="margin-left:auto${activeSection.type === 'gate' ? ';display:none' : ''}" onclick="wbToggleSidePanel()" id="sideToggleBtn">${sideCollapsed ? t('side_panel_show') : t('side_panel_hide')}</button>
     </div>
-    <div class="wb-workspace">
-      <div class="wb-mid" id="wbMid">${renderMid()}</div>
+    <div class="wb-workspace" id="wbWorkspace">
+      <div class="wb-mid" id="wbMid" style="${wbMidWidthPx ? `flex:0 0 ${wbMidWidthPx}px` : ''}">${renderMid()}</div>
+      ${(activeSection.type === 'gate' || sideCollapsed) ? '' : `<div class="wb-resizer" id="wbResizer" title="${esc(t('resizer_title'))}" onmousedown="wbResizeStart(event)"><span></span></div>`}
       <div class="wb-side" id="wbSide" ${(activeSection.type === 'gate' || sideCollapsed) ? 'hidden' : ''}>${renderSide()}</div>
     </div>`;
   wbProfileHint();
@@ -1355,9 +1377,47 @@ window.wbToggleSidePanel = () => {
   sideCollapsed = !sideCollapsed;
   const side = $('wbSide');
   if (side) side.hidden = sideCollapsed;
+  const resizer = $('wbResizer');
+  if (resizer) resizer.hidden = sideCollapsed;
+  const mid = $('wbMid');
+  if (mid) mid.style.flex = sideCollapsed ? '' : (wbMidWidthPx ? `0 0 ${wbMidWidthPx}px` : '');
   const btn = $('sideToggleBtn');
   if (btn) btn.textContent = sideCollapsed ? t('side_panel_show') : t('side_panel_hide');
 };
+
+// ===== Kéo giãn tỉ lệ wb-mid/wb-side (px, lưu localStorage) =====
+let wbResizing = null; // { startX, startWidth }
+window.wbResizeStart = (evt) => {
+  const mid = $('wbMid');
+  if (!mid) return;
+  wbResizing = { startX: evt.clientX, startWidth: mid.getBoundingClientRect().width };
+  $('wbResizer')?.classList.add('active');
+  document.body.style.userSelect = 'none';
+  document.body.style.cursor = 'col-resize';
+  document.addEventListener('mousemove', wbResizeMove);
+  document.addEventListener('mouseup', wbResizeEnd);
+  evt.preventDefault();
+};
+function wbResizeMove(evt) {
+  if (!wbResizing) return;
+  const workspace = $('wbWorkspace');
+  const mid = $('wbMid');
+  if (!workspace || !mid) return;
+  const maxWidth = workspace.getBoundingClientRect().width - 260; // chừa tối thiểu cho wb-side
+  const next = Math.max(260, Math.min(maxWidth, wbResizing.startWidth + (evt.clientX - wbResizing.startX)));
+  wbMidWidthPx = Math.round(next);
+  mid.style.flex = `0 0 ${wbMidWidthPx}px`;
+}
+function wbResizeEnd() {
+  if (!wbResizing) return;
+  wbResizing = null;
+  $('wbResizer')?.classList.remove('active');
+  document.body.style.userSelect = '';
+  document.body.style.cursor = '';
+  document.removeEventListener('mousemove', wbResizeMove);
+  document.removeEventListener('mouseup', wbResizeEnd);
+  if (wbMidWidthPx) { try { localStorage.setItem('chimedis_wb_mid_width', String(wbMidWidthPx)); } catch {} }
+}
 
 // ===== Popover tạo THỰC THỂ mới trong 1 hạng mục cố định (đã biết catId/subId từ nút "+" nào
 // được bấm, nên chỉ còn 1 bước "đặt tên" — không còn bước "chọn loại" như trước, vì loại đã
@@ -1917,7 +1977,9 @@ function renderRunsCard(runs) {
 function renderRuns(runs) {
   if (!runs.length) return `<p class="hint">${t('runs_empty')}</p>`;
   const locale = state.lang === 'zh' ? 'zh-CN' : (state.lang === 'en' ? 'en-US' : 'vi-VN');
-  return `<table><thead><tr><th>${t('col_num')}</th><th>${t('col_mode')}</th><th>${t('col_query')}</th><th>${t('col_results')}</th><th>${t('col_coverage')}</th><th>${t('col_date')}</th><th></th></tr></thead><tbody>${
+  return `<table class="runs-table">
+    <colgroup><col style="width:5%"><col style="width:9%"><col style="width:36%"><col style="width:8%"><col style="width:10%"><col style="width:17%"><col style="width:15%"></colgroup>
+    <thead><tr><th>${t('col_num')}</th><th>${t('col_mode')}</th><th>${t('col_query')}</th><th>${t('col_results')}</th><th>${t('col_coverage')}</th><th>${t('col_date')}</th><th></th></tr></thead><tbody>${
     runs.map((r, i) => `<tr>
       <td>${runs.length - i}</td>
       <td>${t(r.mode === 'evidence' ? 'mode_evidence_short' : 'mode_discovery_short')}</td>
