@@ -176,6 +176,10 @@
 
   table{width:100%;border-collapse:collapse;font-size:13px}
   th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
+  th.sortable-th{cursor:pointer;user-select:none;white-space:nowrap}
+  th.sortable-th:hover{color:var(--fg)}
+  .sort-arrow{display:inline-block;font-size:9px;opacity:.45;margin-left:3px}
+  .sort-arrow.active{opacity:1;color:var(--accent)}
   /* table-layout:auto (mặc định) tính độ rộng cột theo nội dung KHÔNG XUỐNG DÒNG trước, rồi
      mới quyết định — nếu 1 ô (vd cột Truy vấn nhiều pill nguồn dữ liệu) "muốn" rộng hơn chỗ
      có, cả bảng tràn ra ngoài .card thay vì tự bọc dòng, đẩy cột cuối (nút Phân tích khoảng
@@ -421,6 +425,12 @@ let panel3 = null; // { kind:'record'|'gap', id } — nội dung khung thứ 3 (
 let sideCollapsed = false; // người dùng chủ động ẩn khung "kết quả" (wb-side) qua nút bấm
 // Độ rộng wb-mid do user tự kéo (px) — null = mặc định 50/50 (flex:1 1 0 cả 2 bên).
 let wbMidWidthPx = parseInt(localStorage.getItem('chimedis_wb_mid_width'), 10) || null;
+// Trạng thái sắp xếp theo cột (2026-09-18) — key:null = giữ thứ tự mặc định server trả về.
+let libSort = { key: null, dir: 'asc' };
+let runsSort = { key: null, dir: 'asc' };
+let gapSort = { key: null, dir: 'asc' };
+let resultSort = { key: null, dir: 'asc' };
+let lastSearchResult = null; // lưu payload search gần nhất để sắp xếp lại không cần gọi API
 try { auth = getAuth(initializeApp(FIREBASE_CONFIG)); } catch (e) { console.error(e); }
 
 const $ = (id) => document.getElementById(id);
@@ -1627,6 +1637,30 @@ const SOURCE_KEY = {
 };
 function sourceLabel(id) { return SOURCE_KEY[id] ? t(SOURCE_KEY[id]) : id; }
 
+// ===== Sắp xếp theo cột dùng chung cho mọi bảng liệt kê (2026-09-18, yêu cầu user) =====
+// Mặc định (state.key===null) GIỮ NGUYÊN thứ tự server trả về — mọi danh sách "của tôi" (thư
+// viện/nhật ký/khoảng trống) server đã ORDER BY mới nhất trước; danh sách "kết quả tìm kiếm"
+// giữ nguyên thứ tự liên quan/độ tin cậy do API xếp hạng. Bấm cột: lần 1 = tăng dần, lần 2 =
+// giảm dần, bấm cột khác = reset về tăng dần (trừ khoá số/ngày mặc định giảm dần cho hợp lý).
+function sortIndicator(state, key) {
+  if (state.key !== key) return '<span class="sort-arrow">⇅</span>';
+  return state.dir === 'asc' ? '<span class="sort-arrow active">▲</span>' : '<span class="sort-arrow active">▼</span>';
+}
+function sortTh(state, key, label, onclickFn, descFirst) {
+  return `<th class="sortable-th" onclick="${onclickFn}('${key}')" data-desc-first="${!!descFirst}">${label} ${sortIndicator(state, key)}</th>`;
+}
+function applySort(arr, state, comparators) {
+  if (!state.key || !comparators[state.key]) return arr;
+  const sorted = [...arr].sort(comparators[state.key]);
+  return state.dir === 'desc' ? sorted.reverse() : sorted;
+}
+// Bấm cùng cột → đảo chiều; bấm cột khác → về chiều mặc định của cột đó (số/ngày: giảm dần
+// trước vì "lớn nhất/mới nhất" thường hữu ích hơn; chữ: tăng dần trước, kiểu A→Z).
+function toggleSort(state, key, descFirstKeys) {
+  if (state.key === key) { state.dir = state.dir === 'asc' ? 'desc' : 'asc'; }
+  else { state.key = key; state.dir = (descFirstKeys || []).includes(key) ? 'desc' : 'asc'; }
+}
+
 function renderRecordDetail(r) {
   const idRows = Object.entries(r.identifiers || {}).filter(([k]) => k !== 'manual');
   return `<div class="lib-detail">
@@ -1737,7 +1771,15 @@ function renderLibraryCard(records) {
     if (libraryFilters.type !== 'all' && (r.studyType || 'unknown') !== libraryFilters.type) return false;
     return true;
   });
-  const rows = filtered.map((r) => {
+  const LIB_COMPARATORS = {
+    title: (a, b) => (a.title || '').localeCompare(b.title || ''),
+    year: (a, b) => (a.year || 0) - (b.year || 0),
+    source: (a, b) => (a.mergedFrom || []).join(',').localeCompare((b.mergedFrom || []).join(',')),
+    type: (a, b) => studyTypeLabel(a.studyType).localeCompare(studyTypeLabel(b.studyType)),
+    status: (a, b) => (a.status || '').localeCompare(b.status || ''),
+  };
+  const sortedFiltered = applySort(filtered, libSort, LIB_COMPARATORS);
+  const rows = sortedFiltered.map((r) => {
     const studyLabel = studyTypeLabel(r.studyType) + (r.studyTypeGuessed ? ' *' : '');
     const authors = r.authors || [];
     const authorsShort = authors.slice(0, 3).join(', ') + (authors.length > 3 ? ' …' : '');
@@ -1789,7 +1831,13 @@ function renderLibraryCard(records) {
       <button type="button" class="btn sm sec" onclick="wbLibDeleteAll()" style="color:var(--bad);border-color:var(--bad)">${t('delete_all_library')}</button>
     </div>
     ${filtered.length
-      ? `<table><thead><tr><th style="width:22px"></th><th>${t('col_title')}</th><th>${t('col_year')}</th><th>${t('col_source')}</th><th>${t('col_type')}</th><th>${t('col_status')}</th><th></th></tr></thead><tbody>${rows}</tbody></table>`
+      ? `<table><thead><tr><th style="width:22px"></th>
+          ${sortTh(libSort, 'title', t('col_title'), 'wbLibSortBy')}
+          ${sortTh(libSort, 'year', t('col_year'), 'wbLibSortBy', true)}
+          ${sortTh(libSort, 'source', t('col_source'), 'wbLibSortBy')}
+          ${sortTh(libSort, 'type', t('col_type'), 'wbLibSortBy')}
+          ${sortTh(libSort, 'status', t('col_status'), 'wbLibSortBy')}
+          <th></th></tr></thead><tbody>${rows}</tbody></table>`
       : `<p class="hint">${t('filter_no_match')}</p>`}`
       : `<p class="hint">${t('library_empty')}</p>`}`;
 }
@@ -1809,6 +1857,11 @@ window.wbSaveNote = async (recordId) => {
 };
 window.wbLibFilterChange = (key, value) => {
   libraryFilters[key] = value;
+  const card = $('libraryCard');
+  if (card) card.innerHTML = renderLibraryCard(activeDetail.library || []);
+};
+window.wbLibSortBy = (key) => {
+  toggleSort(libSort, key, ['year']);
   const card = $('libraryCard');
   if (card) card.innerHTML = renderLibraryCard(activeDetail.library || []);
 };
@@ -1977,11 +2030,28 @@ function renderRunsCard(runs) {
 function renderRuns(runs) {
   if (!runs.length) return `<p class="hint">${t('runs_empty')}</p>`;
   const locale = state.lang === 'zh' ? 'zh-CN' : (state.lang === 'en' ? 'en-US' : 'vi-VN');
+  // Số thứ tự # gắn theo vị trí GỐC (mới nhất = số lớn nhất) — giữ nguyên ý nghĩa "lượt tìm
+  // thứ mấy" bất kể đang sắp xếp hiển thị theo cột nào.
+  const withOrdinal = runs.map((r, i) => ({ ...r, __ordinal: runs.length - i }));
+  const RUNS_COMPARATORS = {
+    mode: (a, b) => (a.mode || '').localeCompare(b.mode || ''),
+    query: (a, b) => (a.query_original || '').localeCompare(b.query_original || ''),
+    results: (a, b) => (a.count_deduped || 0) - (b.count_deduped || 0),
+    coverage: (a, b) => (a.coverage_state || '').localeCompare(b.coverage_state || ''),
+    date: (a, b) => new Date(a.search_date) - new Date(b.search_date),
+  };
+  const sorted = applySort(withOrdinal, runsSort, RUNS_COMPARATORS);
   return `<table class="runs-table">
     <colgroup><col style="width:5%"><col style="width:9%"><col style="width:36%"><col style="width:8%"><col style="width:10%"><col style="width:17%"><col style="width:15%"></colgroup>
-    <thead><tr><th>${t('col_num')}</th><th>${t('col_mode')}</th><th>${t('col_query')}</th><th>${t('col_results')}</th><th>${t('col_coverage')}</th><th>${t('col_date')}</th><th></th></tr></thead><tbody>${
-    runs.map((r, i) => `<tr>
-      <td>${runs.length - i}</td>
+    <thead><tr><th>${t('col_num')}</th>
+      ${sortTh(runsSort, 'mode', t('col_mode'), 'wbRunsSortBy')}
+      ${sortTh(runsSort, 'query', t('col_query'), 'wbRunsSortBy')}
+      ${sortTh(runsSort, 'results', t('col_results'), 'wbRunsSortBy', true)}
+      ${sortTh(runsSort, 'coverage', t('col_coverage'), 'wbRunsSortBy')}
+      ${sortTh(runsSort, 'date', t('col_date'), 'wbRunsSortBy', true)}
+      <th></th></tr></thead><tbody>${
+    sorted.map((r) => `<tr>
+      <td>${r.__ordinal}</td>
       <td>${t(r.mode === 'evidence' ? 'mode_evidence_short' : 'mode_discovery_short')}</td>
       <td>${esc(r.query_original)}${r.query_translated ? `<br><span class="hint">→ ${esc(r.query_translated)}</span>` : ''}
         <br>${(r.sources || []).map((s) => `<span class="pill exec-${s.execution_status}">${s.connector_id}:${s.execution_status}(${s.retrieved_count})</span>`).join('')}</td>
@@ -1992,6 +2062,11 @@ function renderRuns(runs) {
     </tr>`).join('')
   }</tbody></table>`;
 }
+window.wbRunsSortBy = (key) => {
+  toggleSort(runsSort, key, ['results', 'date']);
+  const card = $('runsCard');
+  if (card) card.innerHTML = renderRunsCard(activeDetail.searchRuns);
+};
 
 // ===== M4 v1 — Gap Candidate (xem chi tiết + lý do trong docs/research-workbench-plan.md) =====
 const GAP_TYPE_KEY = {
@@ -2067,12 +2142,22 @@ window.wbGapDismiss = (i) => {
 };
 
 function renderGapCard(candidates) {
+  const GAP_COMPARATORS = {
+    title: (a, b) => (a.title || '').localeCompare(b.title || ''),
+    type: (a, b) => gapTypeLabel(a.gapType).localeCompare(gapTypeLabel(b.gapType)),
+    status: (a, b) => (a.state || '').localeCompare(b.state || ''),
+  };
+  const sorted = applySort(candidates, gapSort, GAP_COMPARATORS);
   return `
     <h3>${t('gap_card_title', { n: candidates.length })}</h3>
     <p class="hint">${t('gap_card_hint')}</p>
     ${!candidates.length ? `<p class="hint">${t('gap_card_empty')}</p>` : `
-    <table><thead><tr><th>${t('col_title')}</th><th>${t('gap_col_type')}</th><th>${t('col_status')}</th><th></th></tr></thead><tbody>
-      ${candidates.map((c) => `<tr>
+    <table><thead><tr>
+      ${sortTh(gapSort, 'title', t('col_title'), 'wbGapSortBy')}
+      ${sortTh(gapSort, 'type', t('gap_col_type'), 'wbGapSortBy')}
+      ${sortTh(gapSort, 'status', t('col_status'), 'wbGapSortBy')}
+      <th></th></tr></thead><tbody>
+      ${sorted.map((c) => `<tr>
         <td><a href="#" class="lib-title-link" onclick="wbGapToggleDetail(${c.id});return false">${esc(c.title)}</a>
           ${c.tags ? `<br><span class="hint">${esc(c.tags)}</span>` : ''}</td>
         <td>${gapTypeLabel(c.gapType)}</td>
@@ -2084,6 +2169,11 @@ function renderGapCard(candidates) {
       </tr>`).join('')}
     </tbody></table>`}`;
 }
+window.wbGapSortBy = (key) => {
+  toggleSort(gapSort, key, []);
+  const card = $('gapCard');
+  if (card) card.innerHTML = renderGapCard(activeDetail.gapCandidates || []);
+};
 
 function renderGapDetail(c) {
   return `<div class="lib-detail">
@@ -2220,17 +2310,30 @@ window.wbRunSearch = async () => {
 const PREF_SCHEME = ['doi', 'pmid', 'pmcid', 'trial_reg_id', 'openalex', 's2', 'core'];
 
 function renderSearchResult(d) {
+  lastSearchResult = d;
   const cov = d.coverage || {};
   const unmet = (cov.unmet_groups || []).map((g) => `<span class="pill">${g.join(' / ')}</span>`).join('') || `<span class="hint">${t('dash')}</span>`;
   const man = (d.manifest || []).map((m) => `<tr><td>${m.connector_id}</td><td class="exec-${m.execution_status}">${m.execution_status}</td><td>${m.retrieved_count}</td><td>${m.duration_ms}</td><td class="hint">${esc(m.error_detail || '')}</td></tr>`).join('');
   // Lưu records ra biến toàn cục thay vì nhúng scheme/value vào onclick — DOI/URL có thể
   // chứa ký tự phá vỡ escaping HTML attribute. Nút chỉ mang data-idx (số, an toàn tuyệt đối).
+  // __idx gắn theo vị trí GỐC (không đổi khi sắp xếp hiển thị) để nút Lưu luôn trỏ đúng bài.
   window.__wbLastRecords = d.records || [];
-  const recs = (d.records || []).map((r, idx) => {
+  const withIdx = (d.records || []).map((r, idx) => ({ ...r, __idx: idx }));
+  const RESULT_COMPARATORS = {
+    title: (a, b) => (a.title || '').localeCompare(b.title || ''),
+    year: (a, b) => (a.year || 0) - (b.year || 0),
+    source: (a, b) => (a.merged_from || [a.source]).join(',').localeCompare((b.merged_from || [b.source]).join(',')),
+    type: (a, b) => studyTypeLabel(a.study_type).localeCompare(studyTypeLabel(b.study_type)),
+  };
+  // Mặc định (resultSort.key===null) GIỮ NGUYÊN thứ tự API trả về — đây là xếp hạng liên
+  // quan/độ tin cậy của nguồn dữ liệu, đúng ý "độ tin cậy cao nhất lên đầu" cho bảng KẾT QUẢ
+  // (khác bảng "của tôi" như thư viện/nhật ký vốn mặc định mới nhất trước).
+  const sortedRecs = applySort(withIdx, resultSort, RESULT_COMPARATORS);
+  const recs = sortedRecs.map((r) => {
     const ids = r.identifiers || {};
     const scheme = PREF_SCHEME.find((s) => ids[s]) || Object.keys(ids)[0];
     const saveBtn = scheme
-      ? `<button class="btn sm sec save-lib-btn" data-idx="${idx}">${t('btn_save_to_library')}</button>`
+      ? `<button class="btn sm sec save-lib-btn" data-idx="${r.__idx}">${t('btn_save_to_library')}</button>`
       : `<span class="hint">${t('no_id_hint')}</span>`;
     return `<tr>
       <td>${esc(r.title)}${r.abstract ? `<br><span class="hint">${esc(r.abstract.slice(0, 160))}…</span>` : ''}</td>
@@ -2252,9 +2355,20 @@ function renderSearchResult(d) {
         <table><thead><tr><th>${t('manifest_col_source')}</th><th>${t('manifest_col_status')}</th><th>${t('manifest_col_count')}</th><th>${t('manifest_col_ms')}</th><th>${t('manifest_col_note')}</th></tr></thead><tbody>${man}</tbody></table>
       </details>
       <p class="muted">${t('results_after_dedup', { n: d.count, fp: esc((d.requestFingerprint || '').slice(0, 16)) })}${d.persisted ? '' : ` · <b>${t('not_persisted_hint')}</b>`}</p>
-      <table><thead><tr><th>${t('col_title')}</th><th>${t('col_year')}</th><th>${t('col_source')}</th><th>${t('col_type')}</th><th>${t('col_id')}</th><th></th></tr></thead><tbody>${recs}</tbody></table>
+      <table><thead><tr>
+        ${sortTh(resultSort, 'title', t('col_title'), 'wbResultSortBy')}
+        ${sortTh(resultSort, 'year', t('col_year'), 'wbResultSortBy', true)}
+        ${sortTh(resultSort, 'source', t('col_source'), 'wbResultSortBy')}
+        ${sortTh(resultSort, 'type', t('col_type'), 'wbResultSortBy')}
+        <th>${t('col_id')}</th><th></th></tr></thead><tbody>${recs}</tbody></table>
     </div>`;
 }
+window.wbResultSortBy = (key) => {
+  if (!lastSearchResult) return;
+  toggleSort(resultSort, key, ['year']);
+  $('sResult').innerHTML = renderSearchResult(lastSearchResult);
+  bindLibraryButtons($('sResult'));
+};
 
 window.wbLog = async (fmt) => {
   const token = await auth.currentUser.getIdToken();
