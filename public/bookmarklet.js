@@ -144,23 +144,33 @@
   var style = document.createElement('style');
   style.textContent =
     ':host{all:initial}' +
-    '.bk-card{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;width:340px;' +
-    'max-height:min(80vh,620px);overflow:auto;' +
+    // resize:both — user kéo góc dưới-phải để phóng to/thu nhỏ khung tuỳ ý (yêu cầu
+    // 2026-09-19). Neo phải/dưới nên phóng to sẽ nới về hướng trái/trên, đúng trực giác.
+    // Mỗi field-group là flex-column + justify-end (không phải chỉ 2 div rời) để nhãn dài/
+    // ngắn khác nhau KHÔNG làm ô nhập lệch hàng — đúng lỗi "đè vào nhau" user báo (cùng gốc
+    // bug đã sửa ở workbench.html .row>div hôm 2026-09-18: label 1-2 dòng làm input tụt xuống
+    // không thẳng hàng khi 2 ô cạnh nhau có nhãn khác độ dài).
+    '.bk-card{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;' +
+    'width:400px;min-width:300px;max-width:min(92vw,560px);' +
+    'height:auto;min-height:340px;max-height:min(85vh,720px);resize:both;overflow:auto;' +
     'background:#F5F0E6;color:#0E3A3A;border:1px solid #d8cfb8;border-radius:12px;' +
-    'box-shadow:0 8px 28px rgba(0,0,0,.25);padding:16px;font-size:13px;line-height:1.45}' +
-    '.bk-title{font-weight:700;font-size:13px;margin-bottom:8px}' +
-    '.bk-lbl{font-size:11px;color:#6b6355;margin:8px 0 3px;font-weight:600}' +
-    '.bk-meta{color:#6b6355;font-size:12px;margin-bottom:4px}' +
-    '.bk-warn{font-size:11.5px;color:#8a5a00;background:#fbf0d6;border-radius:6px;padding:6px 8px;margin-top:4px}' +
-    '.bk-row{display:flex;gap:8px;margin-top:10px}' +
-    'input[type=text],textarea,select,button{font:inherit;border-radius:8px;border:1px solid #d8cfb8;padding:7px 9px}' +
+    'box-shadow:0 8px 28px rgba(0,0,0,.25);padding:16px;font-size:13px;line-height:1.45;' +
+    'display:flex;flex-direction:column;gap:10px;box-sizing:border-box}' +
+    '.bk-title{font-weight:700;font-size:13px}' +
+    '.bk-field-row{display:flex;gap:8px}' +
+    '.bk-field-row>div{flex:1;min-width:70px;display:flex;flex-direction:column;justify-content:flex-end}' +
+    '.bk-lbl{font-size:11px;color:#6b6355;margin:0 0 3px;font-weight:600}' +
+    '.bk-meta{color:#6b6355;font-size:12px}' +
+    '.bk-warn{font-size:11.5px;color:#8a5a00;background:#fbf0d6;border-radius:6px;padding:6px 8px}' +
+    '.bk-row{display:flex;gap:8px}' +
+    'input[type=text],textarea,select,button{font:inherit;border-radius:8px;border:1px solid #d8cfb8;padding:7px 9px;box-sizing:border-box}' +
     'input[type=text],textarea{width:100%;background:#fff;color:#241f19;resize:vertical}' +
-    'textarea{min-height:80px}' +
+    'textarea.bk-abstract-input{min-height:150px;flex:1}' +
     'select{flex:1;background:#fff;color:#0E3A3A}' +
     'button{cursor:pointer;background:#fff;color:#0E3A3A}' +
     'button.primary{background:#B4472B;color:#fff;border-color:#B4472B;font-weight:600}' +
     'button:disabled{opacity:.55;cursor:default}' +
-    '.bk-status{margin-top:8px;font-size:12px}' +
+    '.bk-status{font-size:12px}' +
     '.bk-status.err{color:#B4472B}' +
     '.bk-status.ok{color:#1e6b4f}' +
     '.bk-close{position:absolute;top:8px;right:10px;background:none;border:none;font-size:16px;' +
@@ -191,38 +201,65 @@
     return;
   }
 
-  var rec = extractRecord();
-  if (!rec.title) {
-    card.innerHTML =
-      '<button class="bk-close">×</button>' +
-      '<div class="bk-title">Chimedis — Lưu vào thư viện</div>' +
-      '<div class="bk-status err">Không đọc được tiêu đề bài viết trên trang này. Mở đúng trang chi tiết 1 bài báo rồi thử lại.</div>';
-    card.querySelector('.bk-close').onclick = close;
-    return;
+  // "Quét thông minh tuỳ trang" (2026-09-19, theo yêu cầu user) — nhiều trang (kể cả CNKI)
+  // ẩn phần tóm tắt/nội dung sau nút "展开全部"/"显示全部"/"阅读全文"/"Show more"/"Read more"
+  // cho tới khi user bấm. Tự dò và bấm các nút khớp mẫu TRƯỚC khi trích — đa số trường hợp
+  // đây chỉ là CSS ẩn/hiện nên áp dụng ngay lập tức, không cần chờ; đợi thêm 1 nhịp ngắn để
+  // phủ luôn trường hợp hiếm hơn là nội dung tải thêm qua AJAX. Đây là suy đoán theo mẫu chữ
+  // phổ biến — KHÔNG đảm bảo đúng mọi trang, vẫn còn nút "↻ Trích lại từ trang" + ô sửa tay
+  // làm lưới an toàn cuối cùng.
+  function tryAutoExpand() {
+    var re = /^(展开|展开全部|显示全部|显示更多|阅读全文|查看全文|更多|全文|show more|read more|view full text|expand|more)$/i;
+    var nodes = document.querySelectorAll('button, a, span, div');
+    var clicked = 0;
+    for (var i = 0; i < nodes.length && clicked < 4; i++) {
+      var el = nodes[i];
+      if (el.children.length > 1) continue; // chỉ nhắm phần tử "lá" (nút/link thật), bỏ container lớn
+      var txt = (el.textContent || '').trim();
+      if (txt.length > 12 || !re.test(txt)) continue;
+      try { el.click(); clicked++; } catch (e) { /* bỏ qua phần tử không click được */ }
+    }
+    return clicked;
   }
+  var expandClicks = tryAutoExpand();
 
+  function proceed() {
+    var rec = extractRecord();
+    if (!rec.title) {
+      card.innerHTML =
+        '<button class="bk-close">×</button>' +
+        '<div class="bk-title">Chimedis — Lưu vào thư viện</div>' +
+        '<div class="bk-status err">Không đọc được tiêu đề bài viết trên trang này. Mở đúng trang chi tiết 1 bài báo rồi thử lại.</div>';
+      card.querySelector('.bk-close').onclick = close;
+      return;
+    }
+    renderForm(rec);
+  }
+  if (expandClicks > 0) { setTimeout(proceed, 250); } else { proceed(); }
+
+  function renderForm(rec) {
   var authorsJoined = rec.authors.join(', ');
   card.innerHTML =
     '<button class="bk-close">×</button>' +
     '<div class="bk-title">Lưu vào Chimedis</div>' +
-    '<div class="bk-lbl">Tiêu đề</div>' +
-    '<input type="text" class="bk-title-input" value="' + escHtml(rec.title) + '" />' +
-    '<div class="bk-lbl">Tác giả (cách nhau bằng dấu phẩy)</div>' +
-    '<input type="text" class="bk-authors-input" value="' + escHtml(authorsJoined) + '" placeholder="Chưa rõ — gõ tay nếu cần" />' +
-    '<div style="display:flex;gap:8px">' +
+    '<div><div class="bk-lbl">Tiêu đề</div><input type="text" class="bk-title-input" value="' + escHtml(rec.title) + '" /></div>' +
+    '<div><div class="bk-lbl">Tác giả (cách nhau bằng dấu phẩy)</div><input type="text" class="bk-authors-input" value="' + escHtml(authorsJoined) + '" placeholder="Chưa rõ — gõ tay nếu cần" /></div>' +
+    '<div class="bk-field-row">' +
     '<div style="flex:2"><div class="bk-lbl">Tạp chí</div><input type="text" class="bk-journal-input" value="' + escHtml(rec.journal || '') + '" /></div>' +
-    '<div style="flex:1"><div class="bk-lbl">Năm</div><input type="text" class="bk-year-input" value="' + escHtml(rec.year || '') + '" /></div>' +
+    '<div><div class="bk-lbl">Năm</div><input type="text" class="bk-year-input" value="' + escHtml(rec.year || '') + '" /></div>' +
     '</div>' +
-    '<div style="display:flex;gap:8px">' +
-    '<div style="flex:1"><div class="bk-lbl">Tập</div><input type="text" class="bk-volume-input" value="' + escHtml(rec.volume || '') + '" /></div>' +
-    '<div style="flex:1"><div class="bk-lbl">Số</div><input type="text" class="bk-issue-input" value="' + escHtml(rec.issue || '') + '" /></div>' +
+    '<div class="bk-field-row">' +
+    '<div><div class="bk-lbl">Tập</div><input type="text" class="bk-volume-input" value="' + escHtml(rec.volume || '') + '" /></div>' +
+    '<div><div class="bk-lbl">Số</div><input type="text" class="bk-issue-input" value="' + escHtml(rec.issue || '') + '" /></div>' +
     '<div style="flex:1.4"><div class="bk-lbl">Trang</div><input type="text" class="bk-pages-input" value="' + escHtml(rec.pages || '') + '" placeholder="vd 45-52" /></div>' +
     '</div>' +
-    '<div class="bk-lbl">Tóm tắt (abstract)</div>' +
+    '<div style="display:flex;justify-content:space-between;align-items:baseline">' +
+    '<div class="bk-lbl" style="margin:0">Tóm tắt (abstract)</div>' +
+    '<a href="#" class="bk-refetch" style="font-size:11px">↻ Trích lại từ trang</a>' +
+    '</div>' +
     '<textarea class="bk-abstract-input" placeholder="Không tự đọc được — bôi-copy đoạn tóm tắt trên trang rồi dán vào đây (không bắt buộc, nhưng cần cho phân tích khoảng trống sau này)">' + escHtml(rec.abstract || '') + '</textarea>' +
-    (rec.abstract ? '' : '<div class="bk-warn">⚠️ Không tự đọc được tóm tắt trên trang này — dán tay vào ô trên nếu muốn dùng cho phân tích khoảng trống sau này.</div>') +
-    '<div class="bk-lbl">Lưu vào dự án</div>' +
-    '<select class="bk-project"><option value="">Đang tải danh sách dự án…</option></select>' +
+    '<div class="bk-warn bk-abstract-warn"' + (rec.abstract ? ' hidden' : '') + '>⚠️ Không tự đọc được tóm tắt trên trang này. Nếu trang có nút "展开/显示全部/Show more" hãy tự bấm mở rồi bấm "↻ Trích lại từ trang" — hoặc bôi-copy tay đoạn tóm tắt rồi dán vào ô trên.</div>' +
+    '<div><div class="bk-lbl">Lưu vào dự án</div><select class="bk-project"><option value="">Đang tải danh sách dự án…</option></select></div>' +
     '<div class="bk-row">' +
     '<button class="bk-save primary" disabled>Lưu</button>' +
     '<button class="bk-cancel">Huỷ</button>' +
@@ -236,12 +273,22 @@
   var saveBtn = card.querySelector('.bk-save');
   var titleInput = card.querySelector('.bk-title-input');
   var abstractInput = card.querySelector('.bk-abstract-input');
+  var abstractWarnEl = card.querySelector('.bk-abstract-warn');
   var authorsInput = card.querySelector('.bk-authors-input');
   var journalInput = card.querySelector('.bk-journal-input');
   var yearInput = card.querySelector('.bk-year-input');
   var volumeInput = card.querySelector('.bk-volume-input');
   var issueInput = card.querySelector('.bk-issue-input');
   var pagesInput = card.querySelector('.bk-pages-input');
+  // "Trích lại từ trang" — sau khi user tự bấm mở rộng nội dung trên trang gốc (vd nút
+  // "展开全部"/"Show more" mà bookmarklet không tự đoán hết được), quét lại DUY NHẤT phần
+  // tóm tắt mà không mất các trường khác đã sửa tay (2026-09-19, theo yêu cầu user).
+  card.querySelector('.bk-refetch').onclick = function (e) {
+    e.preventDefault();
+    var fresh = findAbstract().trim();
+    if (fresh) { abstractInput.value = fresh; abstractWarnEl.hidden = true; }
+    else { abstractWarnEl.hidden = false; }
+  };
 
   fetch(API_BASE + '/projects', { headers: { Authorization: 'Bearer ' + TOKEN } })
     .then(function (r) { return r.json(); })
@@ -296,4 +343,5 @@
         saveBtn.disabled = false;
       });
   };
+  } // end renderForm
 })();
