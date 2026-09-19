@@ -536,11 +536,26 @@
     var m = text.match(/[{[]\s*Reference Type\s*[}\]]\s*:/gi);
     return m ? m.length : 0;
   }
+  // ===== Nhận diện trang KẾT QUẢ TÌM KIẾM 万方 (2026-09-19) — 万方 KHÔNG cho xuất trích dẫn
+  // (NoteExpress/RIS/BibTeX đều trống, user xác nhận thật đã thử), nên đọc THẲNG text hiển thị
+  // sẵn trên trang danh sách kết quả thay vì cần bước xuất. Mẫu thật user bôi-copy dán vào:
+  // "[期刊论文]<tác giả>-《<tạp chí>》<nhãn>2026年1期" lặp lại mỗi bản ghi — đếm số dòng khớp
+  // mẫu này làm tín hiệu phân biệt với trang 1 bài đơn lẻ. Xem parseWanfangList() ở
+  // lib/ref-import.js để biết đầy đủ giới hạn đã biết (tác giả/từ khoá dính liền không tách
+  // được, tóm tắt có thể bị cắt ngắn ở trang danh sách).
+  var WANFANG_CITE_RE = /\[[^\]]+\][^\n]*?-\s*《[^》]+》[^\d\n]*\d{4}年\d+期/g;
+  function countWanfangBlocks(text) {
+    var m = text.match(WANFANG_CITE_RE);
+    return m ? m.length : 0;
+  }
 
   var pageText = document.body.innerText || '';
   var refBlockCount = countReferenceBlocks(pageText);
+  var wanfangCount = countWanfangBlocks(pageText);
   if (refBlockCount >= 2) {
-    renderBulkImport(pageText, refBlockCount);
+    renderBulkImport(pageText, refBlockCount, 'ris');
+  } else if (wanfangCount >= 2) {
+    renderBulkImport(pageText, wanfangCount, 'wanfang-list');
   } else {
     singleArticleFlow();
   }
@@ -562,7 +577,7 @@
   // cầu user — trước đó lưu thẳng, giờ hiện danh sách đã đọc được để user tự bỏ bài không cần
   // TRƯỚC khi lưu, không lưu mù toàn bộ trang xuất). 2 bước: (1) /parse chỉ đọc, không lưu, trả
   // về danh sách bản ghi; (2) user tick bỏ bớt rồi mới /import đúng các bản ghi còn chọn. =====
-  function renderBulkImport(text, count) {
+  function renderBulkImport(text, count, format) {
     mountTitlebar();
     var body = document.createElement('div');
     body.className = 'bk-body';
@@ -575,7 +590,7 @@
     fetch(API_BASE + '/parse', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
-      body: JSON.stringify({ format: 'ris', text: text }),
+      body: JSON.stringify({ format: format || 'ris', text: text }),
     })
       .then(function (r) { return r.json(); })
       .then(function (d) {
