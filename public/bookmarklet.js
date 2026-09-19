@@ -314,7 +314,10 @@
     '.bk-ref-item:hover{background:#f5f0e6}' +
     '.bk-ref-item input{margin-top:3px;flex:0 0 auto}' +
     '.bk-ref-title{font-weight:600;font-size:12.5px;line-height:1.35}' +
+    '.bk-ref-toggle{display:inline-block;width:10px;color:#6b6355;font-size:10px}' +
     '.bk-ref-meta{font-size:11px;color:#6b6355;margin-top:2px}' +
+    '.bk-ref-abstract{font-size:11.5px;color:#241f19;line-height:1.5;margin-top:5px;' +
+    'padding:8px 9px;background:#F5F0E6;border-radius:6px;white-space:pre-wrap}' +
     '.bk-ref-toolbar{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px}' +
     '.bk-ref-toolbar a{color:#B4472B;cursor:pointer}' +
     // 8 tay cầm resize — 4 cạnh (dải mỏng dọc theo cạnh) + 4 góc (ô vuông nhỏ đè lên góc).
@@ -384,6 +387,32 @@
     mini.hidden = true;
   }
   mini.addEventListener('click', restore);
+
+  // ===== Phóng to toàn màn hình (2026-09-19) — user cần đọc lại đầy đủ tiêu đề/tóm tắt khi
+  // xem trước danh sách nhập hàng loạt, khung mặc định nhỏ khó đọc. Bấm lại nút để thu về đúng
+  // kích thước/vị trí trước khi phóng to (không đè lên minimize — 2 trạng thái tách biệt). =====
+  var isMaximized = false;
+  var savedRectBeforeMax = null;
+  var maxBtnEl = null;
+  function toggleMaximize() {
+    if (isMaximized) {
+      if (savedRectBeforeMax) {
+        host.style.left = savedRectBeforeMax.left + 'px';
+        host.style.top = savedRectBeforeMax.top + 'px';
+        host.style.width = savedRectBeforeMax.width + 'px';
+        host.style.height = savedRectBeforeMax.height + 'px';
+      }
+      isMaximized = false;
+    } else {
+      savedRectBeforeMax = { left: parseFloat(host.style.left), top: parseFloat(host.style.top), width: host.offsetWidth, height: host.offsetHeight };
+      host.style.left = '16px';
+      host.style.top = '16px';
+      host.style.width = (window.innerWidth - 32) + 'px';
+      host.style.height = (window.innerHeight - 32) + 'px';
+      isMaximized = true;
+    }
+    if (maxBtnEl) { maxBtnEl.textContent = isMaximized ? '⤡' : '⤢'; maxBtnEl.title = isMaximized ? 'Thu về kích thước cũ' : 'Phóng to toàn màn hình'; }
+  }
 
   // ===== Kéo-thả di chuyển (titlebar) =====
   function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
@@ -460,6 +489,7 @@
     bar.className = 'bk-titlebar';
     bar.innerHTML = '<span class="bk-title">Lưu vào Chimedis</span>' +
       '<span class="bk-header-actions">' +
+      '<button type="button" class="bk-icon-btn bk-max" title="Phóng to toàn màn hình">⤢</button>' +
       '<button type="button" class="bk-icon-btn bk-min" title="Thu nhỏ">–</button>' +
       '<button type="button" class="bk-icon-btn bk-close" title="Đóng">×</button>' +
       '</span>';
@@ -467,6 +497,8 @@
     makeDraggable(bar);
     bar.querySelector('.bk-close').onclick = close;
     bar.querySelector('.bk-min').onclick = minimize;
+    maxBtnEl = bar.querySelector('.bk-max');
+    maxBtnEl.onclick = toggleMaximize;
   }
 
   // "Quét thông minh tuỳ trang" — nhiều trang (kể cả CNKI) ẩn tóm tắt/nội dung sau nút
@@ -561,13 +593,35 @@
         '</div>' +
         '<div class="bk-status"></div>';
       var listEl = body.querySelector('.bk-ref-list');
+      // Bấm vào tiêu đề để xem lại đầy đủ tóm tắt (abstract) trước khi quyết định bỏ tick hay
+      // không (2026-09-19, user muốn đọc lại nội dung sẽ trích trước khi lưu) — TÁCH khỏi
+      // checkbox (không dùng <label> bọc cả dòng nữa) để bấm tiêu đề không vô tình đổi tick.
       records.forEach(function (rec, i) {
-        var row = document.createElement('label');
+        var row = document.createElement('div');
         row.className = 'bk-ref-item';
         var meta = [rec.authors && rec.authors.length ? rec.authors.slice(0, 3).join(', ') + (rec.authors.length > 3 ? ' và cộng sự' : '') : '', [rec.journal, rec.year].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+        var detailParts = [];
+        if (rec.abstract) detailParts.push('<div class="bk-ref-abstract">' + escHtml(rec.abstract) + '</div>');
+        if (rec.doi) detailParts.push('<div class="bk-ref-meta">DOI: ' + escHtml(rec.doi) + '</div>');
+        if (rec.url) detailParts.push('<div class="bk-ref-meta"><a href="' + escHtml(rec.url) + '" target="_blank" rel="noopener">' + escHtml(rec.url) + '</a></div>');
         row.innerHTML = '<input type="checkbox" data-idx="' + i + '" checked />' +
-          '<span><div class="bk-ref-title">' + escHtml(rec.title || '(không có tiêu đề)') + '</div>' +
-          (meta ? '<div class="bk-ref-meta">' + escHtml(meta) + '</div>' : '') + '</span>';
+          '<span style="flex:1;min-width:0">' +
+          '<div class="bk-ref-title"><span class="bk-ref-toggle">▸</span> ' + escHtml(rec.title || '(không có tiêu đề)') + '</div>' +
+          (meta ? '<div class="bk-ref-meta">' + escHtml(meta) + '</div>' : '') +
+          (detailParts.length ? '<div class="bk-ref-detail" hidden>' + detailParts.join('') + '</div>' : '') +
+          '</span>';
+        var titleEl = row.querySelector('.bk-ref-title');
+        var detailEl = row.querySelector('.bk-ref-detail');
+        var toggleEl = row.querySelector('.bk-ref-toggle');
+        if (detailEl) {
+          titleEl.style.cursor = 'pointer';
+          titleEl.onclick = function () {
+            detailEl.hidden = !detailEl.hidden;
+            toggleEl.textContent = detailEl.hidden ? '▸' : '▾';
+          };
+        } else {
+          toggleEl.style.visibility = 'hidden';
+        }
         listEl.appendChild(row);
       });
 
