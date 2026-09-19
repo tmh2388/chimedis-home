@@ -191,8 +191,15 @@
      có, cả bảng tràn ra ngoài .card thay vì tự bọc dòng, đẩy cột cuối (nút Phân tích khoảng
      trống) ra ngoài tầm nhìn — lỗi user báo 2026-09-18. .runs-table ép layout:fixed + tỉ lệ
      cột cố định qua colgroup → nội dung PHẢI tự xuống dòng trong đúng cột của nó. */
-  .runs-table{table-layout:fixed}
+  /* min-width sàn (2026-09-19, user báo tiêu đề cột đè lên nhau khi kéo khung wb-mid hẹp lại
+     — table-layout:fixed ép cột co theo % bất kể còn đủ chỗ cho chữ hay không, th.sortable-th
+     lại có white-space:nowrap nên khi cột hẹp hơn chữ, chữ tràn đè sang cột bên cạnh thay vì
+     tự xuống dòng/cắt bớt. min-width buộc BẢNG không co dưới ngưỡng đọc được — hẹp hơn nữa thì
+     .card{overflow-x:auto} tự hiện thanh cuộn ngang thay vì bóp méo cột. Đây là ngưỡng CHUNG
+     áp cho mọi bảng dùng table-layout:fixed sau này, không cần vá riêng từng bảng mới. */
+  .runs-table{table-layout:fixed;min-width:640px}
   .runs-table td{white-space:normal}
+  .runs-table th.sortable-th{white-space:normal}
   th{color:var(--muted-fg);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.03em;background:#FCFAF6}
   tbody tr:hover td{background:#FCFAF6}
   .lib-title-link{color:var(--ink);font-weight:600;text-decoration:none}

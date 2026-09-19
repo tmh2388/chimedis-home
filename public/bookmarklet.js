@@ -306,6 +306,17 @@
     '.bk-status{font-size:12px}' +
     '.bk-status.err{color:#B4472B}' +
     '.bk-status.ok{color:#1e6b4f}' +
+    // Danh sách xem trước bản ghi hàng loạt (2026-09-19) — mỗi bài 1 dòng có checkbox, cho
+    // user tự bỏ chọn bớt trước khi lưu thay vì lưu mù toàn bộ trang xuất.
+    '.bk-ref-list{display:flex;flex-direction:column;gap:2px;border:1px solid #e4dcc9;' +
+    'border-radius:8px;padding:4px;max-height:100%;overflow:auto;flex:1;min-height:0;background:#fff}' +
+    '.bk-ref-item{display:flex;gap:8px;padding:6px 7px;border-radius:6px;align-items:flex-start}' +
+    '.bk-ref-item:hover{background:#f5f0e6}' +
+    '.bk-ref-item input{margin-top:3px;flex:0 0 auto}' +
+    '.bk-ref-title{font-weight:600;font-size:12.5px;line-height:1.35}' +
+    '.bk-ref-meta{font-size:11px;color:#6b6355;margin-top:2px}' +
+    '.bk-ref-toolbar{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px}' +
+    '.bk-ref-toolbar a{color:#B4472B;cursor:pointer}' +
     // 8 tay cầm resize — 4 cạnh (dải mỏng dọc theo cạnh) + 4 góc (ô vuông nhỏ đè lên góc).
     '.bk-rz{position:absolute;z-index:2}' +
     '.bk-rz-n{top:-4px;left:8px;right:8px;height:8px;cursor:ns-resize}' +
@@ -508,71 +519,119 @@
     if (expandClicks > 0) { setTimeout(proceed, 250); } else { proceed(); }
   }
 
-  // ===== Nhập hàng loạt từ trang xuất CNKI/万方 — chọn dự án 1 lần, gửi thẳng text trang cho
-  // server (đã có sẵn parser RIS/EndNote/NoteExpress/BibTeX dùng chung với nhập tay trong
-  // Chimedis ở lib/ref-import.js, tự nhận diện định dạng bất kể tham số format truyền lên). =====
+  // ===== Nhập hàng loạt từ trang xuất CNKI/万方 (2026-09-19, xem trước + bỏ chọn bớt theo yêu
+  // cầu user — trước đó lưu thẳng, giờ hiện danh sách đã đọc được để user tự bỏ bài không cần
+  // TRƯỚC khi lưu, không lưu mù toàn bộ trang xuất). 2 bước: (1) /parse chỉ đọc, không lưu, trả
+  // về danh sách bản ghi; (2) user tick bỏ bớt rồi mới /import đúng các bản ghi còn chọn. =====
   function renderBulkImport(text, count) {
     mountTitlebar();
     var body = document.createElement('div');
     body.className = 'bk-body';
+    body.style.overflow = 'hidden';
     body.innerHTML =
-      '<div class="bk-status">Phát hiện trang xuất hàng loạt — tìm thấy khoảng <b>' + count + '</b> bản ghi trên trang này.</div>' +
-      '<div><div class="bk-lbl">Nhập vào dự án</div><select class="bk-project"><option value="">Đang tải danh sách dự án…</option></select></div>' +
-      '<div class="bk-row">' +
-      '<button class="bk-import primary" disabled>Nhập tất cả</button>' +
-      '<button class="bk-cancel">Huỷ</button>' +
-      '</div>' +
-      '<div class="bk-status"></div>';
+      '<div class="bk-status">Phát hiện trang xuất hàng loạt — đang đọc khoảng <b>' + count + '</b> bản ghi…</div>';
     card.appendChild(body);
+    var loadingEl = body.querySelector('.bk-status');
 
-    body.querySelector('.bk-cancel').onclick = close;
-    var statusEls = body.querySelectorAll('.bk-status');
-    var statusEl = statusEls[statusEls.length - 1];
-    var selectEl = body.querySelector('.bk-project');
-    var importBtn = body.querySelector('.bk-import');
-
-    fetch(API_BASE + '/projects', { headers: { Authorization: 'Bearer ' + TOKEN } })
+    fetch(API_BASE + '/parse', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
+      body: JSON.stringify({ format: 'ris', text: text }),
+    })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (!d.success) throw new Error(d.error || 'Lỗi tải danh sách dự án');
-        if (!d.projects.length) {
-          selectEl.innerHTML = '<option value="">(chưa có dự án — tạo trong Chimedis trước)</option>';
-          return;
-        }
-        selectEl.innerHTML = d.projects.map(function (p) {
-          return '<option value="' + p.id + '">' + escHtml(p.title) + '</option>';
-        }).join('');
-        importBtn.disabled = false;
+        if (!d.success) throw new Error(d.error || 'Lỗi khi đọc nội dung');
+        if (!d.records.length) throw new Error('Không đọc được bản ghi nào trên trang này');
+        renderBulkChecklist(d.records);
       })
       .catch(function (err) {
-        statusEl.textContent = 'Không tải được danh sách dự án: ' + err.message;
-        statusEl.className = 'bk-status err';
+        loadingEl.textContent = err.message;
+        loadingEl.className = 'bk-status err';
       });
 
-    importBtn.onclick = function () {
-      var projectId = selectEl.value;
-      if (!projectId) return;
-      importBtn.disabled = true;
-      statusEl.textContent = 'Đang nhập ' + count + ' bản ghi…';
-      statusEl.className = 'bk-status';
-      fetch(API_BASE + '/import', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
-        body: JSON.stringify({ projectId: projectId, format: 'ris', text: text }),
-      })
+    function renderBulkChecklist(records) {
+      body.innerHTML =
+        '<div class="bk-ref-toolbar"><span>Tìm thấy <b>' + records.length + '</b> bản ghi — bỏ tick bài không cần:</span>' +
+        '<a class="bk-select-none">Bỏ chọn tất cả</a></div>' +
+        '<div class="bk-ref-list"></div>' +
+        '<div><div class="bk-lbl">Nhập vào dự án</div><select class="bk-project"><option value="">Đang tải danh sách dự án…</option></select></div>' +
+        '<div class="bk-row">' +
+        '<button class="bk-import primary" disabled>Lưu bài đã chọn</button>' +
+        '<button class="bk-cancel">Huỷ</button>' +
+        '</div>' +
+        '<div class="bk-status"></div>';
+      var listEl = body.querySelector('.bk-ref-list');
+      records.forEach(function (rec, i) {
+        var row = document.createElement('label');
+        row.className = 'bk-ref-item';
+        var meta = [rec.authors && rec.authors.length ? rec.authors.slice(0, 3).join(', ') + (rec.authors.length > 3 ? ' và cộng sự' : '') : '', [rec.journal, rec.year].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+        row.innerHTML = '<input type="checkbox" data-idx="' + i + '" checked />' +
+          '<span><div class="bk-ref-title">' + escHtml(rec.title || '(không có tiêu đề)') + '</div>' +
+          (meta ? '<div class="bk-ref-meta">' + escHtml(meta) + '</div>' : '') + '</span>';
+        listEl.appendChild(row);
+      });
+
+      var toggleAllEl = body.querySelector('.bk-select-none');
+      var allChecked = true;
+      toggleAllEl.onclick = function () {
+        allChecked = !allChecked;
+        toggleAllEl.textContent = allChecked ? 'Bỏ chọn tất cả' : 'Chọn tất cả';
+        Array.prototype.forEach.call(listEl.querySelectorAll('input[type=checkbox]'), function (cb) { cb.checked = allChecked; });
+      };
+
+      body.querySelector('.bk-cancel').onclick = close;
+      var statusEl = body.querySelector('.bk-status');
+      var selectEl = body.querySelector('.bk-project');
+      var importBtn = body.querySelector('.bk-import');
+
+      fetch(API_BASE + '/projects', { headers: { Authorization: 'Bearer ' + TOKEN } })
         .then(function (r) { return r.json(); })
         .then(function (d) {
-          if (!d.success) throw new Error(d.error || 'Lỗi khi nhập');
-          statusEl.textContent = 'Đã nhập ' + d.imported + '/' + d.total + ' bản ghi' + (d.skipped ? ' (bỏ qua ' + d.skipped + ')' : '') + ' ✓';
-          statusEl.className = 'bk-status ok';
-          setTimeout(close, 2400);
+          if (!d.success) throw new Error(d.error || 'Lỗi tải danh sách dự án');
+          if (!d.projects.length) {
+            selectEl.innerHTML = '<option value="">(chưa có dự án — tạo trong Chimedis trước)</option>';
+            return;
+          }
+          selectEl.innerHTML = d.projects.map(function (p) {
+            return '<option value="' + p.id + '">' + escHtml(p.title) + '</option>';
+          }).join('');
+          importBtn.disabled = false;
         })
         .catch(function (err) {
-          statusEl.textContent = err.message;
+          statusEl.textContent = 'Không tải được danh sách dự án: ' + err.message;
           statusEl.className = 'bk-status err';
-          importBtn.disabled = false;
         });
-    };
+
+      importBtn.onclick = function () {
+        var projectId = selectEl.value;
+        if (!projectId) return;
+        var selected = [];
+        Array.prototype.forEach.call(listEl.querySelectorAll('input[type=checkbox]:checked'), function (cb) {
+          selected.push(records[parseInt(cb.getAttribute('data-idx'), 10)]);
+        });
+        if (!selected.length) { statusEl.textContent = 'Chưa chọn bài nào.'; statusEl.className = 'bk-status err'; return; }
+        importBtn.disabled = true;
+        statusEl.textContent = 'Đang lưu ' + selected.length + ' bản ghi…';
+        statusEl.className = 'bk-status';
+        fetch(API_BASE + '/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
+          body: JSON.stringify({ projectId: projectId, records: selected }),
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (!d.success) throw new Error(d.error || 'Lỗi khi lưu');
+            statusEl.textContent = 'Đã lưu ' + d.imported + '/' + d.total + ' bản ghi' + (d.skipped ? ' (bỏ qua ' + d.skipped + ')' : '') + ' ✓';
+            statusEl.className = 'bk-status ok';
+            setTimeout(close, 2400);
+          })
+          .catch(function (err) {
+            statusEl.textContent = err.message;
+            statusEl.className = 'bk-status err';
+            importBtn.disabled = false;
+          });
+      };
+    }
   }
 
   function renderForm(rec) {

@@ -7,10 +7,12 @@
 // 3 nhóm route:
 //  - /tokens: quản lý token cá nhân, chạy TRONG app Chimedis → dùng Firebase auth bình
 //    thường (requireUser/requireVerified), KHÔNG cần CORS mở vì cùng origin.
-//  - /projects, /save, /import: gọi TỪ bookmarklet đang chạy trên domain khác (CNKI...) —
-//    không có Firebase session cookie của tab Chimedis, xác thực bằng token cá nhân (Bearer).
-//    CORS mở cho MỌI origin CHỈ ở các route này — an toàn vì auth qua header Bearer tự thân
-//    request mang theo (không phải cookie), không có đường cho site khác "mượn" quyền user.
+//  - /projects, /save, /import, /parse: gọi TỪ bookmarklet đang chạy trên domain khác
+//    (CNKI...) — không có Firebase session cookie của tab Chimedis, xác thực bằng token cá
+//    nhân (Bearer). CORS mở cho MỌI origin CHỈ ở các route này — an toàn vì auth qua header
+//    Bearer tự thân request mang theo (không phải cookie), không có đường cho site khác
+//    "mượn" quyền user. /parse chỉ đọc (không lưu) — dùng cho bước xem trước + bỏ chọn bớt
+//    TRƯỚC khi /import thật sự lưu (2026-09-19, user muốn xem lại danh sách trước khi lưu).
 import { Router } from 'express';
 import { getPool, isDbConfigured } from '../lib/db.js';
 import { requireUser, requireVerified } from '../lib/auth.js';
@@ -65,6 +67,7 @@ router.delete('/tokens/:id', requireDb, requireUser, async (req, res) => {
 router.use('/projects', corsOpen);
 router.use('/save', corsOpen);
 router.use('/import', corsOpen);
+router.use('/parse', corsOpen);
 function corsOpen(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Authorization, Content-Type');
@@ -110,10 +113,33 @@ router.post('/save', requireDb, requirePersonalToken, rlSave, async (req, res) =
   }
 });
 
+// Xem trước hàng loạt (2026-09-19) — parse ĐỌC THÔI, không lưu — để bookmarklet hiện danh
+// sách bài cho user tự bỏ chọn bớt TRƯỚC khi lưu (user báo trang xuất bản gộp cả bài không
+// cần, muốn xem lại rồi mới chọn lưu, không muốn lưu mù toàn bộ).
+const rlParse = rateLimit({ max: 20, windowMs: 60_000, keyFn: (r) => 'bkparse' + (r.user?.id || 'anon') });
+router.post('/parse', requireDb, requirePersonalToken, rlParse, async (req, res) => {
+  try {
+    const format = String(req.body?.format || 'ris').toLowerCase();
+    const text = String(req.body?.text || '');
+    if (!text.trim()) return res.status(400).json({ success: false, error: 'Không có nội dung để đọc' });
+    let parsed;
+    try {
+      parsed = parseReferences(format, text);
+    } catch (e) {
+      return res.status(400).json({ success: false, error: 'Không đọc được định dạng: ' + e.message });
+    }
+    res.json({ success: true, records: parsed.slice(0, 500) });
+  } catch (err) {
+    console.error('POST /bookmarklet/parse:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi khi đọc nội dung' });
+  }
+});
+
 // Nhập hàng loạt — user tự chọn bài trên CNKI/万方, tự bấm "导出与分析 → 导出文献" của
 // CHÍNH nền tảng đó (NoteExpress/BibTex/EndNote), rồi bấm bookmarklet trên trang xuất kết
 // quả hiện ra. Bookmarklet chỉ đọc text đã hiển thị sẵn trên trang — không tự động hoá
-// bước tìm/chọn/xuất nào của CNKI.
+// bước tìm/chọn/xuất nào của CNKI. Nhận 1 trong 2 dạng: `records` (mảng đã parse qua /parse
+// và user đã tự bỏ chọn bớt ở popup) HOẶC `text`+`format` (parse lại từ đầu, đường cũ).
 const rlImport = rateLimit({ max: 10, windowMs: 60_000, keyFn: (r) => 'bkimp' + (r.user?.id || 'anon') });
 router.post('/import', requireDb, requirePersonalToken, rlImport, async (req, res) => {
   try {
@@ -122,14 +148,19 @@ router.post('/import', requireDb, requirePersonalToken, rlImport, async (req, re
       'SELECT id FROM wb_projects WHERE id=? AND user_id=? LIMIT 1', [projectId, req.user.id]
     );
     if (!rows.length) return res.status(404).json({ success: false, error: 'Không tìm thấy dự án (hoặc không thuộc về bạn)' });
-    const format = String(req.body?.format || 'ris').toLowerCase();
-    const text = String(req.body?.text || '');
-    if (!text.trim()) return res.status(400).json({ success: false, error: 'Không có nội dung để nhập' });
+
     let parsed;
-    try {
-      parsed = parseReferences(format, text);
-    } catch (e) {
-      return res.status(400).json({ success: false, error: 'Không đọc được định dạng: ' + e.message });
+    if (Array.isArray(req.body?.records)) {
+      parsed = req.body.records;
+    } else {
+      const format = String(req.body?.format || 'ris').toLowerCase();
+      const text = String(req.body?.text || '');
+      if (!text.trim()) return res.status(400).json({ success: false, error: 'Không có nội dung để nhập' });
+      try {
+        parsed = parseReferences(format, text);
+      } catch (e) {
+        return res.status(400).json({ success: false, error: 'Không đọc được định dạng: ' + e.message });
+      }
     }
     if (!parsed.length) return res.status(400).json({ success: false, error: 'Không tìm thấy bản ghi nào trong nội dung' });
 
