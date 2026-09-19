@@ -1,4 +1,4 @@
-// M9 — "Lưu vào Chimedis" bookmarklet loader (2026-09-18).
+// M9 — "Lưu vào Chimedis" bookmarklet loader (2026-09-18, cập nhật lớn 2026-09-19).
 // Được nạp bằng bookmarklet cực ngắn: javascript:(function(){var s=document.createElement
 // ('script');s.src='https://chimedis.vn/bookmarklet.js?t=TOKEN&r='+Date.now();document.body
 // .appendChild(s);})() — logic thật sống ở đây (file tĩnh) để có thể sửa/cải thiện về sau mà
@@ -8,17 +8,22 @@
 // Chạy TRÊN DOM của trang bên ngoài (CNKI/万方/tạp chí bất kỳ) — dùng Shadow DOM để cô lập
 // hoàn toàn CSS, tránh xung đột với style của trang chủ.
 //
-// TÓM TẮT (abstract) — quan trọng cho Gap Analysis (M4) nên KHÔNG được bỏ sót/rút gọn âm
-// thầm. 3 tầng dò, ưu tiên trên xuống, mỗi tầng chỉ nhận nếu tầng trước rỗng:
-//   1) <meta name="citation_abstract"> — chuẩn Highwire, hiếm site có (gần như chắc chắn
-//      CNKI/万方 không phát hành thẻ này).
-//   2) Quét DOM theo danh sách CSS selector đã biết của CNKI/万方 + tên lớp chung "abstract".
-//   3) Quét DOM tìm nhãn "摘要"/"Abstract" đứng riêng rồi lấy phần văn bản theo sau.
-// KHÔNG bao giờ dùng <meta name="description"> làm tóm tắt (thường chỉ là câu SEO ngắn,
-// không phải abstract thật — im lặng dùng nhầm sẽ làm hỏng chất lượng Gap Map).
-// Vì 2+3 là suy đoán dựa trên cấu trúc trang (dễ hỏng khi site đổi giao diện), ô tóm tắt
-// trong overlay LUÔN cho sửa tay trước khi lưu — nếu dò rỗng hoặc sai, tự bôi-copy đoạn tóm
-// tắt hiển thị trên trang rồi dán vào là chắc chắn nhất.
+// TRÍCH XUẤT ĐA TẦNG, ĐA BÍ DANH (2026-09-19, theo yêu cầu user — cùng triết lý bảng
+// FIELD_ALIASES đã dùng cho nhập RIS/BibTeX/EndNote/NoteExpress ở lib/ref-import.js: 1 khái
+// niệm có NHIỀU cách viết/nhiều ngôn ngữ, dò theo danh sách bí danh thay vì đoán 1 kiểu cố
+// định). Mỗi trường thử theo thứ tự, dừng ở tầng đầu tiên có kết quả:
+//   1) <meta name="citation_*">/<meta name="dc.*"> — chuẩn Highwire/Dublin Core, nhiều nhà
+//      xuất bản quốc tế (Elsevier/Springer/Wiley/PubMed...) có sẵn, không cần suy đoán gì.
+//   2) Selector CSS đã biết theo từng trường (class/id thường gặp ở CNKI/万方/các site khác).
+//   3) Regex "dòng trích dẫn" gộp journal+year+volume+issue+pages (nhiều mẫu, cả kiểu Trung
+//      Quốc "Tên . Năm,Tập(Số):Trang" lẫn kiểu Anh "Tên, Vol X, No Y, pp Z (Năm)").
+//   4) Quét nhãn đứng riêng (LABEL_WORDS — đa ngôn ngữ Việt/Trung/Anh, nhiều bí danh mỗi
+//      trường) rồi lấy phần văn bản đi kèm — dùng chung 1 hàm findByLabelWords() cho MỌI
+//      trường (abstract/authors/journal/year/volume/issue/pages/keywords), không phải viết
+//      riêng từng trường như bản cũ.
+// KHÔNG có tầng nào đảm bảo đúng 100% trên MỌI trang — đây là suy đoán theo mẫu phổ biến,
+// càng nhiều site test thực tế càng bổ sung thêm bí danh/selector mới vào bảng bên dưới.
+// Overlay LUÔN cho sửa tay mọi trường + nút "↻ Trích lại từ trang" làm lưới an toàn cuối.
 (function () {
   if (window.__chimedisBookmarkletActive) return;
   window.__chimedisBookmarkletActive = true;
@@ -39,10 +44,76 @@
   function visibleText(el) {
     return ((el.innerText != null ? el.innerText : el.textContent) || '').replace(/\s+/g, ' ').trim();
   }
-  var ABSTRACT_LABEL_RE = /^(摘\s*要|abstract)\s*[:：]?\s*$/i;
-  var ABSTRACT_PREFIX_RE = /^(摘\s*要|abstract)\s*[:：]\s*/i;
+  function escRe(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/\s+/g, '\\s*'); }
 
-  // Danh sách selector đã biết của CNKI/万方 + tên lớp/id chung "abstract" ở các tạp chí khác.
+  // ===== Bảng bí danh nhãn đa ngôn ngữ (VI/ZH/EN) — mở rộng khi gặp site mới chỉ cần thêm
+  // từ vào đây, KHÔNG cần sửa logic. Cùng tinh thần FIELD_ALIASES của lib/ref-import.js. =====
+  var LABEL_WORDS = {
+    abstract: ['摘要', '摘 要', '内容摘要', '中文摘要', 'abstract', 'summary', 'tóm tắt'],
+    authors: ['作者', '作 者', '著者', '作者单位', 'author', 'authors', 'written by', 'tác giả'],
+    journal: ['期刊', '来源', '文献来源', '出处', '刊名', 'journal', 'source', 'published in', 'tạp chí', 'nguồn'],
+    year: ['年份', '出版年', '发表时间', '出版日期', 'year', 'publication year', 'published', 'năm', 'năm xuất bản'],
+    volume: ['卷', '卷期', 'volume', 'vol', 'vol.', 'tập'],
+    issue: ['期', 'issue', 'no', 'no.', 'number', 'số'],
+    pages: ['页码', '页', 'pages', 'page', 'pp', 'pp.', 'trang'],
+    keywords: ['关键词', '关键字', 'keywords', 'key words', 'từ khoá', 'từ khóa'],
+    doi: ['doi'],
+  };
+
+  // Loại phần tử KHÔNG thể là nhãn trích dẫn thật — cờ phát hiện thật trên chimedis.vn khi tự
+  // test (2026-09-19): trang có <option>Tác giả</option>/<label>Tạp chí</label> trong bộ lọc
+  // tìm kiếm (dropdown "sắp xếp theo") + <div class="doc-type">Tạp chí</div> badge phân loại
+  // — TRÙNG chữ với nhãn trích dẫn thật nhưng là điều khiển UI/badge phân loại, không phải mô
+  // tả bài báo đang xem. Loại theo tên thẻ (form control) + theo tổ tiên gần (nav/header/
+  // footer/form hoặc class gợi ý menu/badge/bộ lọc/phân loại).
+  // H1-H6 loại luôn — tiêu đề mục (vd "<h3>Tạp chí</h3>" mở đầu 1 khu vực danh sách trên
+  // trang chủ) trùng chữ với nhãn trích dẫn thật nhưng KHÔNG phải nhãn mô tả bài đang xem;
+  // nhãn trích dẫn thật hầu như không bao giờ nằm trong thẻ heading.
+  var EXCLUDE_LABEL_TAGS = /^(OPTION|SELECT|LABEL|BUTTON|INPUT|A|H1|H2|H3|H4|H5|H6)$/;
+  var EXCLUDE_ANCESTOR_RE = /nav|header|footer|menu|badge|filter|category|doc-type|dropdown|breadcrumb/i;
+  function isExcludedLabelEl(el) {
+    if (EXCLUDE_LABEL_TAGS.test(el.tagName)) return true;
+    var cur = el;
+    for (var d = 0; d < 5 && cur && cur !== document.body; d++) {
+      var tag = cur.tagName;
+      if (tag === 'NAV' || tag === 'HEADER' || tag === 'FOOTER' || tag === 'FORM') return true;
+      if (EXCLUDE_ANCESTOR_RE.test((cur.className && cur.className.toString ? cur.className.toString() : '') + ' ' + (cur.id || ''))) return true;
+      cur = cur.parentElement;
+    }
+    return false;
+  }
+  // Quét nhãn đứng riêng (1 phần tử "lá" mà TOÀN BỘ chữ chỉ là cái nhãn, vd "摘要" hoặc
+  // "Author:") rồi lấy văn bản của phần tử anh em kế tiếp hoặc phần tử cha (sau khi bỏ nhãn).
+  // Dùng CHUNG cho mọi trường — thay vì viết riêng 1 hàm cho từng trường như bản cũ.
+  function findByLabelWords(words, maxLen) {
+    var alt = words.map(escRe).join('|');
+    var labelRe = new RegExp('^(' + alt + ')\\s*[:：]?\\s*$', 'i');
+    var prefixRe = new RegExp('^(' + alt + ')\\s*[:：]\\s*', 'i');
+    var all = document.body.querySelectorAll('*');
+    var limit = Math.min(all.length, 4000);
+    for (var i = 0; i < limit; i++) {
+      var el = all[i];
+      if (el.children.length > 2) continue;
+      var t = visibleText(el);
+      if (!t || t.length > 24 || !labelRe.test(t)) continue;
+      if (isExcludedLabelEl(el)) continue;
+      var sib = el.nextElementSibling;
+      if (sib && !EXCLUDE_LABEL_TAGS.test(sib.tagName)) {
+        var sTxt = visibleText(sib);
+        if (sTxt.length > 0 && sTxt.length < (maxLen || 8000)) return sTxt;
+      }
+      var parent = el.parentElement;
+      if (parent) {
+        var pTxt = visibleText(parent).replace(prefixRe, '');
+        if (pTxt.length > 0 && pTxt.length < (maxLen || 8000) && pTxt !== t) return pTxt;
+      }
+    }
+    return '';
+  }
+
+  // ===== Tóm tắt (abstract) — quan trọng cho Gap Analysis (M4), KHÔNG được bỏ sót/rút gọn
+  // âm thầm. KHÔNG bao giờ dùng <meta name="description"> (chỉ là câu SEO ngắn, không phải
+  // abstract thật). =====
   var KNOWN_ABSTRACT_SELECTORS = [
     '#ChDivSummary', '.abstract-text', '.brief', '.summary-content',
     '#abstract', '.Abstract', '.abstract', 'section.abstract', 'div.abstract',
@@ -53,44 +124,23 @@
       var els;
       try { els = document.querySelectorAll(KNOWN_ABSTRACT_SELECTORS[i]); } catch (e) { continue; }
       for (var j = 0; j < els.length; j++) {
-        var txt = visibleText(els[j]).replace(ABSTRACT_PREFIX_RE, '');
+        var txt = visibleText(els[j]);
         if (txt.length > 40 && txt.length < 8000) return txt;
       }
     }
     return '';
   }
-  // Quét toàn trang tìm 1 phần tử NHỎ (label) mà toàn bộ chữ chỉ là "摘要"/"Abstract", rồi
-  // lấy văn bản của phần tử anh em kế tiếp hoặc phần tử cha (sau khi bỏ chính nhãn đó).
-  // Giới hạn số phần tử quét để tránh chậm trên trang rất lớn.
-  function findAbstractByLabel() {
-    var all = document.body.querySelectorAll('*');
-    var limit = Math.min(all.length, 6000);
-    for (var i = 0; i < limit; i++) {
-      var el = all[i];
-      if (el.children.length > 2) continue;
-      var t = visibleText(el);
-      if (!t || t.length > 20 || !ABSTRACT_LABEL_RE.test(t)) continue;
-      var sib = el.nextElementSibling;
-      if (sib) {
-        var sTxt = visibleText(sib);
-        if (sTxt.length > 40 && sTxt.length < 8000) return sTxt;
-      }
-      var parent = el.parentElement;
-      if (parent) {
-        var pTxt = visibleText(parent).replace(ABSTRACT_PREFIX_RE, '');
-        if (pTxt.length > 40 && pTxt.length < 8000) return pTxt;
-      }
-    }
-    return '';
-  }
   function findAbstract() {
-    return meta1('citation_abstract') || meta1('dc.description') || findAbstractBySelectors() || findAbstractByLabel() || '';
+    return meta1('citation_abstract') || meta1('dc.description') ||
+      findAbstractBySelectors() || findByLabelWords(LABEL_WORDS.abstract, 8000) || '';
   }
 
-  // Tác giả — CNKI/万方 không phát hành meta chuẩn, nhưng tên tác giả LUÔN hiển thị bằng
-  // link riêng ngay dưới tiêu đề (mỗi tác giả 1 thẻ <a>). Dò theo selector đã biết trước,
-  // tên NGƯỜI THẬT do user tự đọc lại + sửa nếu cần (overlay luôn cho sửa tay).
-  var AUTHOR_SELECTORS = ['.author a', '.authors a', '#authorpart a', '.author-name', '[class*="author" i] a', '[id*="author" i] a'];
+  // ===== Tác giả — CNKI/万方 không phát hành meta chuẩn, nhưng tên tác giả thường hiển thị
+  // bằng link riêng ngay dưới tiêu đề (mỗi tác giả 1 thẻ <a>). =====
+  var AUTHOR_SELECTORS = [
+    '.author a', '.authors a', '#authorpart a', '.author-name', '[class*="author" i] a', '[id*="author" i] a',
+    '.c-article-author-list a', '.contrib-author', '.authorName', '.auth-name', '.artical-info .author',
+  ];
   function findAuthorsFromDom() {
     for (var i = 0; i < AUTHOR_SELECTORS.length; i++) {
       var els;
@@ -102,16 +152,25 @@
     }
     return [];
   }
-  // Dòng trích dẫn "Tên tạp chí . Năm ,Tập (Số) :Trang" — định dạng chuẩn hoá cao của học
-  // thuật Trung Quốc (CNKI/万方 đều theo mẫu này), xuất hiện ngay trên/dưới tiêu đề. 1 regex
-  // lấy được cả journal+year+volume+issue+pages cùng lúc, chỉ quét gần đầu trang (nhanh, ít
-  // khả năng khớp nhầm đoạn văn khác). Chỉ dùng khi thiếu meta — luôn cho sửa tay sau đó.
+  function splitAuthors(s) {
+    return s.split(/[;,，；、]/).map(function (x) { return x.trim(); }).filter(Boolean);
+  }
+
+  // ===== Dòng trích dẫn gộp journal+year+volume+issue+pages — thử NHIỀU mẫu (đa dạng định
+  // dạng), dừng ở mẫu đầu tiên khớp. Chỉ quét gần đầu trang (nhanh, ít khớp nhầm). =====
+  var CITATION_LINE_PATTERNS = [
+    // Kiểu Trung Quốc chuẩn CNKI/万方: "期刊名 . 年份,卷(期):页码"
+    /([一-鿿A-Za-z][^\n.．]{1,60}?)\s*[.．]\s*(\d{4})\s*[,，]\s*(\d+)\s*[（(](\d+)[）)]\s*[:：]\s*([0-9]+(?:[\-–][0-9]+)?)/,
+    // Kiểu Anh phổ biến: "Journal Name, Vol. 12, No. 3, pp. 45-52 (2026)" (mọi bộ phận có thể lẫn thứ tự)
+    /([A-Za-z][^\n]{1,60}?),?\s*Vol\.?\s*(\d+),?\s*No\.?\s*(\d+),?\s*pp\.?\s*([0-9]+(?:[\-–][0-9]+)?)\D{0,10}(\d{4})/i,
+  ];
   function findCitationLine() {
     var text = document.body.innerText.slice(0, 4000);
-    var re = /([一-鿿A-Za-z][^\n.．]{1,60}?)\s*[.．]\s*(\d{4})\s*[,，]\s*(\d+)\s*[（(](\d+)[）)]\s*[:：]\s*([0-9]+(?:[\-–][0-9]+)?)/;
-    var m = text.match(re);
-    if (!m) return null;
-    return { journal: m[1].replace(/\s+/g, '').trim(), year: parseInt(m[2], 10), volume: m[3], issue: m[4], pages: m[5] };
+    var m = text.match(CITATION_LINE_PATTERNS[0]);
+    if (m) return { journal: m[1].replace(/\s+/g, '').trim(), year: parseInt(m[2], 10), volume: m[3], issue: m[4], pages: m[5] };
+    m = text.match(CITATION_LINE_PATTERNS[1]);
+    if (m) return { journal: m[1].trim(), volume: m[2], issue: m[3], pages: m[4], year: parseInt(m[5], 10) };
+    return null;
   }
 
   function extractRecord() {
@@ -119,9 +178,13 @@
     var authorsRaw = metaAll('citation_author');
     if (!authorsRaw.length) {
       var a = meta1('citation_authors') || meta1('dc.creator');
-      if (a) authorsRaw = a.split(/[;,]/).map(function (x) { return x.trim(); }).filter(Boolean);
+      if (a) authorsRaw = splitAuthors(a);
     }
     if (!authorsRaw.length) authorsRaw = findAuthorsFromDom();
+    if (!authorsRaw.length) {
+      var labelAuthors = findByLabelWords(LABEL_WORDS.authors, 300);
+      if (labelAuthors) authorsRaw = splitAuthors(labelAuthors);
+    }
     var journal = meta1('citation_journal_title') || meta1('citation_conference_title') || '';
     var dateStr = meta1('citation_publication_date') || meta1('citation_date') || meta1('citation_online_date') || '';
     var yearMatch = dateStr.match(/(19|20)\d{2}/);
@@ -144,6 +207,17 @@
         pages = pages || cite.pages;
       }
     }
+    // Tầng cuối — quét nhãn riêng lẻ cho từng phần còn thiếu (dòng trích dẫn gộp không khớp).
+    if (!journal) journal = findByLabelWords(LABEL_WORDS.journal, 200);
+    if (!year) {
+      var yTxt = findByLabelWords(LABEL_WORDS.year, 60);
+      var ym = yTxt && yTxt.match(/(19|20)\d{2}/);
+      if (ym) year = parseInt(ym[0], 10);
+    }
+    if (!volume) volume = findByLabelWords(LABEL_WORDS.volume, 20);
+    if (!issue) issue = findByLabelWords(LABEL_WORDS.issue, 20);
+    if (!pages) pages = findByLabelWords(LABEL_WORDS.pages, 30);
+    if (!doi) doi = findByLabelWords(LABEL_WORDS.doi, 100);
     // Ngôn ngữ: ưu tiên thẻ chuẩn/khai báo trang → suy đoán thô từ chữ Hán trong tiêu đề
     // (KHÔNG suy đoán tiếng Việt vì dấu câu dễ nhầm, để trống cho user tự sửa nếu cần).
     var language = meta1('citation_language') || meta1('dc.language') ||
@@ -154,16 +228,20 @@
     keywordsRaw.forEach(function (k) {
       k.split(/[;,]/).forEach(function (x) { if (x.trim()) keywords.push(x.trim()); });
     });
+    if (!keywords.length) {
+      var kwTxt = findByLabelWords(LABEL_WORDS.keywords, 300);
+      if (kwTxt) keywords = kwTxt.split(/[;,，；、]/).map(function (x) { return x.trim(); }).filter(Boolean);
+    }
     return {
       title: title.trim(),
       authors: authorsRaw.slice(0, 30),
-      journal: journal.trim() || null,
+      journal: (journal || '').trim() || null,
       year: year,
-      volume: volume.trim() || null,
-      issue: issue.trim() || null,
-      pages: pages.trim() || null,
+      volume: (volume || '').trim() || null,
+      issue: (issue || '').trim() || null,
+      pages: (pages || '').trim() || null,
       language: language.trim() || null,
-      doi: doi.trim() || null,
+      doi: (doi || '').trim() || null,
       pmid: pmid.trim() || null,
       pmcid: pmcid.trim() || null,
       abstract: findAbstract().trim() || null,
@@ -173,37 +251,45 @@
     };
   }
 
+  // =====================================================================================
+  // ===== Giao diện popup: kéo-thả di chuyển, thu nhỏ thành icon, phóng to/thu nhỏ từ MỌI
+  // cạnh (2026-09-19, theo yêu cầu user). host = khung định vị (position:fixed, left/top/
+  // width/height); card = nội dung form lấp đầy host; 8 tay cầm resize quanh viền host. =====
+  // =====================================================================================
+  var DEFAULT_W = 400, DEFAULT_H = 480, MIN_W = 300, MIN_H = 260;
+  var startLeft = Math.max(8, window.innerWidth - DEFAULT_W - 16);
+  var startTop = Math.max(8, window.innerHeight - DEFAULT_H - 16);
+
   var host = document.createElement('div');
   host.id = 'chimedis-bk-host';
-  host.style.cssText = 'all:initial;position:fixed;z-index:2147483647;right:16px;bottom:16px;';
+  host.style.cssText = 'all:initial;position:fixed;z-index:2147483647;' +
+    'left:' + startLeft + 'px;top:' + startTop + 'px;width:' + DEFAULT_W + 'px;height:' + DEFAULT_H + 'px;';
   document.body.appendChild(host);
   var root = host.attachShadow ? host.attachShadow({ mode: 'open' }) : host;
 
   var style = document.createElement('style');
   style.textContent =
     ':host{all:initial}' +
-    // resize:both — user kéo góc dưới-phải để phóng to/thu nhỏ khung tuỳ ý (yêu cầu
-    // 2026-09-19). Neo phải/dưới nên phóng to sẽ nới về hướng trái/trên, đúng trực giác.
-    // Mỗi field-group là flex-column + justify-end (không phải chỉ 2 div rời) để nhãn dài/
-    // ngắn khác nhau KHÔNG làm ô nhập lệch hàng — đúng lỗi "đè vào nhau" user báo (cùng gốc
-    // bug đã sửa ở workbench.html .row>div hôm 2026-09-18: label 1-2 dòng làm input tụt xuống
-    // không thẳng hàng khi 2 ô cạnh nhau có nhãn khác độ dài).
-    '.bk-card{font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;' +
-    'width:400px;min-width:300px;max-width:min(92vw,560px);' +
-    'height:auto;min-height:340px;max-height:min(85vh,720px);resize:both;overflow:auto;' +
+    '.bk-card{position:absolute;inset:0;display:flex;flex-direction:column;' +
+    'font-family:-apple-system,"Segoe UI",Roboto,Arial,sans-serif;' +
     'background:#F5F0E6;color:#0E3A3A;border:1px solid #d8cfb8;border-radius:12px;' +
-    'box-shadow:0 8px 28px rgba(0,0,0,.25);padding:16px;font-size:13px;line-height:1.45;' +
-    'display:flex;flex-direction:column;gap:10px;box-sizing:border-box}' +
+    'box-shadow:0 8px 28px rgba(0,0,0,.25);font-size:13px;line-height:1.45;box-sizing:border-box}' +
+    '.bk-titlebar{flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;' +
+    'padding:10px 8px 10px 14px;cursor:move;user-select:none;border-bottom:1px solid #e4dcc9}' +
     '.bk-title{font-weight:700;font-size:13px}' +
+    '.bk-header-actions{display:flex;gap:2px}' +
+    '.bk-icon-btn{background:none;border:none;font-size:15px;color:#6b6355;cursor:pointer;' +
+    'width:24px;height:24px;border-radius:6px;line-height:1}' +
+    '.bk-icon-btn:hover{background:rgba(0,0,0,.06);color:#241f19}' +
+    '.bk-body{flex:1;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-height:0}' +
     '.bk-field-row{display:flex;gap:8px}' +
     '.bk-field-row>div{flex:1;min-width:70px;display:flex;flex-direction:column;justify-content:flex-end}' +
     '.bk-lbl{font-size:11px;color:#6b6355;margin:0 0 3px;font-weight:600}' +
-    '.bk-meta{color:#6b6355;font-size:12px}' +
     '.bk-warn{font-size:11.5px;color:#8a5a00;background:#fbf0d6;border-radius:6px;padding:6px 8px}' +
     '.bk-row{display:flex;gap:8px}' +
     'input[type=text],textarea,select,button{font:inherit;border-radius:8px;border:1px solid #d8cfb8;padding:7px 9px;box-sizing:border-box}' +
     'input[type=text],textarea{width:100%;background:#fff;color:#241f19;resize:vertical}' +
-    'textarea.bk-abstract-input{min-height:150px;flex:1}' +
+    'textarea.bk-abstract-input{min-height:120px;flex:1}' +
     'select{flex:1;background:#fff;color:#0E3A3A}' +
     'button{cursor:pointer;background:#fff;color:#0E3A3A}' +
     'button.primary{background:#B4472B;color:#fff;border-color:#B4472B;font-weight:600}' +
@@ -211,14 +297,37 @@
     '.bk-status{font-size:12px}' +
     '.bk-status.err{color:#B4472B}' +
     '.bk-status.ok{color:#1e6b4f}' +
-    '.bk-close{position:absolute;top:8px;right:10px;background:none;border:none;font-size:16px;' +
-    'color:#6b6355;padding:0;width:20px;height:20px}';
+    // 8 tay cầm resize — 4 cạnh (dải mỏng dọc theo cạnh) + 4 góc (ô vuông nhỏ đè lên góc).
+    '.bk-rz{position:absolute;z-index:2}' +
+    '.bk-rz-n{top:-4px;left:8px;right:8px;height:8px;cursor:ns-resize}' +
+    '.bk-rz-s{bottom:-4px;left:8px;right:8px;height:8px;cursor:ns-resize}' +
+    '.bk-rz-e{right:-4px;top:8px;bottom:8px;width:8px;cursor:ew-resize}' +
+    '.bk-rz-w{left:-4px;top:8px;bottom:8px;width:8px;cursor:ew-resize}' +
+    '.bk-rz-ne{top:-4px;right:-4px;width:14px;height:14px;cursor:nesw-resize}' +
+    '.bk-rz-nw{top:-4px;left:-4px;width:14px;height:14px;cursor:nwse-resize}' +
+    '.bk-rz-se{bottom:-4px;right:-4px;width:14px;height:14px;cursor:nwse-resize}' +
+    '.bk-rz-sw{bottom:-4px;left:-4px;width:14px;height:14px;cursor:nesw-resize}' +
+    '.bk-mini{position:absolute;inset:0;border-radius:50%;background:#B4472B;color:#fff;' +
+    'display:flex;align-items:center;justify-content:center;cursor:pointer;' +
+    'box-shadow:0 6px 18px rgba(0,0,0,.3);font-size:20px}' +
+    '.bk-mini:hover{background:#9A3A22}' +
+    // [hidden] mặc định display:none là quy tắc UA stylesheet — bị chính .bk-card/.bk-mini
+    // display:flex phía trên (author stylesheet) đè mất do gốc author LUÔN thắng gốc UA bất
+    // kể thứ tự/độ đặc hiệu (lỗi thật đã gặp: minimize()/restore() set .hidden nhưng phần tử
+    // vẫn hiện, 2 lớp chồng lên nhau — cùng loại lỗi đã sửa ở tai-khoan.html .modal-body[hidden]
+    // hôm 2026-09-19). Khai lại tường minh, chỉ trong phạm vi shadow DOM này.
+    '.bk-card[hidden],.bk-mini[hidden]{display:none}';
   root.appendChild(style);
 
   var card = document.createElement('div');
   card.className = 'bk-card';
-  card.style.position = 'relative';
   root.appendChild(card);
+  var mini = document.createElement('div');
+  mini.className = 'bk-mini';
+  mini.title = 'Mở lại — Lưu vào Chimedis';
+  mini.innerHTML = '💾';
+  mini.hidden = true;
+  root.appendChild(mini);
 
   function close() {
     host.remove();
@@ -230,29 +339,126 @@
     });
   }
 
+  // ===== Thu nhỏ thành icon tròn (2026-09-19) — vị trí góc dưới-phải của khung trước khi
+  // thu nhỏ được giữ nguyên (host chỉ co lại 44x44, neo theo góc đó) để không "nhảy" chỗ. =====
+  var savedRect = null;
+  function minimize() {
+    var r = { left: parseFloat(host.style.left), top: parseFloat(host.style.top), width: host.offsetWidth, height: host.offsetHeight };
+    savedRect = r;
+    host.style.left = (r.left + r.width - 44) + 'px';
+    host.style.top = (r.top + r.height - 44) + 'px';
+    host.style.width = '44px';
+    host.style.height = '44px';
+    card.hidden = true;
+    mini.hidden = false;
+  }
+  function restore() {
+    if (savedRect) {
+      host.style.left = savedRect.left + 'px';
+      host.style.top = savedRect.top + 'px';
+      host.style.width = savedRect.width + 'px';
+      host.style.height = savedRect.height + 'px';
+    }
+    card.hidden = false;
+    mini.hidden = true;
+  }
+  mini.addEventListener('click', restore);
+
+  // ===== Kéo-thả di chuyển (titlebar) =====
+  function clamp(v, min, max) { return Math.max(min, Math.min(max, v)); }
+  function makeDraggable(handleEl) {
+    handleEl.addEventListener('mousedown', function (e) {
+      if (e.target.closest('button')) return;
+      e.preventDefault();
+      var startX = e.clientX, startY = e.clientY;
+      var baseLeft = parseFloat(host.style.left), baseTop = parseFloat(host.style.top);
+      function onMove(ev) {
+        var nx = clamp(baseLeft + (ev.clientX - startX), -host.offsetWidth + 60, window.innerWidth - 60);
+        var ny = clamp(baseTop + (ev.clientY - startY), 0, window.innerHeight - 40);
+        host.style.left = nx + 'px';
+        host.style.top = ny + 'px';
+      }
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+
+  // ===== Phóng to/thu nhỏ từ MỌI cạnh (2026-09-19) — 8 hướng, không chỉ góc dưới-phải. =====
+  function makeResizable(handleEl, dir) {
+    handleEl.addEventListener('mousedown', function (e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var startX = e.clientX, startY = e.clientY;
+      var baseLeft = parseFloat(host.style.left), baseTop = parseFloat(host.style.top);
+      var baseW = host.offsetWidth, baseH = host.offsetHeight;
+      function onMove(ev) {
+        var dx = ev.clientX - startX, dy = ev.clientY - startY;
+        var newLeft = baseLeft, newTop = baseTop, newW = baseW, newH = baseH;
+        if (dir.indexOf('e') >= 0) newW = clamp(baseW + dx, MIN_W, window.innerWidth);
+        if (dir.indexOf('s') >= 0) newH = clamp(baseH + dy, MIN_H, window.innerHeight);
+        if (dir.indexOf('w') >= 0) { newW = clamp(baseW - dx, MIN_W, window.innerWidth); newLeft = baseLeft + (baseW - newW); }
+        if (dir.indexOf('n') >= 0) { newH = clamp(baseH - dy, MIN_H, window.innerHeight); newTop = baseTop + (baseH - newH); }
+        host.style.left = newLeft + 'px';
+        host.style.top = newTop + 'px';
+        host.style.width = newW + 'px';
+        host.style.height = newH + 'px';
+      }
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
+  }
+  ['n', 's', 'e', 'w', 'ne', 'nw', 'se', 'sw'].forEach(function (dir) {
+    var h = document.createElement('div');
+    h.className = 'bk-rz bk-rz-' + dir;
+    card.appendChild(h);
+    makeResizable(h, dir);
+  });
+
   if (!TOKEN) {
-    card.innerHTML =
-      '<button class="bk-close">×</button>' +
-      '<div class="bk-title">Chimedis — Lưu vào thư viện</div>' +
-      '<div class="bk-status err">Thiếu token cá nhân trong link bookmarklet. Vào trang Tài khoản trên chimedis.vn để lấy lại link bookmarklet đúng.</div>';
-    card.querySelector('.bk-close').onclick = close;
+    renderError('Thiếu token cá nhân trong link bookmarklet. Vào trang Tài khoản trên chimedis.vn để lấy lại link bookmarklet đúng.');
     return;
   }
 
-  // "Quét thông minh tuỳ trang" (2026-09-19, theo yêu cầu user) — nhiều trang (kể cả CNKI)
-  // ẩn phần tóm tắt/nội dung sau nút "展开全部"/"显示全部"/"阅读全文"/"Show more"/"Read more"
-  // cho tới khi user bấm. Tự dò và bấm các nút khớp mẫu TRƯỚC khi trích — đa số trường hợp
-  // đây chỉ là CSS ẩn/hiện nên áp dụng ngay lập tức, không cần chờ; đợi thêm 1 nhịp ngắn để
-  // phủ luôn trường hợp hiếm hơn là nội dung tải thêm qua AJAX. Đây là suy đoán theo mẫu chữ
-  // phổ biến — KHÔNG đảm bảo đúng mọi trang, vẫn còn nút "↻ Trích lại từ trang" + ô sửa tay
-  // làm lưới an toàn cuối cùng.
+  function renderError(msg) {
+    var body = document.createElement('div');
+    body.className = 'bk-body';
+    body.innerHTML = '<div class="bk-status err">' + escHtml(msg) + '</div>';
+    mountTitlebar();
+    card.appendChild(body);
+  }
+  function mountTitlebar() {
+    var bar = document.createElement('div');
+    bar.className = 'bk-titlebar';
+    bar.innerHTML = '<span class="bk-title">Lưu vào Chimedis</span>' +
+      '<span class="bk-header-actions">' +
+      '<button type="button" class="bk-icon-btn bk-min" title="Thu nhỏ">–</button>' +
+      '<button type="button" class="bk-icon-btn bk-close" title="Đóng">×</button>' +
+      '</span>';
+    card.appendChild(bar);
+    makeDraggable(bar);
+    bar.querySelector('.bk-close').onclick = close;
+    bar.querySelector('.bk-min').onclick = minimize;
+  }
+
+  // "Quét thông minh tuỳ trang" — nhiều trang (kể cả CNKI) ẩn tóm tắt/nội dung sau nút
+  // "展开全部"/"显示全部"/"阅读全文"/"Show more"/"Read more" cho tới khi bấm. Tự dò và bấm các
+  // nút khớp mẫu TRƯỚC khi trích — đa số trường hợp đây chỉ là CSS ẩn/hiện nên áp dụng ngay
+  // lập tức; đợi thêm 1 nhịp ngắn để phủ luôn trường hợp hiếm hơn là tải thêm qua AJAX.
   function tryAutoExpand() {
     var re = /^(展开|展开全部|显示全部|显示更多|阅读全文|查看全文|更多|全文|show more|read more|view full text|expand|more)$/i;
     var nodes = document.querySelectorAll('button, a, span, div');
     var clicked = 0;
     for (var i = 0; i < nodes.length && clicked < 4; i++) {
       var el = nodes[i];
-      if (el.children.length > 1) continue; // chỉ nhắm phần tử "lá" (nút/link thật), bỏ container lớn
+      if (el.children.length > 1) continue;
       var txt = (el.textContent || '').trim();
       if (txt.length > 12 || !re.test(txt)) continue;
       try { el.click(); clicked++; } catch (e) { /* bỏ qua phần tử không click được */ }
@@ -264,11 +470,7 @@
   function proceed() {
     var rec = extractRecord();
     if (!rec.title) {
-      card.innerHTML =
-        '<button class="bk-close">×</button>' +
-        '<div class="bk-title">Chimedis — Lưu vào thư viện</div>' +
-        '<div class="bk-status err">Không đọc được tiêu đề bài viết trên trang này. Mở đúng trang chi tiết 1 bài báo rồi thử lại.</div>';
-      card.querySelector('.bk-close').onclick = close;
+      renderError('Không đọc được tiêu đề bài viết trên trang này. Mở đúng trang chi tiết 1 bài báo rồi thử lại.');
       return;
     }
     renderForm(rec);
@@ -276,110 +478,110 @@
   if (expandClicks > 0) { setTimeout(proceed, 250); } else { proceed(); }
 
   function renderForm(rec) {
-  var authorsJoined = rec.authors.join(', ');
-  card.innerHTML =
-    '<button class="bk-close">×</button>' +
-    '<div class="bk-title">Lưu vào Chimedis</div>' +
-    '<div><div class="bk-lbl">Tiêu đề</div><input type="text" class="bk-title-input" value="' + escHtml(rec.title) + '" /></div>' +
-    '<div><div class="bk-lbl">Tác giả (cách nhau bằng dấu phẩy)</div><input type="text" class="bk-authors-input" value="' + escHtml(authorsJoined) + '" placeholder="Chưa rõ — gõ tay nếu cần" /></div>' +
-    '<div class="bk-field-row">' +
-    '<div style="flex:2"><div class="bk-lbl">Tạp chí</div><input type="text" class="bk-journal-input" value="' + escHtml(rec.journal || '') + '" /></div>' +
-    '<div><div class="bk-lbl">Năm</div><input type="text" class="bk-year-input" value="' + escHtml(rec.year || '') + '" /></div>' +
-    '</div>' +
-    '<div class="bk-field-row">' +
-    '<div><div class="bk-lbl">Tập</div><input type="text" class="bk-volume-input" value="' + escHtml(rec.volume || '') + '" /></div>' +
-    '<div><div class="bk-lbl">Số</div><input type="text" class="bk-issue-input" value="' + escHtml(rec.issue || '') + '" /></div>' +
-    '<div style="flex:1.4"><div class="bk-lbl">Trang</div><input type="text" class="bk-pages-input" value="' + escHtml(rec.pages || '') + '" placeholder="vd 45-52" /></div>' +
-    '</div>' +
-    '<div style="display:flex;justify-content:space-between;align-items:baseline">' +
-    '<div class="bk-lbl" style="margin:0">Tóm tắt (abstract)</div>' +
-    '<a href="#" class="bk-refetch" style="font-size:11px">↻ Trích lại từ trang</a>' +
-    '</div>' +
-    '<textarea class="bk-abstract-input" placeholder="Không tự đọc được — bôi-copy đoạn tóm tắt trên trang rồi dán vào đây (không bắt buộc, nhưng cần cho phân tích khoảng trống sau này)">' + escHtml(rec.abstract || '') + '</textarea>' +
-    '<div class="bk-warn bk-abstract-warn"' + (rec.abstract ? ' hidden' : '') + '>⚠️ Không tự đọc được tóm tắt trên trang này. Nếu trang có nút "展开/显示全部/Show more" hãy tự bấm mở rồi bấm "↻ Trích lại từ trang" — hoặc bôi-copy tay đoạn tóm tắt rồi dán vào ô trên.</div>' +
-    '<div><div class="bk-lbl">Lưu vào dự án</div><select class="bk-project"><option value="">Đang tải danh sách dự án…</option></select></div>' +
-    '<div class="bk-row">' +
-    '<button class="bk-save primary" disabled>Lưu</button>' +
-    '<button class="bk-cancel">Huỷ</button>' +
-    '</div>' +
-    '<div class="bk-status"></div>';
+    mountTitlebar();
+    var body = document.createElement('div');
+    body.className = 'bk-body';
+    var authorsJoined = rec.authors.join(', ');
+    body.innerHTML =
+      '<div><div class="bk-lbl">Tiêu đề</div><input type="text" class="bk-title-input" value="' + escHtml(rec.title) + '" /></div>' +
+      '<div><div class="bk-lbl">Tác giả (cách nhau bằng dấu phẩy)</div><input type="text" class="bk-authors-input" value="' + escHtml(authorsJoined) + '" placeholder="Chưa rõ — gõ tay nếu cần" /></div>' +
+      '<div class="bk-field-row">' +
+      '<div style="flex:2"><div class="bk-lbl">Tạp chí</div><input type="text" class="bk-journal-input" value="' + escHtml(rec.journal || '') + '" /></div>' +
+      '<div><div class="bk-lbl">Năm</div><input type="text" class="bk-year-input" value="' + escHtml(rec.year || '') + '" /></div>' +
+      '</div>' +
+      '<div class="bk-field-row">' +
+      '<div><div class="bk-lbl">Tập</div><input type="text" class="bk-volume-input" value="' + escHtml(rec.volume || '') + '" /></div>' +
+      '<div><div class="bk-lbl">Số</div><input type="text" class="bk-issue-input" value="' + escHtml(rec.issue || '') + '" /></div>' +
+      '<div style="flex:1.4"><div class="bk-lbl">Trang</div><input type="text" class="bk-pages-input" value="' + escHtml(rec.pages || '') + '" placeholder="vd 45-52" /></div>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:space-between;align-items:baseline">' +
+      '<div class="bk-lbl" style="margin:0">Tóm tắt (abstract)</div>' +
+      '<a href="#" class="bk-refetch" style="font-size:11px">↻ Trích lại từ trang</a>' +
+      '</div>' +
+      '<textarea class="bk-abstract-input" placeholder="Không tự đọc được — bôi-copy đoạn tóm tắt trên trang rồi dán vào đây (không bắt buộc, nhưng cần cho phân tích khoảng trống sau này)">' + escHtml(rec.abstract || '') + '</textarea>' +
+      '<div class="bk-warn bk-abstract-warn"' + (rec.abstract ? ' hidden' : '') + '>⚠️ Không tự đọc được tóm tắt trên trang này. Nếu trang có nút "展开/显示全部/Show more" hãy tự bấm mở rồi bấm "↻ Trích lại từ trang" — hoặc bôi-copy tay đoạn tóm tắt rồi dán vào ô trên.</div>' +
+      '<div><div class="bk-lbl">Lưu vào dự án</div><select class="bk-project"><option value="">Đang tải danh sách dự án…</option></select></div>' +
+      '<div class="bk-row">' +
+      '<button class="bk-save primary" disabled>Lưu</button>' +
+      '<button class="bk-cancel">Huỷ</button>' +
+      '</div>' +
+      '<div class="bk-status"></div>';
+    card.appendChild(body);
 
-  card.querySelector('.bk-close').onclick = close;
-  card.querySelector('.bk-cancel').onclick = close;
-  var statusEl = card.querySelector('.bk-status');
-  var selectEl = card.querySelector('.bk-project');
-  var saveBtn = card.querySelector('.bk-save');
-  var titleInput = card.querySelector('.bk-title-input');
-  var abstractInput = card.querySelector('.bk-abstract-input');
-  var abstractWarnEl = card.querySelector('.bk-abstract-warn');
-  var authorsInput = card.querySelector('.bk-authors-input');
-  var journalInput = card.querySelector('.bk-journal-input');
-  var yearInput = card.querySelector('.bk-year-input');
-  var volumeInput = card.querySelector('.bk-volume-input');
-  var issueInput = card.querySelector('.bk-issue-input');
-  var pagesInput = card.querySelector('.bk-pages-input');
-  // "Trích lại từ trang" — sau khi user tự bấm mở rộng nội dung trên trang gốc (vd nút
-  // "展开全部"/"Show more" mà bookmarklet không tự đoán hết được), quét lại DUY NHẤT phần
-  // tóm tắt mà không mất các trường khác đã sửa tay (2026-09-19, theo yêu cầu user).
-  card.querySelector('.bk-refetch').onclick = function (e) {
-    e.preventDefault();
-    var fresh = findAbstract().trim();
-    if (fresh) { abstractInput.value = fresh; abstractWarnEl.hidden = true; }
-    else { abstractWarnEl.hidden = false; }
-  };
+    body.querySelector('.bk-cancel').onclick = close;
+    var statusEl = body.querySelector('.bk-status');
+    var selectEl = body.querySelector('.bk-project');
+    var saveBtn = body.querySelector('.bk-save');
+    var titleInput = body.querySelector('.bk-title-input');
+    var abstractInput = body.querySelector('.bk-abstract-input');
+    var abstractWarnEl = body.querySelector('.bk-abstract-warn');
+    var authorsInput = body.querySelector('.bk-authors-input');
+    var journalInput = body.querySelector('.bk-journal-input');
+    var yearInput = body.querySelector('.bk-year-input');
+    var volumeInput = body.querySelector('.bk-volume-input');
+    var issueInput = body.querySelector('.bk-issue-input');
+    var pagesInput = body.querySelector('.bk-pages-input');
+    // "Trích lại từ trang" — sau khi user tự bấm mở rộng nội dung trên trang gốc, quét lại
+    // DUY NHẤT phần tóm tắt mà không mất các trường khác đã sửa tay.
+    body.querySelector('.bk-refetch').onclick = function (e) {
+      e.preventDefault();
+      var fresh = findAbstract().trim();
+      if (fresh) { abstractInput.value = fresh; abstractWarnEl.hidden = true; }
+      else { abstractWarnEl.hidden = false; }
+    };
 
-  fetch(API_BASE + '/projects', { headers: { Authorization: 'Bearer ' + TOKEN } })
-    .then(function (r) { return r.json(); })
-    .then(function (d) {
-      if (!d.success) throw new Error(d.error || 'Lỗi tải danh sách dự án');
-      if (!d.projects.length) {
-        selectEl.innerHTML = '<option value="">(chưa có dự án — tạo trong Chimedis trước)</option>';
-        return;
-      }
-      selectEl.innerHTML = d.projects.map(function (p) {
-        return '<option value="' + p.id + '">' + escHtml(p.title) + '</option>';
-      }).join('');
-      saveBtn.disabled = false;
-    })
-    .catch(function (err) {
-      statusEl.textContent = 'Không tải được danh sách dự án: ' + err.message;
-      statusEl.className = 'bk-status err';
-    });
-
-  saveBtn.onclick = function () {
-    var projectId = selectEl.value;
-    if (!projectId) return;
-    var title = titleInput.value.trim();
-    if (!title) { titleInput.focus(); return; }
-    rec.title = title;
-    rec.abstract = abstractInput.value.trim() || null;
-    rec.authors = authorsInput.value.split(',').map(function (x) { return x.trim(); }).filter(Boolean);
-    rec.journal = journalInput.value.trim() || null;
-    var yearVal = parseInt(yearInput.value, 10);
-    rec.year = Number.isFinite(yearVal) ? yearVal : null;
-    rec.volume = volumeInput.value.trim() || null;
-    rec.issue = issueInput.value.trim() || null;
-    rec.pages = pagesInput.value.trim() || null;
-    saveBtn.disabled = true;
-    statusEl.textContent = 'Đang lưu…';
-    statusEl.className = 'bk-status';
-    fetch(API_BASE + '/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
-      body: JSON.stringify({ projectId: projectId, record: rec }),
-    })
+    fetch(API_BASE + '/projects', { headers: { Authorization: 'Bearer ' + TOKEN } })
       .then(function (r) { return r.json(); })
       .then(function (d) {
-        if (!d.success) throw new Error(d.error || 'Lỗi khi lưu');
-        statusEl.textContent = 'Đã lưu vào thư viện ✓';
-        statusEl.className = 'bk-status ok';
-        setTimeout(close, 1800);
+        if (!d.success) throw new Error(d.error || 'Lỗi tải danh sách dự án');
+        if (!d.projects.length) {
+          selectEl.innerHTML = '<option value="">(chưa có dự án — tạo trong Chimedis trước)</option>';
+          return;
+        }
+        selectEl.innerHTML = d.projects.map(function (p) {
+          return '<option value="' + p.id + '">' + escHtml(p.title) + '</option>';
+        }).join('');
+        saveBtn.disabled = false;
       })
       .catch(function (err) {
-        statusEl.textContent = err.message;
+        statusEl.textContent = 'Không tải được danh sách dự án: ' + err.message;
         statusEl.className = 'bk-status err';
-        saveBtn.disabled = false;
       });
-  };
-  } // end renderForm
+
+    saveBtn.onclick = function () {
+      var projectId = selectEl.value;
+      if (!projectId) return;
+      var title = titleInput.value.trim();
+      if (!title) { titleInput.focus(); return; }
+      rec.title = title;
+      rec.abstract = abstractInput.value.trim() || null;
+      rec.authors = authorsInput.value.split(',').map(function (x) { return x.trim(); }).filter(Boolean);
+      rec.journal = journalInput.value.trim() || null;
+      var yearVal = parseInt(yearInput.value, 10);
+      rec.year = Number.isFinite(yearVal) ? yearVal : null;
+      rec.volume = volumeInput.value.trim() || null;
+      rec.issue = issueInput.value.trim() || null;
+      rec.pages = pagesInput.value.trim() || null;
+      saveBtn.disabled = true;
+      statusEl.textContent = 'Đang lưu…';
+      statusEl.className = 'bk-status';
+      fetch(API_BASE + '/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
+        body: JSON.stringify({ projectId: projectId, record: rec }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.success) throw new Error(d.error || 'Lỗi khi lưu');
+          statusEl.textContent = 'Đã lưu vào thư viện ✓';
+          statusEl.className = 'bk-status ok';
+          setTimeout(close, 1800);
+        })
+        .catch(function (err) {
+          statusEl.textContent = err.message;
+          statusEl.className = 'bk-status err';
+          saveBtn.disabled = false;
+        });
+    };
+  }
 })();
