@@ -87,6 +87,33 @@
     return meta1('citation_abstract') || meta1('dc.description') || findAbstractBySelectors() || findAbstractByLabel() || '';
   }
 
+  // Tác giả — CNKI/万方 không phát hành meta chuẩn, nhưng tên tác giả LUÔN hiển thị bằng
+  // link riêng ngay dưới tiêu đề (mỗi tác giả 1 thẻ <a>). Dò theo selector đã biết trước,
+  // tên NGƯỜI THẬT do user tự đọc lại + sửa nếu cần (overlay luôn cho sửa tay).
+  var AUTHOR_SELECTORS = ['.author a', '.authors a', '#authorpart a', '.author-name', '[class*="author" i] a', '[id*="author" i] a'];
+  function findAuthorsFromDom() {
+    for (var i = 0; i < AUTHOR_SELECTORS.length; i++) {
+      var els;
+      try { els = document.querySelectorAll(AUTHOR_SELECTORS[i]); } catch (e) { continue; }
+      if (!els.length) continue;
+      var names = Array.prototype.map.call(els, function (el) { return visibleText(el); })
+        .filter(function (t) { return t && t.length <= 40; });
+      if (names.length) return names;
+    }
+    return [];
+  }
+  // Dòng trích dẫn "Tên tạp chí . Năm ,Tập (Số) :Trang" — định dạng chuẩn hoá cao của học
+  // thuật Trung Quốc (CNKI/万方 đều theo mẫu này), xuất hiện ngay trên/dưới tiêu đề. 1 regex
+  // lấy được cả journal+year+volume+issue+pages cùng lúc, chỉ quét gần đầu trang (nhanh, ít
+  // khả năng khớp nhầm đoạn văn khác). Chỉ dùng khi thiếu meta — luôn cho sửa tay sau đó.
+  function findCitationLine() {
+    var text = document.body.innerText.slice(0, 4000);
+    var re = /([一-鿿A-Za-z][^\n.．]{1,60}?)\s*[.．]\s*(\d{4})\s*[,，]\s*(\d+)\s*[（(](\d+)[）)]\s*[:：]\s*([0-9]+(?:[\-–][0-9]+)?)/;
+    var m = text.match(re);
+    if (!m) return null;
+    return { journal: m[1].replace(/\s+/g, '').trim(), year: parseInt(m[2], 10), volume: m[3], issue: m[4], pages: m[5] };
+  }
+
   function extractRecord() {
     var title = meta1('citation_title') || meta1('dc.title') || document.title || '';
     var authorsRaw = metaAll('citation_author');
@@ -94,6 +121,7 @@
       var a = meta1('citation_authors') || meta1('dc.creator');
       if (a) authorsRaw = a.split(/[;,]/).map(function (x) { return x.trim(); }).filter(Boolean);
     }
+    if (!authorsRaw.length) authorsRaw = findAuthorsFromDom();
     var journal = meta1('citation_journal_title') || meta1('citation_conference_title') || '';
     var dateStr = meta1('citation_publication_date') || meta1('citation_date') || meta1('citation_online_date') || '';
     var yearMatch = dateStr.match(/(19|20)\d{2}/);
@@ -106,6 +134,16 @@
     var firstPage = meta1('citation_firstpage') || '';
     var lastPage = meta1('citation_lastpage') || '';
     var pages = meta1('citation_pages') || (firstPage ? (lastPage ? firstPage + '-' + lastPage : firstPage) : '');
+    if (!journal || !year || !volume || !issue || !pages) {
+      var cite = findCitationLine();
+      if (cite) {
+        journal = journal || cite.journal;
+        year = year || cite.year;
+        volume = volume || cite.volume;
+        issue = issue || cite.issue;
+        pages = pages || cite.pages;
+      }
+    }
     // Ngôn ngữ: ưu tiên thẻ chuẩn/khai báo trang → suy đoán thô từ chữ Hán trong tiêu đề
     // (KHÔNG suy đoán tiếng Việt vì dấu câu dễ nhầm, để trống cho user tự sửa nếu cần).
     var language = meta1('citation_language') || meta1('dc.language') ||
