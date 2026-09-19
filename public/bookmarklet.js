@@ -491,11 +491,39 @@
     mountTitlebar();
     card.appendChild(body);
   }
+  // ===== Nhập từ file trên máy (2026-09-19) — SinoMed (và các nguồn chỉ cho TẢI FILE, không
+  // hiện trực tiếp trên trang) không có text nào để đọc từ document.body. Input file ẩn CHỈ
+  // đọc đúng byte của file user tự chọn qua hộp thoại hệ điều hành (File API) — không đụng gì
+  // tới nội dung trang đang mở, nên không có chuyện "đọc nhầm cả trang" khi dùng cách này. Có
+  // mặt ở MỌI màn hình (gắn trong mountTitlebar) vì user có thể cần chọn file bất cứ lúc nào,
+  // không riêng gì lúc mới mở bookmarklet.
+  var fileInput = document.createElement('input');
+  fileInput.type = 'file';
+  fileInput.accept = '.txt,.ris,.bib,.bibtex,.env,.net,.enw,.nx,text/plain';
+  fileInput.style.display = 'none';
+  root.appendChild(fileInput);
+  fileInput.addEventListener('change', function () {
+    var file = fileInput.files && fileInput.files[0];
+    fileInput.value = '';
+    if (!file) return;
+    file.text().then(function (text) {
+      var d = detectFormatAndCount(text);
+      if (!d) {
+        renderError('Không nhận diện được định dạng trong file "' + file.name + '". Cần file .txt/.ris/.bib xuất theo kiểu RIS/EndNote/NoteExpress/BibTeX.');
+        return;
+      }
+      renderBulkImport(text, d.count, d.format);
+    }).catch(function () {
+      renderError('Không đọc được file "' + file.name + '".');
+    });
+  });
+
   function mountTitlebar() {
     var bar = document.createElement('div');
     bar.className = 'bk-titlebar';
     bar.innerHTML = '<span class="bk-title">Lưu vào Chimedis</span>' +
       '<span class="bk-header-actions">' +
+      '<button type="button" class="bk-icon-btn bk-file" title="Nhập từ file trên máy (SinoMed…)">📎</button>' +
       '<button type="button" class="bk-icon-btn bk-max" title="Phóng to toàn màn hình">⤢</button>' +
       '<button type="button" class="bk-icon-btn bk-min" title="Thu nhỏ">–</button>' +
       '<button type="button" class="bk-icon-btn bk-close" title="Đóng">×</button>' +
@@ -504,6 +532,7 @@
     makeDraggable(bar);
     bar.querySelector('.bk-close').onclick = close;
     bar.querySelector('.bk-min').onclick = minimize;
+    bar.querySelector('.bk-file').onclick = function () { fileInput.click(); };
     maxBtnEl = bar.querySelector('.bk-max');
     maxBtnEl.onclick = toggleMaximize;
   }
@@ -549,13 +578,22 @@
     return m ? m.length : 0;
   }
 
+  // Dùng CHUNG cho cả (a) text lấy từ trang đang mở lúc bấm bookmarklet, VÀ (b) text đọc từ
+  // 1 file user tự chọn trên máy (SinoMed chỉ cho tải file, không hiện trực tiếp trên trang —
+  // xem nút "📎 Nhập từ file trên máy" ở mountTitlebar()) — cùng 1 luật nhận diện, không phân
+  // biệt nguồn text đến từ đâu.
+  function detectFormatAndCount(text) {
+    var refBlockCount = countReferenceBlocks(text);
+    if (refBlockCount >= 2) return { format: 'ris', count: refBlockCount };
+    var wanfangCount = countWanfangBlocks(text);
+    if (wanfangCount >= 2) return { format: 'wanfang-list', count: wanfangCount };
+    return null;
+  }
+
   var pageText = document.body.innerText || '';
-  var refBlockCount = countReferenceBlocks(pageText);
-  var wanfangCount = countWanfangBlocks(pageText);
-  if (refBlockCount >= 2) {
-    renderBulkImport(pageText, refBlockCount, 'ris');
-  } else if (wanfangCount >= 2) {
-    renderBulkImport(pageText, wanfangCount, 'wanfang-list');
+  var pageDetect = detectFormatAndCount(pageText);
+  if (pageDetect) {
+    renderBulkImport(pageText, pageDetect.count, pageDetect.format);
   } else {
     singleArticleFlow();
   }
