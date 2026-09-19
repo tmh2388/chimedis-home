@@ -475,17 +475,105 @@
     }
     return clicked;
   }
-  var expandClicks = tryAutoExpand();
-
-  function proceed() {
-    var rec = extractRecord();
-    if (!rec.title) {
-      renderError('Không đọc được tiêu đề bài viết trên trang này. Mở đúng trang chi tiết 1 bài báo rồi thử lại.');
-      return;
-    }
-    renderForm(rec);
+  // ===== Nhận diện trang "xuất hàng loạt" (2026-09-19) — CNKI/万方 có nút xuất riêng
+  // ("导出与分析 → 导出文献") render NGAY trên trang thành text NoteExpress/BibTex/EndNote
+  // (không phải file tải xuống) khi user tự tick chọn nhiều bài rồi tự bấm xuất — bookmarklet
+  // CHỈ đọc text đã hiện sẵn trên trang đó, không tự động hoá bước tìm/chọn/xuất nào của CNKI.
+  // Đếm số khối "[Reference Type]:"/"{Reference Type}:" xuất hiện — field luôn có mặt ở đầu
+  // MỖI bản ghi trong cả 2 kiểu dấu ngoặc, dùng làm tín hiệu đáng tin để phân biệt với trang 1
+  // bài đơn lẻ (đếm được đúng số bản ghi luôn, không chỉ có/không).
+  function countReferenceBlocks(text) {
+    var m = text.match(/[{[]\s*Reference Type\s*[}\]]\s*:/gi);
+    return m ? m.length : 0;
   }
-  if (expandClicks > 0) { setTimeout(proceed, 250); } else { proceed(); }
+
+  var pageText = document.body.innerText || '';
+  var refBlockCount = countReferenceBlocks(pageText);
+  if (refBlockCount >= 2) {
+    renderBulkImport(pageText, refBlockCount);
+  } else {
+    singleArticleFlow();
+  }
+
+  function singleArticleFlow() {
+    var expandClicks = tryAutoExpand();
+    function proceed() {
+      var rec = extractRecord();
+      if (!rec.title) {
+        renderError('Không đọc được tiêu đề bài viết trên trang này. Mở đúng trang chi tiết 1 bài báo rồi thử lại.');
+        return;
+      }
+      renderForm(rec);
+    }
+    if (expandClicks > 0) { setTimeout(proceed, 250); } else { proceed(); }
+  }
+
+  // ===== Nhập hàng loạt từ trang xuất CNKI/万方 — chọn dự án 1 lần, gửi thẳng text trang cho
+  // server (đã có sẵn parser RIS/EndNote/NoteExpress/BibTeX dùng chung với nhập tay trong
+  // Chimedis ở lib/ref-import.js, tự nhận diện định dạng bất kể tham số format truyền lên). =====
+  function renderBulkImport(text, count) {
+    mountTitlebar();
+    var body = document.createElement('div');
+    body.className = 'bk-body';
+    body.innerHTML =
+      '<div class="bk-status">Phát hiện trang xuất hàng loạt — tìm thấy khoảng <b>' + count + '</b> bản ghi trên trang này.</div>' +
+      '<div><div class="bk-lbl">Nhập vào dự án</div><select class="bk-project"><option value="">Đang tải danh sách dự án…</option></select></div>' +
+      '<div class="bk-row">' +
+      '<button class="bk-import primary" disabled>Nhập tất cả</button>' +
+      '<button class="bk-cancel">Huỷ</button>' +
+      '</div>' +
+      '<div class="bk-status"></div>';
+    card.appendChild(body);
+
+    body.querySelector('.bk-cancel').onclick = close;
+    var statusEls = body.querySelectorAll('.bk-status');
+    var statusEl = statusEls[statusEls.length - 1];
+    var selectEl = body.querySelector('.bk-project');
+    var importBtn = body.querySelector('.bk-import');
+
+    fetch(API_BASE + '/projects', { headers: { Authorization: 'Bearer ' + TOKEN } })
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (!d.success) throw new Error(d.error || 'Lỗi tải danh sách dự án');
+        if (!d.projects.length) {
+          selectEl.innerHTML = '<option value="">(chưa có dự án — tạo trong Chimedis trước)</option>';
+          return;
+        }
+        selectEl.innerHTML = d.projects.map(function (p) {
+          return '<option value="' + p.id + '">' + escHtml(p.title) + '</option>';
+        }).join('');
+        importBtn.disabled = false;
+      })
+      .catch(function (err) {
+        statusEl.textContent = 'Không tải được danh sách dự án: ' + err.message;
+        statusEl.className = 'bk-status err';
+      });
+
+    importBtn.onclick = function () {
+      var projectId = selectEl.value;
+      if (!projectId) return;
+      importBtn.disabled = true;
+      statusEl.textContent = 'Đang nhập ' + count + ' bản ghi…';
+      statusEl.className = 'bk-status';
+      fetch(API_BASE + '/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
+        body: JSON.stringify({ projectId: projectId, format: 'ris', text: text }),
+      })
+        .then(function (r) { return r.json(); })
+        .then(function (d) {
+          if (!d.success) throw new Error(d.error || 'Lỗi khi nhập');
+          statusEl.textContent = 'Đã nhập ' + d.imported + '/' + d.total + ' bản ghi' + (d.skipped ? ' (bỏ qua ' + d.skipped + ')' : '') + ' ✓';
+          statusEl.className = 'bk-status ok';
+          setTimeout(close, 2400);
+        })
+        .catch(function (err) {
+          statusEl.textContent = err.message;
+          statusEl.className = 'bk-status err';
+          importBtn.disabled = false;
+        });
+    };
+  }
 
   function renderForm(rec) {
     mountTitlebar();
