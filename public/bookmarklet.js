@@ -320,6 +320,13 @@
     'padding:8px 9px;background:#F5F0E6;border-radius:6px;white-space:pre-wrap}' +
     '.bk-ref-toolbar{display:flex;justify-content:space-between;align-items:baseline;font-size:11.5px}' +
     '.bk-ref-toolbar a{color:#B4472B;cursor:pointer}' +
+    '.bk-selected-count{font-weight:700;color:#0E3A3A}' +
+    '.bk-ref-filter{width:100%}' +
+    '.bk-ref-dup{display:inline-block;font-size:9.5px;font-weight:700;text-transform:uppercase;' +
+    'letter-spacing:.02em;color:#8a5a00;background:#fbf0d6;border-radius:4px;padding:1px 6px;margin-left:4px;vertical-align:middle}' +
+    // Cùng lỗi cascade [hidden] đã gặp nhiều lần trong file này — display:inline-block phía
+    // trên (author stylesheet) đè mất display:none mặc định của [hidden] nếu không khai lại.
+    '.bk-ref-dup[hidden]{display:none}' +
     // 8 tay cầm resize — 4 cạnh (dải mỏng dọc theo cạnh) + 4 góc (ô vuông nhỏ đè lên góc).
     '.bk-rz{position:absolute;z-index:2}' +
     '.bk-rz-n{top:-4px;left:8px;right:8px;height:8px;cursor:ns-resize}' +
@@ -583,8 +590,9 @@
 
     function renderBulkChecklist(records) {
       body.innerHTML =
-        '<div class="bk-ref-toolbar"><span>Tìm thấy <b>' + records.length + '</b> bản ghi — bỏ tick bài không cần:</span>' +
+        '<div class="bk-ref-toolbar"><span><span class="bk-selected-count">' + records.length + '</span>/' + records.length + ' bản ghi được chọn</span>' +
         '<a class="bk-select-none">Bỏ chọn tất cả</a></div>' +
+        (records.length > 8 ? '<input type="text" class="bk-ref-filter" placeholder="Lọc theo tiêu đề…" />' : '') +
         '<div class="bk-ref-list"></div>' +
         '<div><div class="bk-lbl">Nhập vào dự án</div><select class="bk-project"><option value="">Đang tải danh sách dự án…</option></select></div>' +
         '<div class="bk-row">' +
@@ -593,12 +601,21 @@
         '</div>' +
         '<div class="bk-status"></div>';
       var listEl = body.querySelector('.bk-ref-list');
+      var countEl = body.querySelector('.bk-selected-count');
+      var rowEls = [];
+
+      function updateCount() {
+        var n = listEl.querySelectorAll('input[type=checkbox]:checked').length;
+        countEl.textContent = n;
+      }
+
       // Bấm vào tiêu đề để xem lại đầy đủ tóm tắt (abstract) trước khi quyết định bỏ tick hay
       // không (2026-09-19, user muốn đọc lại nội dung sẽ trích trước khi lưu) — TÁCH khỏi
       // checkbox (không dùng <label> bọc cả dòng nữa) để bấm tiêu đề không vô tình đổi tick.
       records.forEach(function (rec, i) {
         var row = document.createElement('div');
         row.className = 'bk-ref-item';
+        row.setAttribute('data-title', (rec.title || '').toLowerCase());
         var meta = [rec.authors && rec.authors.length ? rec.authors.slice(0, 3).join(', ') + (rec.authors.length > 3 ? ' và cộng sự' : '') : '', [rec.journal, rec.year].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
         var detailParts = [];
         if (rec.abstract) detailParts.push('<div class="bk-ref-abstract">' + escHtml(rec.abstract) + '</div>');
@@ -606,7 +623,7 @@
         if (rec.url) detailParts.push('<div class="bk-ref-meta"><a href="' + escHtml(rec.url) + '" target="_blank" rel="noopener">' + escHtml(rec.url) + '</a></div>');
         row.innerHTML = '<input type="checkbox" data-idx="' + i + '" checked />' +
           '<span style="flex:1;min-width:0">' +
-          '<div class="bk-ref-title"><span class="bk-ref-toggle">▸</span> ' + escHtml(rec.title || '(không có tiêu đề)') + '</div>' +
+          '<div class="bk-ref-title"><span class="bk-ref-toggle">▸</span> ' + escHtml(rec.title || '(không có tiêu đề)') + ' <span class="bk-ref-dup" hidden>đã có trong dự án</span></div>' +
           (meta ? '<div class="bk-ref-meta">' + escHtml(meta) + '</div>' : '') +
           (detailParts.length ? '<div class="bk-ref-detail" hidden>' + detailParts.join('') + '</div>' : '') +
           '</span>';
@@ -622,7 +639,9 @@
         } else {
           toggleEl.style.visibility = 'hidden';
         }
+        row.querySelector('input[type=checkbox]').addEventListener('change', updateCount);
         listEl.appendChild(row);
+        rowEls.push(row);
       });
 
       var toggleAllEl = body.querySelector('.bk-select-none');
@@ -631,12 +650,45 @@
         allChecked = !allChecked;
         toggleAllEl.textContent = allChecked ? 'Bỏ chọn tất cả' : 'Chọn tất cả';
         Array.prototype.forEach.call(listEl.querySelectorAll('input[type=checkbox]'), function (cb) { cb.checked = allChecked; });
+        updateCount();
       };
+
+      // Lọc nhanh theo tiêu đề khi danh sách dài (chỉ hiện ô lọc khi > 8 bài).
+      var filterEl = body.querySelector('.bk-ref-filter');
+      if (filterEl) {
+        filterEl.oninput = function () {
+          var q = filterEl.value.trim().toLowerCase();
+          rowEls.forEach(function (row) {
+            row.style.display = !q || row.getAttribute('data-title').indexOf(q) >= 0 ? '' : 'none';
+          });
+        };
+      }
 
       body.querySelector('.bk-cancel').onclick = close;
       var statusEl = body.querySelector('.bk-status');
       var selectEl = body.querySelector('.bk-project');
       var importBtn = body.querySelector('.bk-import');
+
+      // Báo trùng (2026-09-19) — hỏi server bài nào trong danh sách ĐÃ CÓ sẵn trong dự án đang
+      // chọn (cùng khoá định danh dùng khi lưu thật), gắn nhãn "đã có trong dự án" ngay trên
+      // tiêu đề để user cân nhắc bỏ tick, KHÔNG tự động bỏ tick thay user.
+      function checkDuplicates(projectId) {
+        if (!projectId) return;
+        fetch(API_BASE + '/check-duplicates', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + TOKEN },
+          body: JSON.stringify({ projectId: projectId, records: records }),
+        })
+          .then(function (r) { return r.json(); })
+          .then(function (d) {
+            if (!d.success) return;
+            d.duplicates.forEach(function (isDup, i) {
+              var dupEl = rowEls[i] && rowEls[i].querySelector('.bk-ref-dup');
+              if (dupEl) dupEl.hidden = !isDup;
+            });
+          })
+          .catch(function () { /* im lặng — chỉ là gợi ý phụ, không chặn lưu nếu lỗi */ });
+      }
 
       fetch(API_BASE + '/projects', { headers: { Authorization: 'Bearer ' + TOKEN } })
         .then(function (r) { return r.json(); })
@@ -650,11 +702,13 @@
             return '<option value="' + p.id + '">' + escHtml(p.title) + '</option>';
           }).join('');
           importBtn.disabled = false;
+          checkDuplicates(selectEl.value);
         })
         .catch(function (err) {
           statusEl.textContent = 'Không tải được danh sách dự án: ' + err.message;
           statusEl.className = 'bk-status err';
         });
+      selectEl.onchange = function () { checkDuplicates(selectEl.value); };
 
       importBtn.onclick = function () {
         var projectId = selectEl.value;

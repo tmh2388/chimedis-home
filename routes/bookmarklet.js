@@ -7,12 +7,12 @@
 // 3 nhóm route:
 //  - /tokens: quản lý token cá nhân, chạy TRONG app Chimedis → dùng Firebase auth bình
 //    thường (requireUser/requireVerified), KHÔNG cần CORS mở vì cùng origin.
-//  - /projects, /save, /import, /parse: gọi TỪ bookmarklet đang chạy trên domain khác
-//    (CNKI...) — không có Firebase session cookie của tab Chimedis, xác thực bằng token cá
-//    nhân (Bearer). CORS mở cho MỌI origin CHỈ ở các route này — an toàn vì auth qua header
-//    Bearer tự thân request mang theo (không phải cookie), không có đường cho site khác
-//    "mượn" quyền user. /parse chỉ đọc (không lưu) — dùng cho bước xem trước + bỏ chọn bớt
-//    TRƯỚC khi /import thật sự lưu (2026-09-19, user muốn xem lại danh sách trước khi lưu).
+//  - /projects, /save, /import, /parse, /check-duplicates: gọi TỪ bookmarklet đang chạy trên
+//    domain khác (CNKI...) — không có Firebase session cookie của tab Chimedis, xác thực bằng
+//    token cá nhân (Bearer). CORS mở cho MỌI origin CHỈ ở các route này — an toàn vì auth qua
+//    header Bearer tự thân request mang theo (không phải cookie), không có đường cho site khác
+//    "mượn" quyền user. /parse, /check-duplicates chỉ đọc (không lưu) — dùng cho bước xem
+//    trước + báo trùng + bỏ chọn bớt TRƯỚC khi /import thật sự lưu.
 import { Router } from 'express';
 import { getPool, isDbConfigured } from '../lib/db.js';
 import { requireUser, requireVerified } from '../lib/auth.js';
@@ -68,6 +68,7 @@ router.use('/projects', corsOpen);
 router.use('/save', corsOpen);
 router.use('/import', corsOpen);
 router.use('/parse', corsOpen);
+router.use('/check-duplicates', corsOpen);
 function corsOpen(req, res, next) {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Headers', 'Authorization, Content-Type');
@@ -132,6 +133,48 @@ router.post('/parse', requireDb, requirePersonalToken, rlParse, async (req, res)
   } catch (err) {
     console.error('POST /bookmarklet/parse:', err.message);
     res.status(500).json({ success: false, error: 'Lỗi khi đọc nội dung' });
+  }
+});
+
+// Cảnh báo trùng (2026-09-19) — user muốn biết bài nào trong danh sách xem trước ĐÃ CÓ sẵn
+// trong dự án đang chọn, trước khi quyết định bỏ tick, thay vì lưu xong mới biết trùng. Dùng
+// LẠI đúng khoá định danh normalizeInlineRecord() tính ra khi lưu thật (doi/pmid/pmcid/
+// openalex → url → hash tay từ tiêu đề+năm+tạp chí) — cùng logic upsertStandaloneRecord() đã
+// dùng để chống trùng khi lưu, nên "đã có" ở đây đúng nghĩa "lưu lại sẽ trùng", không phải suy
+// đoán rời rạc.
+const rlDup = rateLimit({ max: 20, windowMs: 60_000, keyFn: (r) => 'bkdup' + (r.user?.id || 'anon') });
+router.post('/check-duplicates', requireDb, requirePersonalToken, rlDup, async (req, res) => {
+  try {
+    const projectId = parseInt(req.body?.projectId, 10);
+    const [rows] = await getPool().query(
+      'SELECT id FROM wb_projects WHERE id=? AND user_id=? LIMIT 1', [projectId, req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ success: false, error: 'Không tìm thấy dự án (hoặc không thuộc về bạn)' });
+    const records = Array.isArray(req.body?.records) ? req.body.records.slice(0, 500) : [];
+    const pool = getPool();
+    const duplicates = [];
+    for (const raw of records) {
+      const norm = normalizeInlineRecord({ ...raw, venue: raw.journal, landingUrl: raw.url, type: raw.docType, source: 'manual' });
+      let dup = false;
+      if (norm) {
+        for (const [scheme, value] of Object.entries(norm.identifiers || {})) {
+          if (!value) continue;
+          const [m] = await pool.query(
+            'SELECT record_id FROM wb_record_identifiers WHERE scheme=? AND value=? LIMIT 1', [scheme, value]
+          );
+          if (!m.length) continue;
+          const [inProj] = await pool.query(
+            'SELECT 1 FROM wb_project_records WHERE project_id=? AND record_id=? LIMIT 1', [projectId, m[0].record_id]
+          );
+          if (inProj.length) { dup = true; break; }
+        }
+      }
+      duplicates.push(dup);
+    }
+    res.json({ success: true, duplicates });
+  } catch (err) {
+    console.error('POST /bookmarklet/check-duplicates:', err.message);
+    res.status(500).json({ success: false, error: 'Lỗi khi kiểm tra trùng lặp' });
   }
 });
 
