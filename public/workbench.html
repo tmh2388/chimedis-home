@@ -586,6 +586,7 @@ const I18N = {
     source_clinicaltrials: 'ClinicalTrials.gov',
     filter_showing: 'Hiển thị {n}/{total} sau lọc', filter_no_match: 'Không có bản ghi nào khớp bộ lọc.',
     detail_authors: 'Tác giả', detail_journal: 'Tạp chí', detail_ids: 'Định danh',
+    detail_volume: 'Tập', detail_issue: 'Số', detail_pages: 'Tr.', detail_open_source: 'Mở trang gốc',
     detail_keywords: 'Từ khoá', detail_topics: 'Chủ đề', detail_abstract: 'Tóm tắt',
     detail_no_abstract: 'Không có tóm tắt.', detail_note_label: 'Ghi chú',
     detail_save_note: 'Lưu ghi chú', detail_close: 'Đóng',
@@ -751,6 +752,7 @@ const I18N = {
     source_clinicaltrials: 'ClinicalTrials.gov',
     filter_showing: '筛选后显示 {n}/{total} 条', filter_no_match: '没有符合筛选条件的记录。',
     detail_authors: '作者', detail_journal: '期刊', detail_ids: '标识符',
+    detail_volume: '卷', detail_issue: '期', detail_pages: '页', detail_open_source: '打开原文页面',
     detail_keywords: '关键词', detail_topics: '主题', detail_abstract: '摘要',
     detail_no_abstract: '暂无摘要。', detail_note_label: '备注',
     detail_save_note: '保存备注', detail_close: '关闭',
@@ -916,6 +918,7 @@ const I18N = {
     source_clinicaltrials: 'ClinicalTrials.gov',
     filter_showing: 'Showing {n}/{total} after filter', filter_no_match: 'No records match the filter.',
     detail_authors: 'Authors', detail_journal: 'Journal', detail_ids: 'Identifiers',
+    detail_volume: 'Vol.', detail_issue: 'No.', detail_pages: 'pp.', detail_open_source: 'Open source page',
     detail_keywords: 'Keywords', detail_topics: 'Topics', detail_abstract: 'Abstract',
     detail_no_abstract: 'No abstract available.', detail_note_label: 'Note',
     detail_save_note: 'Save note', detail_close: 'Close',
@@ -1708,10 +1711,19 @@ function toggleSort(state, key, descFirstKeys) {
 
 function renderRecordDetail(r) {
   const idRows = Object.entries(r.identifiers || {}).filter(([k]) => k !== 'manual');
+  // Tập/Số/Trang (M10) + link mở lại nguồn (URL/DOI bấm được thay vì chữ tĩnh) — trước đây
+  // đã lưu vào CSDL nhưng khung chi tiết không hiện ra, user hỏi "sau này muốn xem lại thì
+  // sao" mới phát hiện thiếu (2026-09-19).
+  const vip = [r.volume ? `${t('detail_volume')} ${esc(r.volume)}` : '', r.issue ? `${t('detail_issue')} ${esc(r.issue)}` : '', r.pages ? `${t('detail_pages')} ${esc(r.pages)}` : ''].filter(Boolean).join(' · ');
+  const idLinks = idRows.map(([k, v]) => {
+    if (k === 'url') return `<a href="${esc(v)}" target="_blank" rel="noopener">${esc(t('detail_open_source'))} ↗</a>`;
+    if (k === 'doi') return `<a href="https://doi.org/${esc(v)}" target="_blank" rel="noopener">DOI: ${esc(v)} ↗</a>`;
+    return `${k.toUpperCase()}: ${esc(v)}`;
+  });
   return `<div class="lib-detail">
     <p><b>${t('detail_authors')}:</b> ${esc((r.authors || []).join('; ')) || t('dash')}</p>
-    <p><b>${t('detail_journal')}:</b> ${esc(r.journal || t('dash'))}${r.year ? ` · ${r.year}` : ''}</p>
-    ${idRows.length ? `<p><b>${t('detail_ids')}:</b> ${idRows.map(([k, v]) => `${k.toUpperCase()}: ${esc(v)}`).join(' · ')}</p>` : ''}
+    <p><b>${t('detail_journal')}:</b> ${esc(r.journal || t('dash'))}${r.year ? ` · ${r.year}` : ''}${vip ? ` · ${vip}` : ''}</p>
+    ${idLinks.length ? `<p><b>${t('detail_ids')}:</b> ${idLinks.join(' · ')}</p>` : ''}
     ${(r.keywords || []).length ? `<p><b>${t('detail_keywords')}:</b> ${esc(r.keywords.join('; '))}</p>` : ''}
     ${(r.subjectHeadings || []).length ? `<p><b>${t('detail_topics')}:</b> ${esc(r.subjectHeadings.join('; '))}</p>` : ''}
     <p><b>${t('detail_abstract')}:</b><br>${esc(r.abstract || t('detail_no_abstract'))}</p>

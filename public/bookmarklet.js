@@ -141,19 +141,28 @@
     '.author a', '.authors a', '#authorpart a', '.author-name', '[class*="author" i] a', '[id*="author" i] a',
     '.c-article-author-list a', '.contrib-author', '.authorName', '.auth-name', '.artical-info .author',
   ];
+  // CNKI thường làm CẢ tên đơn vị công tác thành link giống hệt tên tác giả (bấm vào để tìm
+  // bài khác cùng đơn vị) — cùng selector `.author a` khớp trúng cả 2 loại, dính chung vào 1
+  // danh sách (lỗi thật user gặp 2026-09-19: "吴晨辉1, ... 1.山西中医药大学, 2.山西省中医院").
+  // Loại bỏ: (a) bắt đầu bằng "số.đơn vị" (kiểu đánh số chú thích đơn vị chuẩn CNKI/万方),
+  // (b) chứa từ khoá cơ quan/tổ chức (đại học/viện/bệnh viện...). Đồng thời cắt số thứ tự chú
+  // thích dính liền cuối tên tác giả thật (vd "吴晨辉1" → "吴晨辉").
+  var AFFILIATION_RE = /^\d+\s*[.、．]|(大学|学院|医院|研究所|研究院|中心|集团|科室|University|College|Hospital|Institute|Department)/i;
+  function stripAuthorSuffix(t) { return t.replace(/[\d,;，；、\s]+$/, '').trim(); }
   function findAuthorsFromDom() {
     for (var i = 0; i < AUTHOR_SELECTORS.length; i++) {
       var els;
       try { els = document.querySelectorAll(AUTHOR_SELECTORS[i]); } catch (e) { continue; }
       if (!els.length) continue;
-      var names = Array.prototype.map.call(els, function (el) { return visibleText(el); })
-        .filter(function (t) { return t && t.length <= 40; });
+      var names = Array.prototype.map.call(els, function (el) { return stripAuthorSuffix(visibleText(el)); })
+        .filter(function (t) { return t && t.length <= 40 && !AFFILIATION_RE.test(t); });
       if (names.length) return names;
     }
     return [];
   }
   function splitAuthors(s) {
-    return s.split(/[;,，；、]/).map(function (x) { return x.trim(); }).filter(Boolean);
+    return s.split(/[;,，；、]/).map(function (x) { return stripAuthorSuffix(x); })
+      .filter(function (t) { return t && !AFFILIATION_RE.test(t); });
   }
 
   // ===== Dòng trích dẫn gộp journal+year+volume+issue+pages — thử NHIỀU mẫu (đa dạng định
@@ -307,9 +316,10 @@
     '.bk-rz-nw{top:-4px;left:-4px;width:14px;height:14px;cursor:nwse-resize}' +
     '.bk-rz-se{bottom:-4px;right:-4px;width:14px;height:14px;cursor:nwse-resize}' +
     '.bk-rz-sw{bottom:-4px;left:-4px;width:14px;height:14px;cursor:nesw-resize}' +
-    '.bk-mini{position:absolute;inset:0;border-radius:50%;background:#B4472B;color:#fff;' +
+    '.bk-mini{position:absolute;inset:0;border-radius:50%;background:#fff;' +
     'display:flex;align-items:center;justify-content:center;cursor:pointer;' +
-    'box-shadow:0 6px 18px rgba(0,0,0,.3);font-size:20px}' +
+    'box-shadow:0 6px 18px rgba(0,0,0,.3);padding:8px;box-sizing:border-box}' +
+    '.bk-mini img{width:100%;height:100%;object-fit:contain}' +
     '.bk-mini:hover{background:#9A3A22}' +
     // [hidden] mặc định display:none là quy tắc UA stylesheet — bị chính .bk-card/.bk-mini
     // display:flex phía trên (author stylesheet) đè mất do gốc author LUÔN thắng gốc UA bất
@@ -325,7 +335,7 @@
   var mini = document.createElement('div');
   mini.className = 'bk-mini';
   mini.title = 'Mở lại — Lưu vào Chimedis';
-  mini.innerHTML = '💾';
+  mini.innerHTML = '<img src="https://chimedis.vn/assets/logo.png" alt="Chimedis" />';
   mini.hidden = true;
   root.appendChild(mini);
 
@@ -494,6 +504,11 @@
       '<div><div class="bk-lbl">Số</div><input type="text" class="bk-issue-input" value="' + escHtml(rec.issue || '') + '" /></div>' +
       '<div style="flex:1.4"><div class="bk-lbl">Trang</div><input type="text" class="bk-pages-input" value="' + escHtml(rec.pages || '') + '" placeholder="vd 45-52" /></div>' +
       '</div>' +
+      '<div><div class="bk-lbl">DOI (nếu có)</div><input type="text" class="bk-doi-input" value="' + escHtml(rec.doi || '') + '" placeholder="vd 10.1234/xxxx" /></div>' +
+      // Luôn lưu kèm link trang gốc (dù không thấy DOI/không hiển thị ở đây) để sau này mở
+      // lại xem đúng bài — hiện rõ ra đây để user biết chắc hệ thống có ghi lại (2026-09-19,
+      // user hỏi thẳng "có lưu đường link không").
+      '<p class="bk-source-link" style="margin:0;font-size:11px;color:#6b6355">Nguồn: <a href="' + escHtml(rec.landingUrl) + '" target="_blank" rel="noopener" style="color:#B4472B">' + escHtml(rec.landingUrl.length > 60 ? rec.landingUrl.slice(0, 60) + '…' : rec.landingUrl) + '</a></p>' +
       '<div style="display:flex;justify-content:space-between;align-items:baseline">' +
       '<div class="bk-lbl" style="margin:0">Tóm tắt (abstract)</div>' +
       '<a href="#" class="bk-refetch" style="font-size:11px">↻ Trích lại từ trang</a>' +
@@ -521,6 +536,7 @@
     var volumeInput = body.querySelector('.bk-volume-input');
     var issueInput = body.querySelector('.bk-issue-input');
     var pagesInput = body.querySelector('.bk-pages-input');
+    var doiInput = body.querySelector('.bk-doi-input');
     // "Trích lại từ trang" — sau khi user tự bấm mở rộng nội dung trên trang gốc, quét lại
     // DUY NHẤT phần tóm tắt mà không mất các trường khác đã sửa tay.
     body.querySelector('.bk-refetch').onclick = function (e) {
@@ -562,6 +578,7 @@
       rec.volume = volumeInput.value.trim() || null;
       rec.issue = issueInput.value.trim() || null;
       rec.pages = pagesInput.value.trim() || null;
+      rec.doi = doiInput.value.trim() || null;
       saveBtn.disabled = true;
       statusEl.textContent = 'Đang lưu…';
       statusEl.className = 'bk-status';
