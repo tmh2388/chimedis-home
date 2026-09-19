@@ -248,7 +248,7 @@ CREATE TABLE IF NOT EXISTS wb_gap_candidates (
   question_id          BIGINT NULL,
   origin_search_run_id BIGINT NOT NULL,
   title                VARCHAR(500) NOT NULL,
-  gap_type             ENUM('evidence','population','intervention','outcome','method','mechanism','theory') NULL,
+  gap_type             ENUM('evidence','knowledge','practical_knowledge','methodological','empirical','theoretical','population') NULL COMMENT 'Khung Robinson et al. 2011 — xem db/m12-workbench.sql',
   body_json            JSON NOT NULL,
   state                ENUM('candidate','rejected') NOT NULL DEFAULT 'candidate',
   tags                 VARCHAR(300) NULL,

@@ -137,7 +137,7 @@
             <div class="lang-opt" data-lang="en" onclick="setLang('en')">English <span class="ck">✓</span></div>
           </div>
         </div>
-        <button class="icon-btn" onclick="location.href='/workbench.html'" data-i18n-title="modal_close_title" title="Đóng">
+        <button class="icon-btn" onclick="wbCloseAccountModal()" data-i18n-title="modal_close_title" title="Đóng">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
         </button>
       </div>
@@ -523,6 +523,17 @@ window.wbShowCategory = (cat) => {
   document.querySelectorAll('.settings-section').forEach((el) => { el.hidden = el.dataset.section !== cat; });
   document.querySelectorAll('.nav-item').forEach((el) => { el.classList.toggle('active', el.dataset.cat === cat); });
 };
+
+// ===== Đóng modal — chạy trong iframe (mở từ workbench.html/index.html qua overlay, KHÔNG
+// tải lại trang cha) thì báo cho cha đóng iframe; mở trực tiếp /tai-khoan.html (link cũ, bookmark,
+// gõ tay URL) thì vẫn điều hướng như trước (2026-09-19, user báo đóng xong bị tải lại cả trang,
+// tốn thời gian mất trạng thái Bàn làm việc). =====
+const IN_ACCOUNT_IFRAME = window.self !== window.top;
+window.wbCloseAccountModal = () => {
+  if (IN_ACCOUNT_IFRAME) { parent.postMessage({ chimedisAccountModal: 'close' }, location.origin); return; }
+  location.href = '/workbench.html';
+};
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') wbCloseAccountModal(); });
 </script>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';

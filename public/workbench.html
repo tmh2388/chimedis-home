@@ -139,6 +139,12 @@
 
   /* Popover "Thêm hạng mục" — neo bằng position:fixed (toạ độ set qua JS lúc click) nên
      không bị .wb-tree{overflow:auto} cắt mất khi nút nằm cuối danh sách dài. */
+  /* Modal Tài khoản mở qua iframe overlay (2026-09-19) — giữ nguyên trang Bàn làm việc phía
+     dưới (dự án đang mở, kết quả tìm kiếm...), KHÔNG điều hướng rời trang, nên đóng lại không
+     mất trạng thái/không phải tải lại. tai-khoan.html tự vẽ backdrop+modal riêng của nó, nên
+     khung ngoài này chỉ cần trong suốt, phủ kín màn hình. */
+  .account-modal-overlay{position:fixed;inset:0;z-index:200;background:transparent}
+  .account-modal-overlay iframe{width:100%;height:100%;border:0;display:block}
   .track-popover{position:fixed;width:264px;background:#fff;border:1px solid var(--border);
     border-radius:11px;box-shadow:0 10px 28px rgba(14,58,58,.24);padding:6px;z-index:70;
     max-height:70vh;overflow:auto}
@@ -372,7 +378,7 @@
 
       <div class="app-sidebar-bottom">
         <div class="account-menu" id="accountMenu">
-          <a href="/tai-khoan.html" data-i18n="nav_account">Tài khoản</a>
+          <a href="/tai-khoan.html" data-i18n="nav_account" onclick="wbOpenAccountModal();return false">Tài khoản</a>
           <div class="lang-row">
             <span data-i18n="account_menu_lang">Ngôn ngữ</span>
             <select onchange="setLang(this.value)" id="accountLangSelect">
@@ -567,8 +573,14 @@ const I18N = {
     gap_card_empty: 'Chưa lưu khoảng trống nào. Vào "Nhật ký tìm kiếm" bên dưới, bấm "Phân tích khoảng trống" ở 1 lượt tìm.',
     gap_col_type: 'Loại khoảng trống', gap_state_candidate: 'Ứng viên', gap_state_rejected: 'Đã loại',
     gap_tags_label: 'Thẻ (phẩy giữa các từ)', gap_confirm_delete: 'Xoá khoảng trống này khỏi dự án?',
-    gap_type_evidence: 'Thiếu bằng chứng', gap_type_population: 'Đối tượng nghiên cứu', gap_type_intervention: 'Can thiệp',
-    gap_type_outcome: 'Kết cục', gap_type_method: 'Phương pháp', gap_type_mechanism: 'Cơ chế', gap_type_theory: 'Lý luận',
+    gap_type_evidence: 'Thiếu bằng chứng', gap_type_evidence_def: 'Đã có nghiên cứu nhưng CHƯA ĐỦ (số lượng/chất lượng/độ nhất quán) để kết luận chắc chắn.',
+    gap_type_knowledge: 'Thiếu hiểu biết', gap_type_knowledge_def: 'Hiện tượng/cơ chế CHƯA ĐƯỢC HIỂU RÕ, gần như chưa ai khám phá.',
+    gap_type_practical_knowledge: 'Chưa áp dụng thực tế', gap_type_practical_knowledge_def: 'ĐÃ CÓ đủ bằng chứng khoa học nhưng CHƯA được áp dụng vào thực hành lâm sàng thực tế.',
+    gap_type_methodological: 'Thiếu phương pháp', gap_type_methodological_def: 'THIẾU phương pháp/công cụ đo lường phù hợp để nghiên cứu vấn đề này.',
+    gap_type_empirical: 'Thiếu dữ liệu thực nghiệm', gap_type_empirical_def: 'CÓ lý thuyết/giả thuyết nhưng THIẾU dữ liệu thực nghiệm kiểm chứng.',
+    gap_type_theoretical: 'Thiếu khung lý thuyết', gap_type_theoretical_def: 'CÓ dữ liệu/quan sát nhưng THIẾU khung lý thuyết giải thích nó.',
+    gap_type_population: 'Thiếu đối tượng nghiên cứu', gap_type_population_def: 'Nghiên cứu hiện có KHÔNG đại diện/KHÔNG bao phủ 1 nhóm dân số hoặc bối cảnh cụ thể.',
+    gap_taxonomy_citation: 'Phân loại theo khung Robinson et al. 2011 (Johns Hopkins) — chuẩn dùng bởi các Evidence-based Practice Center.',
     source_openalex: 'OpenAlex', source_europepmc: 'Europe PMC', source_core: 'CORE',
     source_semanticscholar: 'Semantic Scholar', source_pubmed: 'PubMed', source_crossref: 'Crossref',
     source_clinicaltrials: 'ClinicalTrials.gov',
@@ -726,8 +738,14 @@ const I18N = {
     gap_card_empty: '尚未保存任何研究空白。到下方"检索日志"中，对某次检索点击"分析研究空白"。',
     gap_col_type: '空白类型', gap_state_candidate: '候选', gap_state_rejected: '已排除',
     gap_tags_label: '标签（用逗号分隔）', gap_confirm_delete: '从项目中删除此研究空白？',
-    gap_type_evidence: '证据不足', gap_type_population: '研究人群', gap_type_intervention: '干预措施',
-    gap_type_outcome: '结局指标', gap_type_method: '研究方法', gap_type_mechanism: '机制', gap_type_theory: '理论',
+    gap_type_evidence: '证据不足', gap_type_evidence_def: '已有研究但数量/质量/一致性不足以得出明确结论。',
+    gap_type_knowledge: '认知不足', gap_type_knowledge_def: '现象/机制尚未被充分理解，几乎无人探索。',
+    gap_type_practical_knowledge: '尚未应用于实践', gap_type_practical_knowledge_def: '已有充分科学证据，但尚未应用于实际临床实践。',
+    gap_type_methodological: '方法学不足', gap_type_methodological_def: '缺乏合适的方法/测量工具来研究此问题。',
+    gap_type_empirical: '缺乏实证数据', gap_type_empirical_def: '已有理论/假设，但缺乏实证数据验证。',
+    gap_type_theoretical: '缺乏理论框架', gap_type_theoretical_def: '已有数据/观察结果，但缺乏解释性理论框架。',
+    gap_type_population: '研究人群不足', gap_type_population_def: '现有研究未能代表/覆盖某一特定人群或情境。',
+    gap_taxonomy_citation: '按 Robinson 等 2011 年分类框架（约翰霍普金斯大学）— 美国循证医学实践中心采用的标准。',
     source_openalex: 'OpenAlex', source_europepmc: 'Europe PMC', source_core: 'CORE',
     source_semanticscholar: 'Semantic Scholar', source_pubmed: 'PubMed', source_crossref: 'Crossref',
     source_clinicaltrials: 'ClinicalTrials.gov',
@@ -885,8 +903,14 @@ const I18N = {
     gap_card_empty: 'No gaps saved yet. In "Search log" below, click "Analyze gap" on a search run.',
     gap_col_type: 'Gap type', gap_state_candidate: 'Candidate', gap_state_rejected: 'Rejected',
     gap_tags_label: 'Tags (comma-separated)', gap_confirm_delete: 'Remove this gap from the project?',
-    gap_type_evidence: 'Evidence gap', gap_type_population: 'Population', gap_type_intervention: 'Intervention',
-    gap_type_outcome: 'Outcome', gap_type_method: 'Method', gap_type_mechanism: 'Mechanism', gap_type_theory: 'Theory',
+    gap_type_evidence: 'Evidence gap', gap_type_evidence_def: 'Studies exist but are insufficient in number/quality/consistency for a confident conclusion.',
+    gap_type_knowledge: 'Knowledge gap', gap_type_knowledge_def: 'The phenomenon/mechanism is not well understood — almost unexplored.',
+    gap_type_practical_knowledge: 'Practical-knowledge gap', gap_type_practical_knowledge_def: 'Sufficient scientific evidence exists but has not been applied in actual clinical practice.',
+    gap_type_methodological: 'Methodological gap', gap_type_methodological_def: 'Lacks a suitable method/measurement tool to study this.',
+    gap_type_empirical: 'Empirical gap', gap_type_empirical_def: 'A theory/hypothesis exists but lacks empirical data to verify it.',
+    gap_type_theoretical: 'Theoretical gap', gap_type_theoretical_def: 'Data/observations exist but lack a theoretical framework to explain them.',
+    gap_type_population: 'Population gap', gap_type_population_def: 'Existing studies do not represent/cover a specific population or setting.',
+    gap_taxonomy_citation: 'Classified per the Robinson et al. 2011 framework (Johns Hopkins) — the standard used by US Evidence-based Practice Centers.',
     source_openalex: 'OpenAlex', source_europepmc: 'Europe PMC', source_core: 'CORE',
     source_semanticscholar: 'Semantic Scholar', source_pubmed: 'PubMed', source_crossref: 'Crossref',
     source_clinicaltrials: 'ClinicalTrials.gov',
@@ -1119,6 +1143,27 @@ window.toggleProjSwitch = () => { closeAccountMenu(); $('projSwitchMenu').classL
 function closeProjSwitch() { $('projSwitchMenu').classList.remove('show'); }
 window.toggleAccountMenu = () => { closeProjSwitch(); $('accountMenu').classList.toggle('show'); };
 function closeAccountMenu() { $('accountMenu').classList.remove('show'); }
+
+// ===== Modal Tài khoản qua iframe overlay (2026-09-19) — xem CSS .account-modal-overlay.
+// User báo: mở /tai-khoan.html bằng điều hướng thẳng làm mất hết trạng thái Bàn làm việc
+// (dự án đang mở, kết quả tìm kiếm...), đóng lại phải tải lại từ đầu, tốn thời gian. Mở qua
+// iframe đè lên trang hiện tại — đóng chỉ gỡ iframe, trang bên dưới KHÔNG hề tải lại. =====
+window.wbOpenAccountModal = () => {
+  closeAccountMenu();
+  if ($('accountModalOverlay')) return;
+  const overlay = document.createElement('div');
+  overlay.className = 'account-modal-overlay';
+  overlay.id = 'accountModalOverlay';
+  overlay.innerHTML = '<iframe src="/tai-khoan.html" title="Tài khoản"></iframe>';
+  document.body.appendChild(overlay);
+};
+window.wbCloseAccountModal = () => { $('accountModalOverlay')?.remove(); };
+window.addEventListener('message', (e) => {
+  if (e.origin === location.origin && e.data?.chimedisAccountModal === 'close') wbCloseAccountModal();
+});
+// Fallback Esc ở tài liệu cha — phòng khi focus chưa vào trong iframe lúc vừa mở (listener
+// riêng bên trong tai-khoan.html chỉ bắt được khi focus đã ở trong iframe).
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('accountModalOverlay')) wbCloseAccountModal(); });
 document.addEventListener('click', (e) => {
   if (!e.target.closest('.proj-switch-wrap')) closeProjSwitch();
   if (!e.target.closest('.app-sidebar-bottom')) closeAccountMenu();
@@ -2069,11 +2114,20 @@ window.wbRunsSortBy = (key) => {
 };
 
 // ===== M4 v1 — Gap Candidate (xem chi tiết + lý do trong docs/research-workbench-plan.md) =====
+// Phân loại theo khung Robinson et al. 2011 (M12, 2026-09-19) — xem db/m12-workbench.sql +
+// [[project_chimedis_gap_novelty_roadmap]]. Nhãn có tooltip giải thích ngắn (gapTypeDef) để
+// user hiểu ngay "loại này nghĩa là gì" mà không cần rời trang tra cứu.
 const GAP_TYPE_KEY = {
-  evidence: 'gap_type_evidence', population: 'gap_type_population', intervention: 'gap_type_intervention',
-  outcome: 'gap_type_outcome', method: 'gap_type_method', mechanism: 'gap_type_mechanism', theory: 'gap_type_theory',
+  evidence: 'gap_type_evidence', knowledge: 'gap_type_knowledge', practical_knowledge: 'gap_type_practical_knowledge',
+  methodological: 'gap_type_methodological', empirical: 'gap_type_empirical',
+  theoretical: 'gap_type_theoretical', population: 'gap_type_population',
 };
 function gapTypeLabel(ty) { return GAP_TYPE_KEY[ty] ? t(GAP_TYPE_KEY[ty]) : t('dash'); }
+function gapTypeDef(ty) { return GAP_TYPE_KEY[ty] ? t(GAP_TYPE_KEY[ty] + '_def') : ''; }
+function gapTypeBadge(ty) {
+  if (!ty) return t('dash');
+  return `<span title="${esc(gapTypeDef(ty))}" style="border-bottom:1px dotted var(--muted-fg);cursor:help">${esc(gapTypeLabel(ty))}</span>`;
+}
 
 window.wbGapAnalyze = async (runId) => {
   gapPreview = { runId, loading: true, candidates: [] };
@@ -2096,11 +2150,13 @@ function renderGapPreview() {
   if (!gapPreview.candidates.length) return `<p class="hint" style="margin-top:10px">${t('gap_none_found')}</p>`;
   return `
     <div style="margin-top:12px;border-top:0.5px solid var(--border);padding-top:12px">
-      <p class="hint" style="margin:0 0 8px">${t('gap_preview_hint')}</p>
+      <p class="hint" style="margin:0 0 4px">${t('gap_preview_hint')}</p>
+      <p class="hint" style="margin:0 0 8px;font-style:italic">${t('gap_taxonomy_citation')}</p>
       ${gapPreview.candidates.map((c, i) => {
         const saved = gapPreview.saved && gapPreview.saved.has(i);
         return `<div class="card" style="background:var(--bg);margin:0 0 10px">
-          <p style="font-weight:600;margin:0 0 8px">${esc(c.title)}</p>
+          <p style="font-weight:600;margin:0 0 4px">${esc(c.title)}</p>
+          <p style="margin:0 0 8px">${gapTypeBadge(c.gapType)}</p>
           <table style="width:100%;font-size:13px;border-collapse:collapse">
             <tr><td style="color:var(--muted-fg);padding:2px 8px 2px 0;white-space:nowrap;vertical-align:top">${t('gap_col_have')}</td>
               <td style="padding:2px 0">${c.evidenceHave.map((e) => `${esc(e.note)} <span class="hint">(${esc(e.title)})</span>`).join('; ')}</td></tr>
@@ -2160,7 +2216,7 @@ function renderGapCard(candidates) {
       ${sorted.map((c) => `<tr>
         <td><a href="#" class="lib-title-link" onclick="wbGapToggleDetail(${c.id});return false">${esc(c.title)}</a>
           ${c.tags ? `<br><span class="hint">${esc(c.tags)}</span>` : ''}</td>
-        <td>${gapTypeLabel(c.gapType)}</td>
+        <td>${gapTypeBadge(c.gapType)}</td>
         <td><select onchange="wbGapSetState(${c.id}, this.value)">
           <option value="candidate" ${c.state === 'candidate' ? 'selected' : ''}>${t('gap_state_candidate')}</option>
           <option value="rejected" ${c.state === 'rejected' ? 'selected' : ''}>${t('gap_state_rejected')}</option>
