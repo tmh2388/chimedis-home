@@ -430,7 +430,15 @@ let activeSection = { type: 'tool', tool: 'search' }; // { type:'tool', tool } |
 let panel3 = null; // { kind:'record'|'gap', id } — nội dung khung thứ 3 (chi tiết)
 let sideCollapsed = false; // người dùng chủ động ẩn khung "kết quả" (wb-side) qua nút bấm
 // Độ rộng wb-mid do user tự kéo (px) — null = mặc định 50/50 (flex:1 1 0 cả 2 bên).
-let wbMidWidthPx = parseInt(localStorage.getItem('chimedis_wb_mid_width'), 10) || null;
+// Độ rộng wb-mid lưu RIÊNG theo từng công cụ (questions/search/library/runs) — trước đây
+// dùng chung 1 giá trị nên kéo giãn ở "Tìm kiếm" lại áp cả sang "Thư viện"/"Câu hỏi nghiên
+// cứu" khi chuyển tab, bất tiện vì mỗi mục cần bố cục khác nhau (user báo 2026-09-19).
+let wbMidWidths = (() => {
+  try { return JSON.parse(localStorage.getItem('chimedis_wb_mid_widths_v2') || '{}'); }
+  catch { return {}; }
+})();
+function wbMidWidthKey() { return activeSection.type === 'tool' ? activeSection.tool : null; }
+function wbCurrentMidWidth() { const k = wbMidWidthKey(); return k ? (wbMidWidths[k] || null) : null; }
 // Trạng thái sắp xếp theo cột (2026-09-18) — key:null = giữ thứ tự mặc định server trả về.
 let libSort = { key: null, dir: 'asc' };
 let runsSort = { key: null, dir: 'asc' };
@@ -1233,7 +1241,7 @@ function renderProject() {
       <button class="btn sm sec" style="margin-left:auto${activeSection.type === 'gate' ? ';display:none' : ''}" onclick="wbToggleSidePanel()" id="sideToggleBtn">${sideCollapsed ? t('side_panel_show') : t('side_panel_hide')}</button>
     </div>
     <div class="wb-workspace" id="wbWorkspace">
-      <div class="wb-mid" id="wbMid" style="${wbMidWidthPx ? `flex:0 0 ${wbMidWidthPx}px` : ''}">${renderMid()}</div>
+      <div class="wb-mid" id="wbMid" style="${wbCurrentMidWidth() ? `flex:0 0 ${wbCurrentMidWidth()}px` : ''}">${renderMid()}</div>
       ${(activeSection.type === 'gate' || sideCollapsed) ? '' : `<div class="wb-resizer" id="wbResizer" title="${esc(t('resizer_title'))}" onmousedown="wbResizeStart(event)"><span></span></div>`}
       <div class="wb-side" id="wbSide" ${(activeSection.type === 'gate' || sideCollapsed) ? 'hidden' : ''}>${renderSide()}</div>
     </div>`;
@@ -1418,7 +1426,9 @@ window.wbSelectTool = (tool) => {
     $('content').innerHTML = `<p class="muted">${t('tool_locked_hint')}</p>`;
     return;
   }
-  $('wbMid').innerHTML = renderMid();
+  const mid = $('wbMid');
+  mid.innerHTML = renderMid();
+  mid.style.flex = sideCollapsed ? '' : (wbCurrentMidWidth() ? `0 0 ${wbCurrentMidWidth()}px` : '');
   const side = $('wbSide'); side.hidden = sideCollapsed; side.innerHTML = renderSide();
   const btn = $('sideToggleBtn'); if (btn) { btn.style.display = ''; btn.textContent = sideCollapsed ? t('side_panel_show') : t('side_panel_hide'); }
   wbProfileHint();
@@ -1438,7 +1448,7 @@ window.wbToggleSidePanel = () => {
   const resizer = $('wbResizer');
   if (resizer) resizer.hidden = sideCollapsed;
   const mid = $('wbMid');
-  if (mid) mid.style.flex = sideCollapsed ? '' : (wbMidWidthPx ? `0 0 ${wbMidWidthPx}px` : '');
+  if (mid) mid.style.flex = sideCollapsed ? '' : (wbCurrentMidWidth() ? `0 0 ${wbCurrentMidWidth()}px` : '');
   const btn = $('sideToggleBtn');
   if (btn) btn.textContent = sideCollapsed ? t('side_panel_show') : t('side_panel_hide');
 };
@@ -1460,11 +1470,12 @@ function wbResizeMove(evt) {
   if (!wbResizing) return;
   const workspace = $('wbWorkspace');
   const mid = $('wbMid');
-  if (!workspace || !mid) return;
+  const key = wbMidWidthKey();
+  if (!workspace || !mid || !key) return;
   const maxWidth = workspace.getBoundingClientRect().width - 260; // chừa tối thiểu cho wb-side
   const next = Math.max(260, Math.min(maxWidth, wbResizing.startWidth + (evt.clientX - wbResizing.startX)));
-  wbMidWidthPx = Math.round(next);
-  mid.style.flex = `0 0 ${wbMidWidthPx}px`;
+  wbMidWidths[key] = Math.round(next);
+  mid.style.flex = `0 0 ${wbMidWidths[key]}px`;
 }
 function wbResizeEnd() {
   if (!wbResizing) return;
@@ -1474,7 +1485,7 @@ function wbResizeEnd() {
   document.body.style.cursor = '';
   document.removeEventListener('mousemove', wbResizeMove);
   document.removeEventListener('mouseup', wbResizeEnd);
-  if (wbMidWidthPx) { try { localStorage.setItem('chimedis_wb_mid_width', String(wbMidWidthPx)); } catch {} }
+  try { localStorage.setItem('chimedis_wb_mid_widths_v2', JSON.stringify(wbMidWidths)); } catch {}
 }
 
 // ===== Popover tạo THỰC THỂ mới trong 1 hạng mục cố định (đã biết catId/subId từ nút "+" nào
