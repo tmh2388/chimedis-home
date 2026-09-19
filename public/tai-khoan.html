@@ -6,116 +6,244 @@
 <title id="pageTitle">Tài khoản — Chimedis</title>
 <link rel="icon" href="/assets/logo.png" />
 <style>
-  :root { --bg:#f6f3ec; --card:#fff; --ink:#2b2b26; --muted:#6b6b60; --line:#e3ddcf; --accent:#3d6b4f; --warn:#8a5a00; --bad:#9a2f2f; }
+  /* Token đồng bộ với public/index.html / public/workbench.html (trước đây tai-khoan.html
+     dùng 1 theme riêng #f6f3ec/xanh lá — lệch hẳn 2 trang kia, đã gộp về 1 nguồn sự thật). */
+  :root {
+    --bg:#F5F0E6; --ink:#0E3A3A; --ink-2:#15514F; --accent:#B4472B; --accent-2:#9A3A22;
+    --fg:#241F19; --muted-fg:#6B6156; --card:#FFFFFF; --border:#E4DCCC; --border-strong:#D8CDB8;
+    --focus:#1E7A76; --ok:#1F7A3D; --warn:#7A5A22; --bad:#9A3A22;
+    --font-serif:"Noto Serif","Songti SC","Noto Serif SC",serif;
+    --font-sans:"Noto Sans","Segoe UI",system-ui,sans-serif;
+  }
   * { box-sizing:border-box; }
-  body { margin:0; font:15px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif; background:var(--bg); color:var(--ink); }
-  .wrap { max-width:560px; margin:40px auto; padding:0 18px; }
-  .topbar { display:flex; justify-content:space-between; align-items:center; }
-  h1 { font-size:20px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:16px; }
-  .card h2 { font-size:15px; margin:0 0 10px; }
-  .row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--line); font-size:14px; }
-  .row:last-child { border-bottom:0; }
-  .row span:first-child { color:var(--muted); }
-  .btn { border:1px solid var(--accent); background:var(--accent); color:#fff; border-radius:7px; padding:8px 14px; font-size:14px; cursor:pointer; }
+  body { margin:0; font:14.5px/1.55 var(--font-sans); background:var(--bg); color:var(--fg); -webkit-font-smoothing:antialiased; }
+  a { color:var(--accent); }
+  :focus-visible { outline:2.5px solid var(--focus); outline-offset:2px; }
+
+  /* ===== Overlay kiểu popup (tham khảo Claude Desktop Settings — cột trái danh mục có icon,
+     cột phải nội dung, nút đóng góc trên phải) — trang này KHÔNG mở đè lên trang khác thật sự
+     (là trang riêng /tai-khoan.html), nhưng trình bày như 1 popup nổi trên nền mờ để tách bạch
+     rõ "đây là màn cài đặt", không lẫn với luồng nghiên cứu chính. ===== */
+  .backdrop { position:fixed; inset:0; background:radial-gradient(circle at 50% 20%, rgba(14,58,58,.5), rgba(14,58,58,.72));
+    display:flex; align-items:center; justify-content:center; padding:24px; }
+  .modal { background:var(--card); border-radius:16px; width:min(940px,100%); height:min(660px,92vh);
+    box-shadow:0 30px 80px rgba(0,0,0,.35); display:flex; flex-direction:column; overflow:hidden; }
+  .modal-header { flex:0 0 auto; display:flex; align-items:center; justify-content:space-between;
+    padding:16px 10px 16px 22px; border-bottom:1px solid var(--border); }
+  .modal-title { display:flex; align-items:center; gap:10px; }
+  .modal-title img { width:24px; height:24px; border-radius:6px; }
+  .modal-title h1 { font-family:var(--font-serif); font-size:17px; font-weight:700; margin:0; color:var(--ink); }
+  .modal-header-actions { display:flex; align-items:center; gap:4px; }
+  .icon-btn { width:34px; height:34px; border-radius:9px; border:none; background:transparent; color:var(--muted-fg);
+    display:flex; align-items:center; justify-content:center; cursor:pointer; transition:background .14s,color .14s; }
+  .icon-btn:hover { background:var(--bg); color:var(--fg); }
+  .icon-btn svg { width:18px; height:18px; }
+
+  .modal-body { flex:1; display:flex; min-height:0; }
+  .modal-body[hidden] { display:none; }
+  .modal-nav { flex:0 0 220px; background:var(--bg); border-right:1px solid var(--border); padding:14px 10px; overflow-y:auto; }
+  .nav-group-label { font-size:10.5px; letter-spacing:.05em; text-transform:uppercase; color:var(--muted-fg);
+    font-weight:700; padding:8px 10px 6px; }
+  .nav-item { display:flex; align-items:center; gap:10px; width:100%; padding:9px 11px; border:none; background:transparent;
+    border-radius:8px; font:inherit; font-size:13.5px; color:var(--fg); cursor:pointer; text-align:left;
+    transition:background .14s,color .14s; margin-bottom:2px; }
+  .nav-item svg { width:16px; height:16px; flex:0 0 auto; opacity:.8; }
+  .nav-item:hover { background:#EFE7D8; }
+  .nav-item.active { background:var(--accent); color:#fff; font-weight:600; }
+  .nav-item.active svg { opacity:1; }
+  .nav-item.danger { color:var(--bad); }
+  .nav-item.danger:hover { background:#F7E7E3; }
+  .nav-item.danger.active { background:var(--bad); color:#fff; }
+  .nav-divider { height:1px; background:var(--border); margin:10px 6px; }
+
+  .modal-content { flex:1; overflow-y:auto; padding:26px 30px 40px; }
+  .settings-section h2 { font-family:var(--font-serif); font-size:19px; margin:0 0 4px; color:var(--ink); }
+  .settings-section > p.sec-desc { color:var(--muted-fg); font-size:13px; margin:0 0 20px; max-width:560px; }
+  .settings-section h3 { font-size:13px; font-weight:700; color:var(--ink); margin:26px 0 4px; }
+  .settings-section h3:first-of-type { margin-top:4px; }
+  .field-row { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:10px 0;
+    border-bottom:1px solid var(--border); font-size:13.5px; }
+  .field-row:last-child { border-bottom:0; }
+  .field-row .field-label { color:var(--muted-fg); flex:0 0 auto; }
+  .field-row .field-value { text-align:right; word-break:break-word; }
+
+  .btn { display:inline-flex; align-items:center; gap:6px; border:1px solid var(--accent); background:var(--accent);
+    color:#fff; border-radius:8px; padding:8px 14px; font:inherit; font-size:13.5px; font-weight:600; cursor:pointer;
+    transition:background .14s,border-color .14s; }
+  .btn:hover { background:var(--accent-2); border-color:var(--accent-2); }
   .btn.sec { background:transparent; color:var(--accent); }
+  .btn.sec:hover { background:#F5EDE3; }
   .btn.danger { border-color:var(--bad); background:var(--bad); }
-  .pill { display:inline-block; padding:2px 9px; border-radius:20px; font-size:12px; font-weight:600; }
-  .ok { background:#e2efe6; color:var(--accent); } .no { background:#f3dede; color:var(--bad); }
-  .muted { color:var(--muted); font-size:13px; }
+  .btn.danger:hover { background:#7c2f1c; }
+
+  .pill { display:inline-block; padding:2px 10px; border-radius:20px; font-size:11.5px; font-weight:700; }
+  .pill.ok { background:#E7F3EA; color:var(--ok); }
+  .pill.no { background:#F7E7E3; color:var(--bad); }
+  .pill.plan-free { background:#EFE7D8; color:var(--ink); }
+  .pill.plan-pro { background:#F5EDE3; color:var(--accent-2); }
+
+  .muted { color:var(--muted-fg); font-size:12.5px; }
   .msg { padding:8px 10px; border-radius:6px; font-size:13px; margin-top:10px; }
-  .msg.err { background:#f3dede; color:var(--bad); } .msg.okm { background:#e2efe6; color:var(--accent); }
-  input { width:100%; padding:8px 9px; border:1px solid var(--line); border-radius:6px; font:inherit; }
+  .msg.err { background:#F7E7E3; color:var(--bad); }
+  .msg.okm { background:#E7F3EA; color:var(--ok); }
+  input, textarea { width:100%; padding:8px 10px; border:1px solid var(--border-strong); border-radius:8px; font:inherit;
+    background:#fff; color:var(--fg); }
+  input:focus, textarea:focus { border-color:var(--focus); }
+
   .lang-wrap { position:relative; }
-  .lang-btn { border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:7px; padding:6px 10px; font-size:13px; cursor:pointer; }
-  .lang-menu { position:absolute; right:0; top:calc(100% + 4px); background:#fff; border:1px solid var(--line); border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,.1); min-width:130px; padding:4px; display:none; z-index:20; }
+  .lang-btn { display:flex; align-items:center; gap:5px; border:1px solid var(--border); background:#fff; color:var(--fg);
+    border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:600; cursor:pointer; }
+  .lang-btn:hover { background:var(--bg); }
+  .lang-menu { position:absolute; right:0; top:calc(100% + 6px); background:#fff; border:1px solid var(--border);
+    border-radius:10px; box-shadow:0 8px 24px rgba(14,58,58,.18); min-width:140px; padding:4px; display:none; z-index:20; }
   .lang-menu.open { display:block; }
-  .lang-opt { display:flex; justify-content:space-between; align-items:center; padding:7px 9px; border-radius:6px; font-size:13px; cursor:pointer; }
+  .lang-opt { display:flex; justify-content:space-between; align-items:center; padding:7px 9px; border-radius:6px;
+    font-size:13px; cursor:pointer; }
   .lang-opt:hover { background:var(--bg); }
-  .lang-opt.active { color:var(--accent); font-weight:600; }
+  .lang-opt.active { color:var(--accent); font-weight:700; }
   .lang-opt .ck { display:none; }
   .lang-opt.active .ck { display:inline; }
+
+  #anon { padding:40px 30px; text-align:center; }
+
+  @media (max-width:720px) {
+    .backdrop { padding:0; }
+    .modal { width:100%; height:100%; border-radius:0; }
+    .modal-body { flex-direction:column; }
+    .modal-nav { flex:0 0 auto; width:100%; display:flex; overflow-x:auto; padding:8px 10px; gap:4px;
+      border-right:0; border-bottom:1px solid var(--border); }
+    .nav-group-label, .nav-divider { display:none; }
+    .nav-item { flex:0 0 auto; white-space:nowrap; margin-bottom:0; }
+    .modal-content { padding:20px 18px 32px; }
+    .field-row { flex-direction:column; align-items:flex-start; gap:2px; }
+    .field-row .field-value { text-align:left; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="topbar">
-    <p class="muted"><a href="/workbench.html" data-i18n="back_link">← Bàn làm việc nghiên cứu</a></p>
-    <div class="lang-wrap">
-      <button class="lang-btn" onclick="toggleLangMenu(event)"><span class="lang-label">VI</span> ▾</button>
-      <div class="lang-menu">
-        <div class="lang-opt" data-lang="vi" onclick="setLang('vi')">Tiếng Việt <span class="ck">✓</span></div>
-        <div class="lang-opt" data-lang="zh" onclick="setLang('zh')">中文 <span class="ck">✓</span></div>
-        <div class="lang-opt" data-lang="en" onclick="setLang('en')">English <span class="ck">✓</span></div>
+<div class="backdrop">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <img src="/assets/logo.png" alt="" />
+        <h1 data-i18n="page_h1">Tài khoản</h1>
       </div>
-    </div>
-  </div>
-  <h1 data-i18n="page_h1">Tài khoản</h1>
-
-  <div id="anon" hidden class="card"><span data-i18n="anon_msg">Bạn chưa đăng nhập.</span> <a href="/workbench.html" data-i18n="anon_login_link">Đăng nhập</a>.</div>
-
-  <div id="view" hidden>
-    <div class="card">
-      <h2 data-i18n="profile_h2">Hồ sơ</h2>
-      <div class="row"><span data-i18n="profile_name">Tên hiển thị</span><span id="fName">—</span></div>
-      <div class="row"><span data-i18n="profile_email">Email</span><span id="fEmail">—</span></div>
-      <div class="row"><span data-i18n="profile_verified">Xác thực email</span><span id="fVerified">—</span></div>
-      <div class="row"><span data-i18n="profile_role">Vai trò</span><span id="fRole">—</span></div>
-      <div id="verifyRow" hidden style="margin-top:10px">
-        <button class="btn sec" onclick="resendVerify()" data-i18n="btn_resend_verify">Gửi lại email xác thực</button>
-        <button class="btn sec" onclick="location.reload()" data-i18n="btn_reload_verified">Đã xác thực — tải lại</button>
-      </div>
-    </div>
-
-    <div class="card">
-      <h2 data-i18n="identities_h2">Phương thức đăng nhập</h2>
-      <div id="identities" class="muted">—</div>
-      <div id="linkMsg"></div>
-      <p class="muted" style="margin-top:8px" data-i18n="identities_hint">Liên kết nhiều phương thức để đăng nhập bằng cách nào cũng vào đúng tài khoản này.
-        Không tự gộp tài khoản theo email trùng — bạn phải chủ động liên kết.</p>
-    </div>
-
-    <div class="card">
-      <h2 data-i18n="bm_h2">Lưu tài liệu từ CNKI/万方 (Bookmarklet)</h2>
-      <p class="muted" data-i18n="bm_desc">Bạn tự mở CNKI/万方/tạp chí bất kỳ ở tab riêng, tự đăng nhập, tự tìm — bấm nút bookmarklet bên dưới khi đang xem 1 bài để lưu thẳng vào thư viện Chimedis, khỏi gõ tay lại. Chimedis không tự động đăng nhập hay tải hàng loạt thay bạn.</p>
-      <div id="bmList" class="muted">—</div>
-      <div id="bmCreateRow" style="margin-top:10px;display:flex;gap:8px">
-        <input id="bmLabel" data-i18n-ph="bm_label_ph" placeholder="Đặt tên (vd: Máy tính cá nhân)" />
-        <button class="btn sec" style="white-space:nowrap" onclick="createBookmarklet()" data-i18n="bm_create_btn">+ Tạo bookmarklet mới</button>
-      </div>
-      <div id="bmMsg"></div>
-      <div id="bmNew" hidden style="margin-top:14px;padding:12px;border:1px dashed var(--accent);border-radius:8px">
-        <div style="font-weight:600;margin-bottom:6px" data-i18n="bm_created_title">Đã tạo — cài ngay bây giờ</div>
-        <p class="muted" data-i18n="bm_created_warn">⚠️ Đường dẫn bên dưới CHỈ hiện lần này. Cài ngay, đừng rời trang trước khi xong.</p>
-        <p class="muted" data-i18n="bm_install_desktop">Máy tính (Chrome/Cốc Cốc/Edge/Safari/trình duyệt Baidu…): kéo nút dưới đây thả vào thanh Bookmark của trình duyệt.</p>
-        <p style="text-align:center;margin:12px 0">
-          <a id="bmDragLink" href="#" class="btn" style="display:inline-block;text-decoration:none" data-i18n="bm_link_text">💾 Lưu vào Chimedis</a>
-        </p>
-        <p class="muted" data-i18n="bm_install_mobile">iPhone/iPad (Safari): tạo 1 bookmark bất kỳ trước → sửa bookmark đó → dán mã dưới đây thay cho địa chỉ → lưu lại.</p>
-        <textarea id="bmCode" readonly style="width:100%;height:70px;font:12px/1.4 monospace;padding:8px;border:1px solid var(--line);border-radius:6px"></textarea>
-        <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn sec" onclick="copyBmCode()" data-i18n="bm_copy_code">Sao chép mã</button>
-          <button class="btn" onclick="dismissBmNew()" data-i18n="bm_done_btn">Xong, đã cài</button>
+      <div class="modal-header-actions">
+        <div class="lang-wrap">
+          <button class="lang-btn" onclick="toggleLangMenu(event)"><span class="lang-label">VI</span> ▾</button>
+          <div class="lang-menu">
+            <div class="lang-opt" data-lang="vi" onclick="setLang('vi')">Tiếng Việt <span class="ck">✓</span></div>
+            <div class="lang-opt" data-lang="zh" onclick="setLang('zh')">中文 <span class="ck">✓</span></div>
+            <div class="lang-opt" data-lang="en" onclick="setLang('en')">English <span class="ck">✓</span></div>
+          </div>
         </div>
-        <p class="muted" style="margin-top:8px" data-i18n="bm_usage_hint">Cách dùng: mở CNKI/万方/tạp chí bất kỳ ở tab riêng → tự đăng nhập, mở 1 bài → bấm nút bookmarklet này → chọn dự án → Lưu.</p>
+        <button class="icon-btn" onclick="location.href='/workbench.html'" data-i18n-title="modal_close_title" title="Đóng">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
       </div>
     </div>
 
-    <div class="card">
-      <h2 data-i18n="pw_h2">Đổi mật khẩu</h2>
-      <p class="muted" data-i18n="pw_hint">Chỉ áp dụng nếu bạn đăng nhập bằng email + mật khẩu.</p>
-      <button class="btn sec" onclick="resetPw()" data-i18n="btn_reset_pw">Gửi email đặt lại mật khẩu</button>
-      <div id="pwMsg"></div>
+    <div id="anon" hidden>
+      <p class="muted" style="font-size:14px"><span data-i18n="anon_msg">Bạn chưa đăng nhập.</span> <a href="/workbench.html" data-i18n="anon_login_link">Đăng nhập</a>.</p>
     </div>
 
-    <div class="card">
-      <h2 style="color:var(--bad)" data-i18n="delete_h2">Xoá tài khoản</h2>
-      <p class="muted" data-i18n="delete_hint">Xoá vĩnh viễn tài khoản + toàn bộ dự án nghiên cứu, câu hỏi, nhật ký tìm kiếm của bạn.
-        Không thể hoàn tác. (Kho bài báo dùng chung không chứa thông tin cá nhân, được giữ lại.)</p>
-      <p class="muted" data-i18n-html="delete_confirm_hint">Gõ <b>XOA TAI KHOAN</b> để xác nhận:</p>
-      <input id="delConfirm" placeholder="XOA TAI KHOAN" />
-      <button class="btn danger" style="margin-top:10px" onclick="deleteAccount()" data-i18n="btn_delete_account">Xoá tài khoản của tôi</button>
-      <div id="delMsg"></div>
+    <div id="view" class="modal-body" hidden>
+      <nav class="modal-nav">
+        <div class="nav-group-label" data-i18n="nav_group_account">Tài khoản</div>
+        <button class="nav-item active" data-cat="profile" onclick="wbShowCategory('profile')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          <span data-i18n="nav_profile">Hồ sơ</span>
+        </button>
+        <button class="nav-item" data-cat="security" onclick="wbShowCategory('security')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z"/></svg>
+          <span data-i18n="nav_security">Bảo mật &amp; Đăng nhập</span>
+        </button>
+        <button class="nav-item" data-cat="plan" onclick="wbShowCategory('plan')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M3 12h3M18 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/><circle cx="12" cy="12" r="3"/></svg>
+          <span data-i18n="nav_plan">Gói &amp; AI</span>
+        </button>
+
+        <div class="nav-group-label" data-i18n="nav_group_tools">Công cụ</div>
+        <button class="nav-item" data-cat="bookmarklet" onclick="wbShowCategory('bookmarklet')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4.5L6 21V3z"/></svg>
+          <span data-i18n="nav_bookmarklet">Bookmarklet</span>
+        </button>
+
+        <div class="nav-divider"></div>
+        <button class="nav-item danger" data-cat="danger" onclick="wbShowCategory('danger')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>
+          <span data-i18n="nav_danger">Xoá tài khoản</span>
+        </button>
+      </nav>
+
+      <div class="modal-content">
+        <section class="settings-section" id="sec-profile" data-section="profile">
+          <h2 data-i18n="profile_h2">Hồ sơ</h2>
+          <div class="field-row"><span class="field-label" data-i18n="profile_name">Tên hiển thị</span><span class="field-value" id="fName">—</span></div>
+          <div class="field-row"><span class="field-label" data-i18n="profile_email">Email</span><span class="field-value" id="fEmail">—</span></div>
+          <div class="field-row"><span class="field-label" data-i18n="profile_verified">Xác thực email</span><span class="field-value" id="fVerified">—</span></div>
+          <div class="field-row"><span class="field-label" data-i18n="profile_role">Vai trò</span><span class="field-value" id="fRole">—</span></div>
+          <div id="verifyRow" hidden style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn sec" onclick="resendVerify()" data-i18n="btn_resend_verify">Gửi lại email xác thực</button>
+            <button class="btn sec" onclick="location.reload()" data-i18n="btn_reload_verified">Đã xác thực — tải lại</button>
+          </div>
+        </section>
+
+        <section class="settings-section" id="sec-security" data-section="security" hidden>
+          <h2 data-i18n="nav_security">Bảo mật &amp; Đăng nhập</h2>
+          <h3 data-i18n="identities_h2">Phương thức đăng nhập</h3>
+          <div id="identities" class="muted">—</div>
+          <div id="linkMsg"></div>
+          <p class="muted" style="margin-top:8px" data-i18n="identities_hint">Liên kết nhiều phương thức để đăng nhập bằng cách nào cũng vào đúng tài khoản này. Không tự gộp tài khoản theo email trùng — bạn phải chủ động liên kết.</p>
+          <h3 data-i18n="pw_h2">Đổi mật khẩu</h3>
+          <p class="muted" data-i18n="pw_hint">Chỉ áp dụng nếu bạn đăng nhập bằng email + mật khẩu.</p>
+          <button class="btn sec" onclick="resetPw()" data-i18n="btn_reset_pw">Gửi email đặt lại mật khẩu</button>
+          <div id="pwMsg"></div>
+        </section>
+
+        <section class="settings-section" id="sec-plan" data-section="plan" hidden>
+          <h2 data-i18n="nav_plan">Gói &amp; AI</h2>
+          <p class="sec-desc" data-i18n="plan_desc">Tìm kiếm và lưu thư viện luôn miễn phí không giới hạn. Các tính năng dùng AI (như "Phân tích khoảng trống") tính theo gói.</p>
+          <div class="field-row"><span class="field-label" data-i18n="plan_current_label">Gói hiện tại</span><span class="field-value" id="fPlan">—</span></div>
+          <div class="field-row"><span class="field-label" data-i18n="plan_ai_usage_label">Lượt dùng AI tháng này</span><span class="field-value" id="fAiUsage">—</span></div>
+          <p class="muted" style="margin-top:14px" data-i18n="plan_upcoming_note">Cơ chế credit theo lượt (chọn model rẻ/mạnh mỗi lần dùng) đang được xây dựng, sẽ áp dụng cho mọi gói kể cả miễn phí — chưa thay đổi gì ở giai đoạn hiện tại.</p>
+        </section>
+
+        <section class="settings-section" id="sec-bookmarklet" data-section="bookmarklet" hidden>
+          <h2 data-i18n="bm_h2">Lưu tài liệu từ CNKI/万方 (Bookmarklet)</h2>
+          <p class="sec-desc" data-i18n="bm_desc">Bạn tự mở CNKI/万方/tạp chí bất kỳ ở tab riêng, tự đăng nhập, tự tìm — bấm nút bookmarklet bên dưới khi đang xem 1 bài để lưu thẳng vào thư viện Chimedis, khỏi gõ tay lại. Chimedis không tự động đăng nhập hay tải hàng loạt thay bạn.</p>
+          <div id="bmList" class="muted">—</div>
+          <div id="bmCreateRow" style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+            <input id="bmLabel" data-i18n-ph="bm_label_ph" placeholder="Đặt tên (vd: Máy tính cá nhân)" style="max-width:260px" />
+            <button class="btn sec" style="white-space:nowrap" onclick="createBookmarklet()" data-i18n="bm_create_btn">+ Tạo bookmarklet mới</button>
+          </div>
+          <div id="bmMsg"></div>
+          <div id="bmNew" hidden style="margin-top:16px;padding:14px;border:1px dashed var(--accent);border-radius:10px;background:var(--bg)">
+            <div style="font-weight:700;margin-bottom:6px;color:var(--ink)" data-i18n="bm_created_title">Đã tạo — cài ngay bây giờ</div>
+            <p class="muted" data-i18n="bm_created_warn">⚠️ Đường dẫn bên dưới CHỈ hiện lần này. Cài ngay, đừng rời trang trước khi xong.</p>
+            <p class="muted" data-i18n="bm_install_desktop">Máy tính (Chrome/Cốc Cốc/Edge/Safari/trình duyệt Baidu…): kéo nút dưới đây thả vào thanh Bookmark của trình duyệt.</p>
+            <p style="text-align:center;margin:14px 0">
+              <a id="bmDragLink" href="#" class="btn" style="display:inline-block;text-decoration:none" data-i18n="bm_link_text">💾 Lưu vào Chimedis</a>
+            </p>
+            <p class="muted" data-i18n="bm_install_mobile">iPhone/iPad (Safari): tạo 1 bookmark bất kỳ trước → sửa bookmark đó → dán mã dưới đây thay cho địa chỉ → lưu lại.</p>
+            <textarea id="bmCode" readonly style="height:70px;font:12px/1.4 monospace"></textarea>
+            <div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn sec" onclick="copyBmCode()" data-i18n="bm_copy_code">Sao chép mã</button>
+              <button class="btn" onclick="dismissBmNew()" data-i18n="bm_done_btn">Xong, đã cài</button>
+            </div>
+            <p class="muted" style="margin-top:8px" data-i18n="bm_usage_hint">Cách dùng: mở CNKI/万方/tạp chí bất kỳ ở tab riêng → tự đăng nhập, mở 1 bài → bấm nút bookmarklet này → chọn dự án → Lưu.</p>
+          </div>
+        </section>
+
+        <section class="settings-section" id="sec-danger" data-section="danger" hidden>
+          <h2 style="color:var(--bad)" data-i18n="delete_h2">Xoá tài khoản</h2>
+          <p class="sec-desc" data-i18n="delete_hint">Xoá vĩnh viễn tài khoản + toàn bộ dự án nghiên cứu, câu hỏi, nhật ký tìm kiếm của bạn. Không thể hoàn tác. (Kho bài báo dùng chung không chứa thông tin cá nhân, được giữ lại.)</p>
+          <p class="muted" style="margin-bottom:6px" data-i18n-html="delete_confirm_hint">Gõ <b>XOA TAI KHOAN</b> để xác nhận:</p>
+          <input id="delConfirm" placeholder="XOA TAI KHOAN" style="max-width:280px" />
+          <button class="btn danger" style="margin-top:12px" onclick="deleteAccount()" data-i18n="btn_delete_account">Xoá tài khoản của tôi</button>
+          <div id="delMsg"></div>
+        </section>
+      </div>
     </div>
   </div>
 </div>
@@ -125,7 +253,14 @@ const I18N = {
   vi: {
     page_title: 'Tài khoản — Chimedis',
     page_h1: 'Tài khoản',
-    back_link: '← Bàn làm việc nghiên cứu',
+    modal_close_title: 'Đóng',
+    nav_group_account: 'Tài khoản',
+    nav_group_tools: 'Công cụ',
+    nav_profile: 'Hồ sơ',
+    nav_security: 'Bảo mật & Đăng nhập',
+    nav_plan: 'Gói & AI',
+    nav_bookmarklet: 'Bookmarklet',
+    nav_danger: 'Xoá tài khoản',
     anon_msg: 'Bạn chưa đăng nhập.',
     anon_login_link: 'Đăng nhập',
     profile_h2: 'Hồ sơ',
@@ -144,6 +279,13 @@ const I18N = {
     pw_h2: 'Đổi mật khẩu',
     pw_hint: 'Chỉ áp dụng nếu bạn đăng nhập bằng email + mật khẩu.',
     btn_reset_pw: 'Gửi email đặt lại mật khẩu',
+    plan_desc: 'Tìm kiếm và lưu thư viện luôn miễn phí không giới hạn. Các tính năng dùng AI (như "Phân tích khoảng trống") tính theo gói.',
+    plan_current_label: 'Gói hiện tại',
+    plan_free: 'Miễn phí',
+    plan_pro: 'Pro',
+    plan_ai_usage_label: 'Lượt dùng AI tháng này',
+    plan_ai_usage_value: '{n} lượt',
+    plan_upcoming_note: 'Cơ chế credit theo lượt (chọn model rẻ/mạnh mỗi lần dùng) đang được xây dựng, sẽ áp dụng cho mọi gói kể cả miễn phí — chưa thay đổi gì ở giai đoạn hiện tại.',
     delete_h2: 'Xoá tài khoản',
     delete_hint: 'Xoá vĩnh viễn tài khoản + toàn bộ dự án nghiên cứu, câu hỏi, nhật ký tìm kiếm của bạn. Không thể hoàn tác. (Kho bài báo dùng chung không chứa thông tin cá nhân, được giữ lại.)',
     delete_confirm_hint: 'Gõ <b>XOA TAI KHOAN</b> để xác nhận:',
@@ -187,7 +329,14 @@ const I18N = {
   zh: {
     page_title: '账户 — Chimedis',
     page_h1: '账户',
-    back_link: '← 研究工作台',
+    modal_close_title: '关闭',
+    nav_group_account: '账户',
+    nav_group_tools: '工具',
+    nav_profile: '个人资料',
+    nav_security: '安全与登录',
+    nav_plan: '套餐与 AI',
+    nav_bookmarklet: '书签小工具',
+    nav_danger: '删除账户',
     anon_msg: '您尚未登录。',
     anon_login_link: '登录',
     profile_h2: '个人资料',
@@ -206,6 +355,13 @@ const I18N = {
     pw_h2: '更改密码',
     pw_hint: '仅适用于使用邮箱+密码登录的账户。',
     btn_reset_pw: '发送重置密码邮件',
+    plan_desc: '检索与文献库保存始终免费、无限制。使用 AI 的功能（如"研究空白分析"）按套餐计算。',
+    plan_current_label: '当前套餐',
+    plan_free: '免费版',
+    plan_pro: 'Pro',
+    plan_ai_usage_label: '本月 AI 使用次数',
+    plan_ai_usage_value: '{n} 次',
+    plan_upcoming_note: '按次计费的额度机制（每次可选便宜/强力模型）正在建设中，未来将适用于所有套餐（含免费版）— 当前阶段暂无变化。',
     delete_h2: '删除账户',
     delete_hint: '永久删除账户及您全部的研究项目、研究问题、检索日志。此操作不可撤销。（共享文献库不含个人信息，将予以保留。）',
     delete_confirm_hint: '输入 <b>XOA TAI KHOAN</b> 以确认：',
@@ -249,7 +405,14 @@ const I18N = {
   en: {
     page_title: 'Account — Chimedis',
     page_h1: 'Account',
-    back_link: '← Research Workbench',
+    modal_close_title: 'Close',
+    nav_group_account: 'Account',
+    nav_group_tools: 'Tools',
+    nav_profile: 'Profile',
+    nav_security: 'Security & Sign-in',
+    nav_plan: 'Plan & AI',
+    nav_bookmarklet: 'Bookmarklet',
+    nav_danger: 'Delete account',
     anon_msg: 'You are not signed in.',
     anon_login_link: 'Sign in',
     profile_h2: 'Profile',
@@ -268,6 +431,13 @@ const I18N = {
     pw_h2: 'Change password',
     pw_hint: 'Only applies if you sign in with email + password.',
     btn_reset_pw: 'Send password reset email',
+    plan_desc: 'Search and library saving are always free, unlimited. AI-powered features (like "Gap Analysis") are metered by plan.',
+    plan_current_label: 'Current plan',
+    plan_free: 'Free',
+    plan_pro: 'Pro',
+    plan_ai_usage_label: 'AI runs this month',
+    plan_ai_usage_value: '{n} runs',
+    plan_upcoming_note: 'A per-run credit system (choose a cheaper or stronger model each time) is being built and will apply to every plan, including free — nothing changes at this stage yet.',
     delete_h2: 'Delete account',
     delete_hint: 'Permanently deletes your account plus all your research projects, questions, and search logs. Cannot be undone. (The shared literature library holds no personal data and is kept.)',
     delete_confirm_hint: 'Type <b>XOA TAI KHOAN</b> to confirm:',
@@ -319,6 +489,7 @@ function applyI18n() {
   document.querySelectorAll('[data-i18n]').forEach((el) => { el.textContent = t(el.getAttribute('data-i18n')); });
   document.querySelectorAll('[data-i18n-html]').forEach((el) => { el.innerHTML = t(el.getAttribute('data-i18n-html')); });
   document.querySelectorAll('[data-i18n-ph]').forEach((el) => { el.placeholder = t(el.getAttribute('data-i18n-ph')); });
+  document.querySelectorAll('[data-i18n-title]').forEach((el) => { el.title = t(el.getAttribute('data-i18n-title')); });
   document.documentElement.lang = state.lang;
   document.title = t('page_title');
   const pt = document.getElementById('pageTitle'); if (pt) pt.textContent = t('page_title');
@@ -329,6 +500,7 @@ function applyI18n() {
       ? `<span class="pill ok">${t('verified_yes')}</span>`
       : `<span class="pill no">${t('verified_no')}</span>`;
   }
+  if (window.__lastPlan !== undefined) renderPlanPill(window.__lastPlan);
 }
 function closeLangMenu() { document.querySelectorAll('.lang-menu').forEach((m) => m.classList.remove('open')); }
 window.toggleLangMenu = (e) => { e.stopPropagation(); document.querySelectorAll('.lang-menu').forEach((m) => m.classList.toggle('open')); };
@@ -338,6 +510,19 @@ function syncLangMenu() {
 }
 window.setLang = (l) => { state.lang = l; localStorage.setItem('chimedis_portal_lang', l); applyI18n(); syncLangMenu(); closeLangMenu(); };
 document.addEventListener('click', (e) => { if (!e.target.closest('.lang-wrap')) closeLangMenu(); });
+
+// ===== Điều hướng danh mục cài đặt (cột trái) — thuần hiện/ẩn, không có gì bất đồng bộ. =====
+function renderPlanPill(plan) {
+  const el = document.getElementById('fPlan');
+  if (!el) return;
+  el.innerHTML = plan === 'pro'
+    ? `<span class="pill plan-pro">${t('plan_pro')}</span>`
+    : `<span class="pill plan-free">${t('plan_free')}</span>`;
+}
+window.wbShowCategory = (cat) => {
+  document.querySelectorAll('.settings-section').forEach((el) => { el.hidden = el.dataset.section !== cat; });
+  document.querySelectorAll('.nav-item').forEach((el) => { el.classList.toggle('active', el.dataset.cat === cat); });
+};
 </script>
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
@@ -387,8 +572,19 @@ onAuthStateChanged(auth, async (user) => {
     $('verifyRow').hidden = d.verified;
     renderIdentities(d.identities || []);
     loadBookmarklets();
+    loadPlanUsage(d.user.plan);
   } catch (e) { $('anon').hidden = false; $('anon').textContent = t('err_profile_load', { msg: e.message }); }
 });
+
+// ===== Gói & AI — dữ liệu thật (users.plan + wb_ai_runs), không có nút bấm giả. =====
+async function loadPlanUsage(plan) {
+  window.__lastPlan = plan || 'free';
+  renderPlanPill(window.__lastPlan);
+  try {
+    const d = await api('/api/workbench/ai-usage');
+    $('fAiUsage').textContent = t('plan_ai_usage_value', { n: d.runsThisMonth });
+  } catch (e) { $('fAiUsage').textContent = '—'; }
+}
 
 const LINKABLE = [['google.com','provider_google'],['apple.com','provider_apple'],['facebook.com','provider_facebook']];
 window.renderIdentities = renderIdentities;
@@ -397,11 +593,11 @@ function renderIdentities(list) {
   const have = new Set(list.map((i) => i.provider));
   const rows = list.map((i) => {
     const canUnlink = list.length > 1 && i.provider !== (auth.currentUser?.providerData?.[0]?.providerId);
-    return `<div class="row"><span>${esc(providerLabel(i.provider))}</span><span>${esc(i.provider_email || '')} ${i.verified_at ? '✓' : ''}` +
+    return `<div class="field-row"><span class="field-label">${esc(providerLabel(i.provider))}</span><span class="field-value">${esc(i.provider_email || '')} ${i.verified_at ? '✓' : ''}` +
       (canUnlink ? ` · <a href="#" onclick="unlinkProv('${i.provider}');return false">${t('unlink_action')}</a>` : '') + `</span></div>`;
   });
   for (const [pid, labelKey] of LINKABLE) {
-    if (!have.has(pid)) rows.push(`<div class="row"><span>${t(labelKey)}</span><span><a href="#" onclick="linkProv('${pid}');return false">${t('link_action')}</a></span></div>`);
+    if (!have.has(pid)) rows.push(`<div class="field-row"><span class="field-label">${t(labelKey)}</span><span class="field-value"><a href="#" onclick="linkProv('${pid}');return false">${t('link_action')}</a></span></div>`);
   }
   $('identities').innerHTML = rows.join('');
 }
@@ -421,7 +617,7 @@ async function loadBookmarklets() {
 window.renderBookmarklets = renderBookmarklets;
 function renderBookmarklets() {
   const list = window.__lastTokens || [];
-  $('bmList').innerHTML = list.length ? list.map((tk) => `<div class="row"><span>${esc(tk.label || '—')}<br><small class="muted">${esc(t('bm_created_at'))}: ${esc(fmtDate(tk.created_at))} · ${esc(t('bm_last_used'))}: ${tk.last_used_at ? esc(fmtDate(tk.last_used_at)) : esc(t('bm_never_used'))}</small></span><span><a href="#" onclick="revokeBookmarklet(${tk.id},'${esc(tk.label || '')}');return false">${esc(t('bm_revoke'))}</a></span></div>`).join('')
+  $('bmList').innerHTML = list.length ? list.map((tk) => `<div class="field-row"><span class="field-label">${esc(tk.label || '—')}<br><small class="muted">${esc(t('bm_created_at'))}: ${esc(fmtDate(tk.created_at))} · ${esc(t('bm_last_used'))}: ${tk.last_used_at ? esc(fmtDate(tk.last_used_at)) : esc(t('bm_never_used'))}</small></span><span class="field-value"><a href="#" onclick="revokeBookmarklet(${tk.id},'${esc(tk.label || '')}');return false">${esc(t('bm_revoke'))}</a></span></div>`).join('')
     : `<span data-i18n="bm_empty">${esc(t('bm_empty'))}</span>`;
 }
 window.createBookmarklet = async () => {
