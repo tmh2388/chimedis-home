@@ -596,17 +596,22 @@
       .then(function (d) {
         if (!d.success) throw new Error(d.error || 'Lỗi khi đọc nội dung');
         if (!d.records.length) throw new Error('Không đọc được bản ghi nào trên trang này');
-        renderBulkChecklist(d.records);
+        // Mặc định tick sẵn hết CHỈ hợp lý với CNKI (user đã chủ động chọn bài trước khi bấm
+        // xuất, nên đọc lại đúng ý họ). Với trang kết quả 万方 thì KHÔNG — đọc toàn bộ trang
+        // (2026-09-19, không biết được user đã tick ô nào của chính 万方), nên mặc định BỎ
+        // TICK hết để buộc user chủ động chọn lại trong popup, tránh lưu nhầm cả trang.
+        renderBulkChecklist(d.records, format === 'wanfang-list' ? false : true);
       })
       .catch(function (err) {
         loadingEl.textContent = err.message;
         loadingEl.className = 'bk-status err';
       });
 
-    function renderBulkChecklist(records) {
+    function renderBulkChecklist(records, defaultChecked) {
+      var initialCount = defaultChecked ? records.length : 0;
       body.innerHTML =
-        '<div class="bk-ref-toolbar"><span><span class="bk-selected-count">' + records.length + '</span>/' + records.length + ' bản ghi được chọn</span>' +
-        '<a class="bk-select-none">Bỏ chọn tất cả</a></div>' +
+        '<div class="bk-ref-toolbar"><span><span class="bk-selected-count">' + initialCount + '</span>/' + records.length + ' bản ghi được chọn</span>' +
+        '<a class="bk-select-none">' + (defaultChecked ? 'Bỏ chọn tất cả' : 'Chọn tất cả') + '</a></div>' +
         (records.length > 8 ? '<input type="text" class="bk-ref-filter" placeholder="Lọc theo tiêu đề…" />' : '') +
         '<div class="bk-ref-list"></div>' +
         '<div><div class="bk-lbl">Nhập vào dự án</div><select class="bk-project"><option value="">Đang tải danh sách dự án…</option></select></div>' +
@@ -636,7 +641,7 @@
         if (rec.abstract) detailParts.push('<div class="bk-ref-abstract">' + escHtml(rec.abstract) + '</div>');
         if (rec.doi) detailParts.push('<div class="bk-ref-meta">DOI: ' + escHtml(rec.doi) + '</div>');
         if (rec.url) detailParts.push('<div class="bk-ref-meta"><a href="' + escHtml(rec.url) + '" target="_blank" rel="noopener">' + escHtml(rec.url) + '</a></div>');
-        row.innerHTML = '<input type="checkbox" data-idx="' + i + '" checked />' +
+        row.innerHTML = '<input type="checkbox" data-idx="' + i + '"' + (defaultChecked ? ' checked' : '') + ' />' +
           '<span style="flex:1;min-width:0">' +
           '<div class="bk-ref-title"><span class="bk-ref-toggle">▸</span> ' + escHtml(rec.title || '(không có tiêu đề)') + ' <span class="bk-ref-dup" hidden>đã có trong dự án</span></div>' +
           (meta ? '<div class="bk-ref-meta">' + escHtml(meta) + '</div>' : '') +
@@ -660,7 +665,7 @@
       });
 
       var toggleAllEl = body.querySelector('.bk-select-none');
-      var allChecked = true;
+      var allChecked = !!defaultChecked;
       toggleAllEl.onclick = function () {
         allChecked = !allChecked;
         toggleAllEl.textContent = allChecked ? 'Bỏ chọn tất cả' : 'Chọn tất cả';
